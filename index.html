@@ -393,11 +393,29 @@ function refreshReservation(){
   const next = nextOccurrence();
   el.innerHTML = `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s · ${fmtTime(reservation.time)}</div>
     <div class="countdown" id="countdown"></div>
+    <a class="cta gold" style="display:block; text-align:center; text-decoration:none" href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 Add to my calendar</a>
     <button class="cta ghost" id="r-clear">Cancel reservation</button>`;
   $('#r-clear').onclick = () => { reservation=null; store.set('reservation',null); refreshAll(); };
   tickCountdown(next);
 }
 function fmtTime(t){ const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM'); }
+/* Google Calendar hand-off links — pre-filled events, user taps Save there */
+const gcalStamp = d => d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
+function gcalWeeklyURL(){
+  const s=nextOccurrence(), e=new Date(s.getTime()+2*3600000);   // 2-hour block by default
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    +'&text='+encodeURIComponent('Date night ♥')
+    +'&dates='+gcalStamp(s)+'/'+gcalStamp(e)
+    +'&recur='+encodeURIComponent('RRULE:FREQ=WEEKLY')
+    +'&details='+encodeURIComponent("Standing reservation — booked in Book'd");
+}
+function gcalOneOffURL(p){
+  const d1=p.date.replace(/-/g,''), d2=toISO(new Date(parseISO(p.date).getTime()+DAY)).replace(/-/g,'');
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    +'&text='+encodeURIComponent(p.title+' ♥')
+    +'&dates='+d1+'/'+d2
+    +'&details='+encodeURIComponent("Date booked in Book'd");
+}
 function nextOccurrence(){
   const [h,m]=reservation.time.split(':').map(Number);
   const n=new Date(); const d=new Date(); d.setHours(h,m,0,0);
@@ -424,7 +442,7 @@ function refreshBanners(){
   if(planned){
     const days=Math.round((parseISO(planned.date)-now)/DAY);
     if(days>0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>Booked: ${planned.title} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go</span><button onclick="clearPlanned()">✕</button></div>`);
+      `<div class="banner booked"><span>Booked: ${planned.title} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go · <a href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener" style="color:inherit">📆 calendar</a></span><button onclick="clearPlanned()">✕</button></div>`);
     else if(days===0) el.insertAdjacentHTML('beforeend',
       `<div class="banner booked"><span>Tonight: ${planned.title}. It's on the books.</span><button onclick="logPlanned()">Log it</button></div>`);
     else el.insertAdjacentHTML('beforeend',
