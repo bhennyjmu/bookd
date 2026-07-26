@@ -179,6 +179,7 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
   <!-- ============ MAKE A DEPOSIT ============ -->
   <div class="sechead" id="sec-deposit"><h2>Make a deposit</h2><span class="lead"></span><span class="tag">Log a date</span></div>
   <div class="cardbox">
+    <button class="cta gold" id="timer-btn" style="margin:0 0 16px" onclick="toggleTimer()">⏱ Start the date clock</button>
     <div class="fgroup">
       <label class="f">Deposit type</label>
       <div class="pills" data-group="etype">
@@ -316,6 +317,7 @@ let reservation= store.get('reservation', null);  // {weekday:0-6, time:'19:00',
 let favorites  = store.get('favorites', []);      // [ideaName]
 let lastSpin   = store.get('lastSpin', null);
 let planned    = store.get('planned', null);      // {title, date:'YYYY-MM-DD'} — the next booked date
+let timer      = store.get('timer', null);        // {start: epoch ms, date:'YYYY-MM-DD'} — running date clock
 
 const DAY = 86400000, MISS_HRS = 3;
 const WD = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -407,6 +409,8 @@ function tickCountdown(target){
 function refreshBanners(){
   const el=$('#banners'); el.innerHTML='';
   const now=new Date(); now.setHours(0,0,0,0);
+  if(timer) el.insertAdjacentHTML('beforeend',
+    `<div class="banner tonight"><span id="timer-banner">⏱ Date in progress — ${fmtElapsed(Date.now()-timer.start)}</span><button onclick="toggleTimer()">Stop</button></div>`);
   if(planned){
     const days=Math.round((parseISO(planned.date)-now)/DAY);
     if(days>0) el.insertAdjacentHTML('beforeend',
@@ -495,6 +499,41 @@ $('#d-save').onclick = () => {
   resetDepositForm();
   refreshAll();
   $('#passbook').scrollIntoView({behavior:'smooth', block:'start'});
+};
+
+/* ---------- date clock (punch in / punch out) ---------- */
+let timerTick=null;
+function fmtElapsed(ms){ const m=Math.floor(ms/60000), h=Math.floor(m/60); return h ? h+'h '+(m%60)+'m' : m+'m'; }
+function refreshTimer(){
+  clearInterval(timerTick);
+  const btn=$('#timer-btn');
+  if(!timer){ btn.textContent='⏱ Start the date clock'; return; }
+  const step=()=>{
+    const t=fmtElapsed(Date.now()-timer.start);
+    btn.textContent='⏹ Stop the date clock — '+t+' so far';
+    const b=$('#timer-banner'); if(b) b.textContent='⏱ Date in progress — '+t;
+  };
+  step(); timerTick=setInterval(step, 30000);
+}
+window.toggleTimer = () => {
+  if(!timer){
+    timer={start:Date.now(), date:todayISO()}; store.set('timer',timer);
+    toast('Date clock started ♥');
+    refreshTimer(); refreshBanners();
+    return;
+  }
+  const mins=Math.round((Date.now()-timer.start)/60000);
+  const startDate=timer.date||todayISO();
+  timer=null; store.set('timer',null);
+  refreshTimer(); refreshBanners();
+  if(mins<1){ toast('Clock stopped — too quick to count'); return; }
+  resetDepositForm();
+  $('#d-date').value=startDate;
+  if(mins<45){ setPill('etype','small'); updateEtypeUI(); $('#d-hours').value=mins; }
+  else $('#d-hours').value=Math.round(mins/6)/10;
+  toast('Clocked: '+fmtElapsed(mins*60000)+' — just name it');
+  $('#sec-deposit').scrollIntoView({behavior:'smooth', block:'start'});
+  $('#d-title').focus({preventScroll:true});
 };
 
 /* ---------- roulette ---------- */
@@ -814,7 +853,7 @@ $('#restore-file').onchange = ev => {
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
 function refreshAll(){ refreshPassbook(); refreshReservation(); refreshBanners(); refreshStatement(); refreshInvest(); }
 $('#d-date').value = todayISO();
-buildHearts(); renderFavs(); updateEtypeUI(); refreshAll();
+buildHearts(); renderFavs(); updateEtypeUI(); refreshTimer(); refreshAll();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
