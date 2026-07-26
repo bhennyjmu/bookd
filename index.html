@@ -102,8 +102,8 @@ select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.o
 .pillgroup{margin-bottom:12px}
 .pills{display:flex; gap:6px; flex-wrap:wrap}
 .pill{background:var(--plum); border:1px solid rgba(246,239,227,.14); color:var(--dim); border-radius:999px; padding:6px 14px; font-size:13px; font-family:'Karla'; font-weight:500; cursor:pointer}
-.pills[data-group=cost] .pill.on, .pills[data-group=where] .pill.on{background:var(--rose); border-color:var(--rose); color:var(--plum); font-weight:700}
-.pills[data-group=vibe] .pill.on{background:var(--champagne); border-color:var(--champagne); color:var(--plum); font-weight:700}
+.pills[data-group=cost] .pill.on, .pills[data-group=where] .pill.on, .pills[data-group=etype] .pill.on{background:var(--rose); border-color:var(--rose); color:var(--plum); font-weight:700}
+.pills[data-group=vibe] .pill.on, .pills[data-group=planner] .pill.on{background:var(--champagne); border-color:var(--champagne); color:var(--plum); font-weight:700}
 .spin-card{background:var(--plum); border:1px dashed rgba(246,239,227,.2); border-radius:12px; min-height:96px; margin-top:14px; padding:18px; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px}
 .spin-card.show{display:flex}
 .spin-idea{font-family:'Fraunces',serif; font-size:22px; font-weight:700; line-height:1.2}
@@ -113,6 +113,13 @@ select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.o
 .fav{display:flex; justify-content:space-between; align-items:center; border-bottom:1px dotted rgba(246,239,227,.15); padding:9px 2px; font-size:14.5px}
 .fav button{background:none; border:0; color:var(--dimmer); font-size:16px; cursor:pointer}
 .eyebrow{font-family:'Spline Sans Mono',monospace; font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--dimmer)}
+
+/* ---------- booked banner / split / moments / insights ---------- */
+.banner.booked{background:var(--champagne); color:var(--plum); font-weight:700}
+.banner.booked button{background:var(--plum); color:var(--cream)}
+.pb-split{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:12px}
+.moment{font-size:13px; font-style:italic; color:var(--dim); margin-top:3px}
+.inv-head{font-family:'Fraunces',serif; font-size:19px; font-weight:700; margin:6px 0 12px; line-height:1.3}
 
 /* ---------- statement ---------- */
 .entry{display:flex; justify-content:space-between; gap:10px; padding:13px 2px; border-bottom:1px dotted rgba(246,239,227,.15)}
@@ -165,6 +172,7 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
       <div class="stat"><div class="v" id="pb-streak">0</div><div class="k">Week Streak</div></div>
       <div class="stat"><div class="v" id="pb-avg">0.0</div><div class="k">Hrs / Wk</div></div>
     </div>
+    <div class="pb-split" id="pb-split"></div>
     <div class="tear" aria-hidden="true">♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥&#8202;♥</div>
   </div>
 
@@ -172,12 +180,19 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
   <div class="sechead" id="sec-deposit"><h2>Make a deposit</h2><span class="lead"></span><span class="tag">Log a date</span></div>
   <div class="cardbox">
     <div class="fgroup">
+      <label class="f">Deposit type</label>
+      <div class="pills" data-group="etype">
+        <button class="pill on" data-v="date">Date night</button>
+        <button class="pill" data-v="small">Everyday moment</button>
+      </div>
+    </div>
+    <div class="fgroup">
       <label class="f" for="d-title">What did you do?</label>
       <input type="text" id="d-title" placeholder="Dinner at that new ramen place" maxlength="60">
     </div>
     <div class="grid2 fgroup">
       <div><label class="f" for="d-date">Date</label><input type="date" id="d-date"></div>
-      <div><label class="f" for="d-hours">Hours together</label><input type="number" id="d-hours" min="0.5" max="24" step="0.5" placeholder="2.5"></div>
+      <div><label class="f" for="d-hours" id="d-hours-label">Hours together</label><input type="number" id="d-hours" min="0.5" max="24" step="0.5" placeholder="2.5"></div>
     </div>
     <div class="grid2 fgroup">
       <div>
@@ -190,6 +205,17 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
       <div>
         <label class="f">How was it?</label>
         <div class="hearts" id="d-hearts" role="radiogroup" aria-label="Heart rating 1 to 5"></div>
+      </div>
+    </div>
+    <div class="fgroup">
+      <label class="f" for="d-moment">Best moment (optional)</label>
+      <input type="text" id="d-moment" placeholder="The part you don't want to forget" maxlength="120">
+    </div>
+    <div class="fgroup">
+      <label class="f">Who booked it?</label>
+      <div class="pills" data-group="planner">
+        <button class="pill" data-v="me">Me</button>
+        <button class="pill" data-v="partner">My partner</button>
       </div>
     </div>
     <button class="cta pink" id="d-save">Deposit this date</button>
@@ -230,6 +256,10 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
     <div class="favs" id="favs"></div>
   </div>
 
+  <!-- ============ BEST INVESTMENTS ============ -->
+  <div class="sechead"><h2>Best investments</h2><span class="lead"></span><span class="tag">Insights</span></div>
+  <div class="cardbox" id="invest"></div>
+
   <!-- ============ ACCOUNT STATEMENT ============ -->
   <div class="sechead"><h2>Account statement</h2><span class="lead"></span><span class="tag">History</span></div>
   <div class="cardbox" id="stmt"></div>
@@ -256,6 +286,7 @@ let entries    = store.get('entries', []);        // [{id,title,date:'YYYY-MM-DD
 let reservation= store.get('reservation', null);  // {weekday:0-6, time:'19:00', since:'YYYY-MM-DD'}
 let favorites  = store.get('favorites', []);      // [ideaName]
 let lastSpin   = store.get('lastSpin', null);
+let planned    = store.get('planned', null);      // {title, date:'YYYY-MM-DD'} — the next booked date
 
 const DAY = 86400000, MISS_HRS = 3;
 const WD = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -264,13 +295,15 @@ const todayISO = () => { const d=new Date(); return d.getFullYear()+'-'+String(d
 const parseISO = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
 const fmtDate  = s => parseISO(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
 const monday   = d => { const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; };
+const toISO    = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const isDate   = e => (e.type||'date')==='date';  // entries saved before v2 have no type — they're dates
 
 /* ---------- withdrawals: reservation weeks with no date logged ---------- */
 function missedOccurrences(){
   if(!reservation) return [];
   const out=[], since=parseISO(reservation.since), now=new Date(); now.setHours(0,0,0,0);
   const first=new Date(since); first.setDate(first.getDate() + ((reservation.weekday - first.getDay() + 7) % 7));
-  const weeksWith = new Set(entries.map(e => monday(parseISO(e.date)).getTime()));
+  const weeksWith = new Set(entries.filter(isDate).map(e => monday(parseISO(e.date)).getTime()));
   for(let d=new Date(first); d < now; d.setDate(d.getDate()+7)){
     if(!weeksWith.has(monday(d).getTime())) out.push(new Date(d));
   }
@@ -288,9 +321,12 @@ function refreshPassbook(){
   const balEl = $('#pb-balance');
   balEl.innerHTML = bal.toFixed(1) + '<small> hrs</small>';
   balEl.classList.toggle('neg', bal < 0);
-  $('#pb-dates').textContent = recent.length;
+  $('#pb-dates').textContent = recent.filter(isDate).length;
   $('#pb-avg').textContent = (entries.filter(e=>parseISO(e.date) >= new Date(now.getTime()-28*DAY)).reduce((s,e)=>s+e.hours,0)/4).toFixed(1);
-  const weeks = new Set(entries.map(e => monday(parseISO(e.date)).getTime()));
+  const bookedMe = recent.filter(e=>isDate(e)&&e.planner==='me').length,
+        bookedPa = recent.filter(e=>isDate(e)&&e.planner==='partner').length;
+  $('#pb-split').textContent = (bookedMe+bookedPa) ? `Booked by · Me ${bookedMe} · Partner ${bookedPa}` : '';
+  const weeks = new Set(entries.filter(isDate).map(e => monday(parseISO(e.date)).getTime()));
   let streak=0, w=monday(now).getTime();
   if(!weeks.has(w)) w -= 7*DAY;               // current week isn't over — don't break the streak yet
   while(weeks.has(w)){ streak++; w -= 7*DAY; }
@@ -341,11 +377,26 @@ function tickCountdown(target){
 /* ---------- banners: tonight + rut detector ---------- */
 function refreshBanners(){
   const el=$('#banners'); el.innerHTML='';
+  const now=new Date(); now.setHours(0,0,0,0);
+  if(planned){
+    const days=Math.round((parseISO(planned.date)-now)/DAY);
+    if(days>0) el.insertAdjacentHTML('beforeend',
+      `<div class="banner booked"><span>Booked: ${planned.title} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go</span><button onclick="clearPlanned()">✕</button></div>`);
+    else if(days===0) el.insertAdjacentHTML('beforeend',
+      `<div class="banner booked"><span>Tonight: ${planned.title}. It's on the books.</span><button onclick="logPlanned()">Log it</button></div>`);
+    else el.insertAdjacentHTML('beforeend',
+      `<div class="banner rut"><span>Did "${planned.title}" happen?</span><button onclick="logPlanned()">Log it</button></div>`);
+  }
   if(reservation && new Date().getDay() === reservation.weekday){
     el.insertAdjacentHTML('beforeend',
       `<div class="banner tonight"><span>Tonight's the night. ${fmtTime(reservation.time)}, be there.</span></div>`);
   }
-  const last3 = [...entries].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  const mmdd=todayISO().slice(5), thisYear=todayISO().slice(0,4);
+  const mem=entries.filter(e=>isDate(e) && e.date.slice(5)===mmdd && e.date.slice(0,4)<thisYear)
+                   .sort((a,b)=>a.date.localeCompare(b.date))[0];
+  if(mem) el.insertAdjacentHTML('beforeend',
+    `<div class="banner rut"><span>On this day, ${mem.date.slice(0,4)}: ${mem.title}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
+  const last3 = entries.filter(isDate).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
   if(last3.length===3 && last3.every(e=>e.cat===last3[0].cat)){
     el.insertAdjacentHTML('beforeend',
       `<div class="banner rut"><span>Three ${last3[0].cat.toLowerCase()} dates in a row. Feeling adventurous?</span>
@@ -367,28 +418,50 @@ function buildHearts(){
   paintHearts();
 }
 function paintHearts(){ [...$('#d-hearts').children].forEach((c,j)=>c.classList.toggle('on', j<rating)); }
+function setPill(group,val){
+  const g=document.querySelector(`.pills[data-group=${group}]`); if(!g) return;
+  [...g.children].forEach(x=>x.classList.toggle('on', x.dataset.v===val));
+  filters[group]=val;
+}
+function updateEtypeUI(){
+  const small = filters.etype==='small';
+  $('#d-hours-label').textContent = small ? 'Minutes together' : 'Hours together';
+  const h=$('#d-hours');
+  h.min=small?5:0.5; h.max=small?600:24; h.step=small?5:0.5; h.placeholder=small?'45':'2.5';
+  $('#d-title').placeholder = small ? 'Morning walk, phones at home' : 'Dinner at that new ramen place';
+}
 function resetDepositForm(){
   editingId=null; rating=0; paintHearts();
-  $('#d-title').value=''; $('#d-hours').value=''; $('#d-date').value=todayISO();
+  $('#d-title').value=''; $('#d-hours').value=''; $('#d-date').value=todayISO(); $('#d-moment').value='';
+  setPill('etype','date'); updateEtypeUI(); setPill('planner',null);
   $('#d-save').textContent='Deposit this date'; $('#d-cancel').hidden=true;
 }
 window.editEntry = id => {
   const e=entries.find(x=>x.id===id); if(!e) return;
   editingId=id;
-  $('#d-title').value=e.title; $('#d-date').value=e.date; $('#d-hours').value=e.hours; $('#d-cat').value=e.cat;
+  const small=!isDate(e);
+  setPill('etype', small?'small':'date'); updateEtypeUI();
+  $('#d-title').value=e.title; $('#d-date').value=e.date; $('#d-cat').value=e.cat;
+  $('#d-hours').value = small ? Math.round(e.hours*60) : e.hours;
+  $('#d-moment').value = e.moment||'';
+  setPill('planner', e.planner||null);
   rating=e.rating||0; paintHearts();
   $('#d-save').textContent='Update this date'; $('#d-cancel').hidden=false;
   $('#sec-deposit').scrollIntoView({behavior:'smooth', block:'start'});
 };
 $('#d-cancel').onclick = () => { resetDepositForm(); toast('Edit cancelled'); };
 $('#d-save').onclick = () => {
-  const title=$('#d-title').value.trim(), date=$('#d-date').value, hours=parseFloat($('#d-hours').value);
+  const title=$('#d-title').value.trim(), date=$('#d-date').value, raw=parseFloat($('#d-hours').value);
+  const small = filters.etype==='small';
   if(!title) return toast('Give it a name');
   if(!date)  return toast('Pick the date');
-  if(!(hours>0)) return toast('How many hours?');
-  const record={ id:editingId ?? Date.now(), title, date, hours, cat:$('#d-cat').value, rating };
+  if(!(raw>0)) return toast(small ? 'How many minutes?' : 'How many hours?');
+  const hours = small ? raw/60 : raw;
+  const record={ id:editingId ?? Date.now(), title, date, hours, cat:$('#d-cat').value, rating,
+                 type: small?'small':'date', planner: filters.planner||null,
+                 moment: $('#d-moment').value.trim()||null };
   if(editingId){ entries=entries.map(e=>e.id===editingId?record:e); toast('Entry updated'); }
-  else { entries.push(record); toast('Deposited +' + hours.toFixed(1) + ' hrs'); }
+  else { entries.push(record); toast(small ? 'Deposited +'+Math.round(raw)+' min' : 'Deposited +' + hours.toFixed(1) + ' hrs'); }
   store.set('entries', entries);
   resetDepositForm();
   refreshAll();
@@ -450,12 +523,13 @@ const IDEAS=[
  {n:'Scenic flight or helicopter tour',c:3,w:'out',v:'adv'},
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv'}
 ];
-const filters={cost:'any', where:'any', vibe:'any'};
+const filters={cost:'any', where:'any', vibe:'any', etype:'date', planner:null};
 document.querySelectorAll('.pills').forEach(g=>{
   g.addEventListener('click', e=>{
     const b=e.target.closest('.pill'); if(!b) return;
     [...g.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
     filters[g.dataset.group]=b.dataset.v;
+    if(g.dataset.group==='etype') updateEtypeUI();
   });
 });
 let currentIdea=null;
@@ -471,7 +545,8 @@ $('#spin-btn').onclick=()=>{
   lastSpin=currentIdea.n; store.set('lastSpin', lastSpin);
   card.innerHTML=`<div class="spin-idea">${currentIdea.n}</div>
     <div class="spin-meta">${'$'.repeat(currentIdea.c)} · ${currentIdea.w==='in'?'Stay in':'Go out'} · ${currentIdea.v==='adv'?'Adventurous':'Chill'}</div>
-    <button class="cta pink" style="margin-top:10px" onclick="logIdea()">We did it — log it</button>`;
+    <button class="cta pink" style="margin-top:10px" onclick="logIdea()">We did it — log it</button>
+    <button class="cta ghost" style="margin-top:8px" onclick="bookIdea()">📅 Book it for later</button>`;
   const fb=$('#fav-btn'); fb.hidden=false;
   fb.textContent = favorites.includes(currentIdea.n) ? '♥ Saved' : '♥ Save idea';
 };
@@ -491,8 +566,8 @@ function refreshStatement(){
   const rows=[
     ...entries.map(e=>({sort:e.date, html:
       `<div class="entry"><div><div class="t">${e.title}</div>
-        <div class="m">${fmtDate(e.date)} · ${e.cat}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div></div>
-       <div style="text-align:right"><div class="amt dep">+${e.hours.toFixed(1)} hrs</div>
+        <div class="m">${fmtDate(e.date)} · ${isDate(e)?e.cat:'Everyday moment'}${e.planner?` · booked by ${e.planner==='me'?'me':'partner'}`:''}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div>${e.moment?`<div class="moment">“${e.moment}”</div>`:''}</div>
+       <div style="text-align:right"><div class="amt dep">${isDate(e)?'+'+e.hours.toFixed(1)+' hrs':'+'+Math.round(e.hours*60)+' min'}</div>
         <div><button class="del" onclick="editEntry(${e.id})">edit</button> · <button class="del" onclick="delEntry(${e.id})">delete</button></div></div></div>`})),
     ...missedOccurrences().map(d=>{
       const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -506,6 +581,22 @@ function refreshStatement(){
 }
 window.delEntry = id => { if(editingId===id) resetDepositForm(); entries=entries.filter(e=>e.id!==id); store.set('entries',entries); refreshAll(); };
 
+/* ---------- best investments ---------- */
+function refreshInvest(){
+  const el=$('#invest');
+  const rated=entries.filter(e=>isDate(e)&&e.rating>0), by={};
+  rated.forEach(e=>{ const b=by[e.cat]=by[e.cat]||{n:0,sum:0,hrs:0}; b.n++; b.sum+=e.rating; b.hrs+=e.hours; });
+  const rows=Object.entries(by).map(([c,v])=>({c, avg:v.sum/v.n, n:v.n, hrs:v.hrs}))
+    .filter(r=>r.n>=2).sort((a,b)=>b.avg-a.avg);
+  if(!rows.length){
+    el.innerHTML='<div class="empty">Rate a few dates — two in the same category — and the ledger starts telling you which ones are worth rebooking. <span class="hrt">♥</span></div>';
+    return;
+  }
+  el.innerHTML = `<div class="eyebrow">Highest-yield category</div>
+    <div class="inv-head">${rows[0].c} · ♥ ${rows[0].avg.toFixed(1)} average — book more of these</div>` +
+    rows.map(r=>`<div class="fav"><span>${r.c}</span><span class="mono" style="font-size:12px; color:var(--dim)">♥ ${r.avg.toFixed(1)} · ${r.n} date${r.n===1?'':'s'} · ${r.hrs.toFixed(1)} hrs</span></div>`).join('');
+}
+
 window.logIdea = () => {
   if(!currentIdea) return;
   resetDepositForm();
@@ -515,9 +606,40 @@ window.logIdea = () => {
   $('#d-hours').focus({preventScroll:true});
 };
 
+/* ---------- book the next date ---------- */
+function defaultBookISO(){
+  if(reservation) return toISO(nextOccurrence());
+  const d=new Date(); d.setDate(d.getDate()+1); return toISO(d);
+}
+window.bookIdea = () => {
+  if(!currentIdea || $('#book-date')) return;
+  $('#spin-card').insertAdjacentHTML('beforeend',
+    `<div style="display:flex; gap:8px; width:100%; margin-top:10px">
+       <input type="date" id="book-date" value="${defaultBookISO()}" min="${todayISO()}">
+       <button class="cta gold" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button>
+     </div>`);
+};
+window.confirmBook = () => {
+  const date=$('#book-date').value; if(!date) return toast('Pick a day');
+  planned={ title:currentIdea.n, date }; store.set('planned',planned);
+  toast('Booked · '+fmtDate(date));
+  refreshBanners();
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+window.logPlanned = () => {
+  if(!planned) return;
+  const p=planned; planned=null; store.set('planned',null);
+  resetDepositForm();
+  $('#d-title').value=p.title; $('#d-date').value=p.date;
+  refreshBanners();
+  $('#sec-deposit').scrollIntoView({behavior:'smooth', block:'start'});
+  $('#d-hours').focus({preventScroll:true});
+};
+window.clearPlanned = () => { planned=null; store.set('planned',null); toast('Booking cleared'); refreshBanners(); };
+
 /* ---------- backup & restore ---------- */
 $('#backup-btn').onclick = () => {
-  const data={app:"bookd", exported:todayISO(), entries, reservation, favorites};
+  const data={app:"bookd", exported:todayISO(), entries, reservation, favorites, planned};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download='bookd-backup-'+todayISO()+'.json';
@@ -534,8 +656,8 @@ $('#restore-file').onchange = ev => {
       const d=JSON.parse(r.result);
       if(d.app!=='bookd' || !Array.isArray(d.entries)) throw new Error('not a backup');
       if(!confirm('Replace everything in this app with the backup file? This cannot be undone.')) return;
-      entries=d.entries; reservation=d.reservation||null; favorites=d.favorites||[];
-      store.set('entries',entries); store.set('reservation',reservation); store.set('favorites',favorites);
+      entries=d.entries; reservation=d.reservation||null; favorites=d.favorites||[]; planned=d.planned||null;
+      store.set('entries',entries); store.set('reservation',reservation); store.set('favorites',favorites); store.set('planned',planned);
       renderFavs(); refreshAll(); toast('Ledger restored');
     }catch(e){ toast("That file isn't a Book'd backup"); }
   };
@@ -544,9 +666,9 @@ $('#restore-file').onchange = ev => {
 
 /* ---------- boot ---------- */
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
-function refreshAll(){ refreshPassbook(); refreshReservation(); refreshBanners(); refreshStatement(); }
+function refreshAll(){ refreshPassbook(); refreshReservation(); refreshBanners(); refreshStatement(); refreshInvest(); }
 $('#d-date').value = todayISO();
-buildHearts(); renderFavs(); refreshAll();
+buildHearts(); renderFavs(); updateEtypeUI(); refreshAll();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
