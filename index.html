@@ -120,6 +120,8 @@ select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.o
 .pb-split{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:12px}
 .moment{font-size:13px; font-style:italic; color:var(--dim); margin-top:3px}
 .inv-head{font-family:'Fraunces',serif; font-size:19px; font-weight:700; margin:6px 0 12px; line-height:1.3}
+.cta.danger{color:var(--withdrawal); border:1px solid var(--withdrawal); background:transparent; margin-top:10px}
+.cta.dangersolid{background:var(--withdrawal); color:var(--plum)}
 
 /* ---------- statement ---------- */
 .entry{display:flex; justify-content:space-between; gap:10px; padding:13px 2px; border-bottom:1px dotted rgba(246,239,227,.15)}
@@ -298,6 +300,14 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
     <button class="cta ghost" id="restore-btn">⬆ Restore</button>
   </div>
   <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
+  <button class="cta ghost danger" id="wipe-btn">Close the account (erase everything)</button>
+  <div class="cardbox" id="wipe-confirm" hidden style="margin-top:10px; border:1px solid var(--withdrawal)">
+    <div class="empty" style="padding:4px 4px 14px">This erases everything on this phone — every deposit, the balance, your reservation, favorites, the works. <b>There is no undo.</b> Consider tapping Back up first.</div>
+    <div class="datarow">
+      <button class="cta ghost" onclick="wipeCancel()" style="margin-top:0">Never mind</button>
+      <button class="cta dangersolid" onclick="wipeAll()" style="margin-top:0">Yes — erase it all</button>
+    </div>
+  </div>
   <input type="file" id="restore-file" accept="application/json,.json" hidden>
 </div>
 
@@ -847,6 +857,16 @@ $('#restore-file').onchange = ev => {
     }catch(e){ toast("That file isn't a Book'd backup"); }
   };
   r.readAsText(f);
+};
+
+/* ---------- close the account (two-step wipe) ---------- */
+$('#wipe-btn').onclick = () => { $('#wipe-confirm').hidden=false; $('#wipe-btn').hidden=true; };
+window.wipeCancel = () => { $('#wipe-confirm').hidden=true; $('#wipe-btn').hidden=false; };
+window.wipeAll = () => {
+  Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
+  entries=[]; reservation=null; favorites=[]; planned=null; timer=null; lastSpin=null;
+  resetDepositForm(); renderFavs(); refreshTimer(); refreshAll(); wipeCancel();
+  toast('Account closed — fresh books');
 };
 
 /* ---------- boot ---------- */
