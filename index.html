@@ -102,8 +102,8 @@ select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.o
 .pillgroup{margin-bottom:12px}
 .pills{display:flex; gap:6px; flex-wrap:wrap}
 .pill{background:var(--plum); border:1px solid rgba(246,239,227,.14); color:var(--dim); border-radius:999px; padding:6px 14px; font-size:13px; font-family:'Karla'; font-weight:500; cursor:pointer}
-.pills[data-group=cost] .pill.on, .pills[data-group=where] .pill.on, .pills[data-group=etype] .pill.on{background:var(--rose); border-color:var(--rose); color:var(--plum); font-weight:700}
-.pills[data-group=vibe] .pill.on, .pills[data-group=planner] .pill.on{background:var(--champagne); border-color:var(--champagne); color:var(--plum); font-weight:700}
+.pills[data-group=cost] .pill.on, .pills[data-group=where] .pill.on, .pills[data-group=etype] .pill.on, .pills[data-group=mode] .pill.on, .pills[data-group=ncat] .pill.on{background:var(--rose); border-color:var(--rose); color:var(--plum); font-weight:700}
+.pills[data-group=vibe] .pill.on, .pills[data-group=planner] .pill.on, .pills[data-group=nrad] .pill.on{background:var(--champagne); border-color:var(--champagne); color:var(--plum); font-weight:700}
 .spin-card{background:var(--plum); border:1px dashed rgba(246,239,227,.2); border-radius:12px; min-height:96px; margin-top:14px; padding:18px; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px}
 .spin-card.show{display:flex}
 .spin-idea{font-family:'Fraunces',serif; font-size:22px; font-weight:700; line-height:1.2}
@@ -230,6 +230,13 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
   <div class="sechead"><h2>Need a plan?</h2><span class="lead"></span><span class="tag">Idea roulette</span></div>
   <div class="cardbox">
     <div class="pillgroup">
+      <div class="pills" data-group="mode">
+        <button class="pill on" data-v="cards">Idea cards</button>
+        <button class="pill" data-v="near">Real places near me</button>
+      </div>
+    </div>
+    <div id="card-controls">
+    <div class="pillgroup">
       <label class="f">Budget</label>
       <div class="pills" data-group="cost">
         <button class="pill on" data-v="any">Any</button><button class="pill" data-v="1">$</button>
@@ -248,6 +255,28 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
       <div class="pills" data-group="vibe">
         <button class="pill on" data-v="any">Any</button><button class="pill" data-v="chill">Chill</button>
         <button class="pill" data-v="adv">Adventurous</button>
+      </div>
+    </div>
+    </div>
+    <div id="near-controls" hidden>
+      <div class="pillgroup">
+        <label class="f">Looking for</label>
+        <div class="pills" data-group="ncat">
+          <button class="pill on" data-v="food">Restaurants</button><button class="pill" data-v="cafe">Cafés &amp; sweets</button>
+          <button class="pill" data-v="bar">Bars</button><button class="pill" data-v="park">Parks &amp; nature</button>
+          <button class="pill" data-v="fun">Activities</button><button class="pill" data-v="culture">Culture</button>
+        </div>
+      </div>
+      <div class="pillgroup">
+        <label class="f">How far</label>
+        <div class="pills" data-group="nrad">
+          <button class="pill" data-v="2000">Walkable</button><button class="pill on" data-v="8000">Short drive</button>
+          <button class="pill" data-v="25000">Day out</button>
+        </div>
+      </div>
+      <div class="fgroup">
+        <label class="f" for="near-loc">Where (blank = use my location)</label>
+        <input type="text" id="near-loc" placeholder="Town or ZIP — or leave blank for GPS" maxlength="60">
       </div>
     </div>
     <div class="spin-card" id="spin-card"></div>
@@ -523,17 +552,27 @@ const IDEAS=[
  {n:'Scenic flight or helicopter tour',c:3,w:'out',v:'adv'},
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv'}
 ];
-const filters={cost:'any', where:'any', vibe:'any', etype:'date', planner:null};
+const filters={cost:'any', where:'any', vibe:'any', etype:'date', planner:null, mode:'cards', ncat:'food', nrad:'8000'};
 document.querySelectorAll('.pills').forEach(g=>{
   g.addEventListener('click', e=>{
     const b=e.target.closest('.pill'); if(!b) return;
     [...g.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
     filters[g.dataset.group]=b.dataset.v;
     if(g.dataset.group==='etype') updateEtypeUI();
+    if(g.dataset.group==='mode') updateModeUI();
   });
 });
 let currentIdea=null;
-$('#spin-btn').onclick=()=>{
+function updateModeUI(){
+  const near = filters.mode==='near';
+  $('#card-controls').hidden = near;
+  $('#near-controls').hidden = !near;
+  $('#spin-card').classList.remove('show');
+  $('#fav-btn').hidden = true;
+  $('#spin-btn').textContent = near ? '🎲 Spin a place nearby' : '🎲 Spin the roulette';
+}
+$('#spin-btn').onclick=()=>{ filters.mode==='near' ? nearSpin() : cardSpin(); };
+function cardSpin(){
   let pool=IDEAS.filter(i =>
     (filters.cost==='any'  || i.c===+filters.cost) &&
     (filters.where==='any' || i.w===filters.where) &&
@@ -550,6 +589,113 @@ $('#spin-btn').onclick=()=>{
   const fb=$('#fav-btn'); fb.hidden=false;
   fb.textContent = favorites.includes(currentIdea.n) ? '♥ Saved' : '♥ Save idea';
 };
+
+/* ---------- real places nearby (OpenStreetMap — free, no key) ---------- */
+const NEAR_TAGS = {
+  food:    ['amenity=restaurant'],
+  cafe:    ['amenity=cafe','amenity=ice_cream'],
+  bar:     ['amenity=bar','amenity=pub','amenity=biergarten'],
+  park:    ['leisure=park','leisure=nature_reserve','leisure=garden','tourism=viewpoint'],
+  fun:     ['amenity=cinema','leisure=bowling_alley','leisure=escape_game','leisure=miniature_golf','leisure=ice_rink','leisure=amusement_arcade','tourism=zoo','tourism=aquarium'],
+  culture: ['tourism=museum','tourism=gallery','amenity=theatre']
+};
+const NEAR_LABEL = {food:'Restaurant', cafe:'Café', bar:'Bar', park:'Park & nature', fun:'Activity', culture:'Culture'};
+const nearCache = {};
+let lastNear = null;
+function haversine(a,b){
+  const R=6371, toR=x=>x*Math.PI/180;
+  const s=Math.sin(toR(b.lat-a.lat)/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(toR(b.lon-a.lon)/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
+}
+async function getCoords(){
+  const manual=$('#near-loc').value.trim();
+  if(manual){
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(manual));
+    const j=await r.json();
+    if(!Array.isArray(j)||!j.length) throw new Error(`Couldn't find "${manual}" — try adding the state`);
+    return {lat:+j[0].lat, lon:+j[0].lon, key:manual.toLowerCase()};
+  }
+  return new Promise((res,rej)=>{
+    if(!navigator.geolocation) return rej(new Error('No GPS here — type a town above instead'));
+    navigator.geolocation.getCurrentPosition(
+      p=>res({lat:p.coords.latitude, lon:p.coords.longitude, key:'gps'}),
+      ()=>rej(new Error('Location blocked — type a town above instead')),
+      {timeout:10000, maximumAge:600000});
+  });
+}
+const OVERPASS_EPS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+const PHOTON_QS={
+  food:['restaurant','grill','pizza','bistro','diner'],
+  cafe:['cafe','coffee','ice cream','bakery'],
+  bar:['bar','pub','brewery','taproom'],
+  park:['park','garden','nature reserve','trail'],
+  fun:['cinema','bowling','escape room','mini golf','arcade'],
+  culture:['museum','gallery','theatre']
+};
+async function overpassNear(cat, rad, c){
+  const sel=NEAR_TAGS[cat].map(t=>{const [k,v]=t.split('='); return `nwr["${k}"="${v}"]["name"](around:${rad},${c.lat},${c.lon});`;}).join('');
+  const q='data='+encodeURIComponent(`[out:json][timeout:12];(${sel});out center 60;`);
+  const ask = ep => fetch(ep, {method:'POST', body:q, headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      signal:AbortSignal.timeout(13000)})
+    .then(r => { if(!r.ok) throw new Error('http '+r.status); return r.json(); });
+  try{
+    const j=await Promise.any(OVERPASS_EPS.map(ask));
+    const seen=new Set();
+    return j.elements
+      .map(el=>({name:el.tags&&el.tags.name, lat:el.lat??(el.center&&el.center.lat), lon:el.lon??(el.center&&el.center.lon)}))
+      .filter(p=>p.name && p.lat && !seen.has(p.name) && seen.add(p.name))
+      .map(p=>({...p, km:haversine(c,p)}));
+  }catch(e){ return null; }   // every mirror busy — caller falls back to Photon
+}
+async function photonNear(cat, rad, c){
+  const dLat=rad/111320, dLon=rad/(111320*Math.cos(c.lat*Math.PI/180));
+  const bbox=[c.lon-dLon, c.lat-dLat, c.lon+dLon, c.lat+dLat].map(x=>x.toFixed(4)).join(',');
+  const results=await Promise.all(PHOTON_QS[cat].map(term=>
+    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(term)}&bbox=${bbox}&limit=20`)
+      .then(r=>r.ok?r.json():{features:[]}).catch(()=>({features:[]}))));
+  const seen=new Set(), out=[];
+  results.forEach(j=>(j.features||[]).forEach(f=>{
+    const name=f.properties&&f.properties.name;
+    if(!name || seen.has(name)) return; seen.add(name);
+    const [lon,lat]=f.geometry.coordinates;
+    out.push({name, lat, lon, km:haversine(c,{lat,lon})});
+  }));
+  return out.filter(p=>p.km <= rad/1000 + 0.5);
+}
+async function fetchNear(cat, rad, c){
+  const viaOverpass=await overpassNear(cat, rad, c);
+  if(viaOverpass && viaOverpass.length) return viaOverpass;
+  const viaPhoton=await photonNear(cat, rad, c);
+  if(!viaPhoton.length && viaOverpass===null) throw new Error('The free map services are all busy — try again in a few minutes');
+  return viaPhoton;
+}
+async function nearSpin(){
+  const card=$('#spin-card'); card.classList.add('show');
+  card.innerHTML='<span class="spin-empty">Scanning the neighborhood…</span>';
+  $('#fav-btn').hidden=true;
+  try{
+    const c=await getCoords();
+    const key=filters.ncat+'|'+filters.nrad+'|'+c.key;
+    if(!nearCache[key]) nearCache[key]=await fetchNear(filters.ncat, +filters.nrad, c);
+    let pool=nearCache[key];
+    if(!pool.length){ card.innerHTML='<span class="spin-empty">Nothing mapped in that range — widen the radius or try another category.</span>'; return; }
+    if(pool.length>1 && lastNear) pool=pool.filter(p=>p.name!==lastNear);
+    const pick=pool[Math.floor(Math.random()*pool.length)];
+    lastNear=pick.name;
+    currentIdea={n:pick.name, c:2, w:'out', v:'chill',
+      cat:{food:'Food & drink', cafe:'Food & drink', bar:'Food & drink', park:'Outdoors', fun:'Active', culture:'Music & culture'}[filters.ncat]};
+    const mi = pick.km*0.621371;
+    const dist = mi<0.2 ? Math.round(pick.km*3280.84/50)*50+' ft' : mi.toFixed(1)+' mi';
+    card.innerHTML=`<div class="spin-idea">${pick.name}</div>
+      <div class="spin-meta">${NEAR_LABEL[filters.ncat]} · ${dist} away · <a href="https://www.google.com/maps/search/?api=1&query=${pick.lat}%2C${pick.lon}" target="_blank" rel="noopener" style="color:var(--rose)">map ↗</a></div>
+      <button class="cta pink" style="margin-top:10px" onclick="logIdea()">We did it — log it</button>
+      <button class="cta ghost" style="margin-top:8px" onclick="bookIdea()">📅 Book it for later</button>`;
+    const fb=$('#fav-btn'); fb.hidden=false;
+    fb.textContent = favorites.includes(pick.name) ? '♥ Saved' : '♥ Save idea';
+  }catch(err){
+    card.innerHTML='<span class="spin-empty">'+(err.message||'Something went wrong — try again')+'</span>';
+  }
+}
 $('#fav-btn').onclick=()=>{
   if(!currentIdea) return;
   if(!favorites.includes(currentIdea.n)){ favorites.push(currentIdea.n); store.set('favorites',favorites); $('#fav-btn').textContent='♥ Saved'; renderFavs(); }
@@ -601,7 +747,7 @@ window.logIdea = () => {
   if(!currentIdea) return;
   resetDepositForm();
   $('#d-title').value = currentIdea.n;
-  $('#d-cat').value = currentIdea.w==='in' ? 'At home' : 'Something new';
+  $('#d-cat').value = currentIdea.cat || (currentIdea.w==='in' ? 'At home' : 'Something new');
   $('#sec-deposit').scrollIntoView({behavior:'smooth', block:'start'});
   $('#d-hours').focus({preventScroll:true});
 };
