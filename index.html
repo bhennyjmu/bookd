@@ -623,9 +623,26 @@ function st4(){
     +`<div class="clockcard"><div class="cl">${esc((timer&&timer.title)||(plan?plan.n:(planned?planned.title:'Tonight')))}</div>
        <div class="cv" id="clockv">${fmtMS(secs)}</div><div class="cn">${note}</div></div>`
     +btn
+    +(state!=='idle'?`<button class="btn danger" style="margin-top:10px" onclick="openScrapSheet()">✕ Scrap the clock — log nothing</button>`:'')
     +`<div class="footrow"><button class="btn sec" onclick="ui.stage=3;renderAll()">←</button>
       <button class="btn sec grow" onclick="wrapUp()">Wrap it up →</button></div>`;
 }
+window.openScrapSheet=()=>{
+  const secs=elapsedSecs();
+  openSheet(`
+    <div class="kicker">Scrap the clock</div><h3>Call it off?</h3>
+    <div class="sheetnote">${fmtMS(secs)} on the clock gets discarded — nothing goes in the ledger, no withdrawal, no judgment. Life happens.</div>
+    <div class="footrow" style="margin-top:0">
+      <button class="btn sec grow" onclick="closeSheet()">Keep the clock</button>
+      <button class="btn pink" style="background:#e2694f" onclick="scrapClock()">Scrap it</button></div>`);
+};
+window.scrapClock=()=>{
+  closeSheet();
+  timer=null; store.set('timer',null);
+  dep={etype:'date', rating:0, planner:null, editingId:null};
+  toast('Clock scrapped — hope everything’s okay ♥');
+  renderAll();
+};
 window.wrapUp=()=>{ if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); } ui.stage=5; renderAll(); };
 window.clockStart=()=>{
   const plan=flow.picked!=null?flow.hand[flow.picked]:null;
