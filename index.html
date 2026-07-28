@@ -532,15 +532,25 @@ function ideasBlock(){
     <div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
       favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
 }
+function otURL(i){
+  const date = (planned&&planned.title===i.n)?planned.date:toISO(new Date(Date.now()+DAY));
+  const time = (planned&&planned.title===i.n&&planned.time)||(reservation&&reservation.time)||'19:00';
+  return 'https://www.opentable.com/s?covers=2&dateTime='+encodeURIComponent(date+'T'+time)
+    +'&term='+encodeURIComponent(i.n)
+    +(i.lat?('&latitude='+i.lat+'&longitude='+i.lon):'');
+}
 function spinCardHTML(){
   const i=currentIdea;
   const meta = i.place
     ? `${esc(i.kindLabel||'Real place')}${i.mi!=null?' · '+i.mi.toFixed(1)+' mi away':''}${i.lat?` · <a href="https://www.google.com/maps/search/?api=1&query=${i.lat}%2C${i.lon}" target="_blank" rel="noopener">map ↗</a>`:''}`
     : `${'$'.repeat(i.c||1)} · ${i.w==='in'?'Stay in':'Go out'} · ${i.v==='adv'?'Adventurous':'Chill'}`;
+  const otBtn = (i.place && ['Restaurant','Café','Bar'].includes(i.kindLabel))
+    ? `<a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px" href="${otURL(i)}" target="_blank" rel="noopener">🍽 Reserve on OpenTable ↗</a>` : '';
   return `<div class="spin-idea">${esc(i.n)}</div>
     <div class="spin-meta">${meta}</div>
     <button class="cta pink" style="margin-top:10px" onclick="logIdea()">We did it — log it</button>
     <button class="cta ghost" style="margin-top:8px" onclick="bookIdea()">📅 Book it for later</button>
+    ${otBtn}
     <div id="bookrow" style="width:100%"></div>`;
 }
 function ideaPool(){
