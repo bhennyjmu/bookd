@@ -493,16 +493,18 @@ function placeListHTML(){
   const rows=near.results
     .filter(p=>!near.query || p.name.toLowerCase().includes(near.query.toLowerCase()))
     .slice(0,20);
+  near.view=rows;   // rows are referenced by index — names never travel through inline JS
   return near.busy ? `<div class="matchline">Scanning the neighborhood…</div>`
     : near.err ? `<div class="matchline">${esc(near.err)}</div>`
     : !near.coords ? `<div class="matchline">Set a location to load the map and real places.</div>`
     : !rows.length ? `<div class="matchline">Nothing within ${near.radiusMi} mi matches that. Widen the radius or clear the search.</div>`
-    : `<div class="rowgrid">`+rows.map(p=>`
-        <button class="rowcard ${near.sel===p.name?'sel':''}" onclick="selPlace('${esc(p.name).replace(/'/g,"\\'")}')">
+    : `<div class="rowgrid">`+rows.map((p,i)=>`
+        <button class="rowcard ${near.sel===p.name?'sel':''}" onclick="selPlaceIdx(${i})">
           <span style="flex:1"><span class="rt">${esc(p.name)}</span><br><span class="rm">${esc(p.kind)}</span></span>
           <span style="font-size:11px; opacity:.75">${(p.km*0.621371).toFixed(1)} mi</span>
         </button>`).join('')+'</div>';
 }
+window.selPlaceIdx=i=>{ const p=near.view&&near.view[i]; if(p) selPlace(p.name); };
 function takeHTML(){
   return near.sel
     ? `<button class="btn pink" onclick="takePlace()">Take ${esc(near.sel)} →</button>`
@@ -916,7 +918,7 @@ function mapDraw(recenter){
     const on=p.name===near.sel, s=on?30:22;
     const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:'',html:`<div class="pin${on?' onp':''}" style="width:${s}px;height:${s}px;font-size:${on?14:10}px">♥</div>`,iconSize:[s,s],iconAnchor:[s/2,s/2]}),title:p.name}).addTo(map);
     m.bindPopup(`<strong>${esc(p.name)}</strong><br>${esc(p.kind)} · ${(p.km*0.621371).toFixed(1)} mi`);
-    m.on('click',()=>{ near.sel=p.name; renderStage(true); mapDraw(false); });
+    m.on('click',()=>{ selPlace(p.name); });
     mapMarkers.push(m);
   });
   const badge=$('#mapbadge'); if(badge) badge.textContent=(near.coords.label||'')+' · '+near.radiusMi+' mi';
