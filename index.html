@@ -37,7 +37,7 @@ header{text-align:center; padding:18px 16px 14px}
 .brand .hrt{font-size:16px; color:var(--pink); vertical-align:22%; margin:0 1px}
 .tagline{font-size:8.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-top:7px}
 
-/* ---------- banners (carried over from production) ---------- */
+/* ---------- banners ---------- */
 .banner{margin:0 0 10px; padding:10px 13px; border-radius:12px; font-size:11.5px; display:flex; gap:10px; align-items:center; justify-content:space-between}
 .banner.booked{background:rgba(230,195,119,.16); border:1px solid rgba(230,195,119,.45); color:var(--gold)}
 .banner.tonight{background:var(--pink); color:var(--inkcream); font-weight:700}
@@ -45,13 +45,17 @@ header{text-align:center; padding:18px 16px 14px}
 .banner button{border:0; border-radius:8px; padding:6px 10px; font-weight:700; font-size:11px; flex-shrink:0; background:var(--ground); color:var(--text)}
 .banner a{color:inherit}
 
-/* ---------- love ledger strip ---------- */
-.strip{margin:0 0 14px; border-radius:16px; background:var(--cream); color:var(--inkcream); display:flex; box-shadow:0 10px 28px rgba(0,0,0,.35)}
-.cell{flex:1; padding:20px 8px 18px; text-align:center; position:relative}
-.cell+.cell{border-left:1px solid rgba(42,19,43,.14); margin:14px 0; padding-top:6px; padding-bottom:4px}
-.cell .k{font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(42,19,43,.5); display:flex; justify-content:center; align-items:center; gap:6px}
-.cell .v{font-family:'Playfair Display',serif; font-weight:800; font-size:34px; line-height:1.2; margin-top:2px}
-.cell .v small{font-family:'Space Mono',monospace; font-size:12px; font-weight:400; color:rgba(42,19,43,.55)}
+/* ---------- love ledger (hero + four stats) ---------- */
+.strip{margin:0 0 14px; border-radius:16px; background:var(--cream); color:var(--inkcream); box-shadow:0 10px 28px rgba(0,0,0,.35); padding:18px 16px 14px}
+.hero{text-align:center; padding-bottom:12px; border-bottom:1px solid rgba(42,19,43,.14)}
+.hero .k{font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(42,19,43,.5); display:flex; justify-content:center; align-items:center; gap:6px}
+.hero .v{font-family:'Playfair Display',serif; font-weight:800; font-size:44px; line-height:1.2; margin-top:2px}
+.hero .v small{font-family:'Space Mono',monospace; font-size:14px; font-weight:400; color:rgba(42,19,43,.55)}
+.statrow{display:flex; padding-top:12px}
+.cell{flex:1; text-align:center}
+.cell+.cell{border-left:1px solid rgba(42,19,43,.14)}
+.cell .k{font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(42,19,43,.5); display:flex; justify-content:center; align-items:center; gap:5px}
+.cell .v{font-family:'Playfair Display',serif; font-weight:800; font-size:20px; line-height:1.25; margin-top:2px}
 .cell .v.hearts{color:var(--pinkdeep)}
 .cell.live .k{color:rgba(31,122,74,.75)}
 .cell.live .v{color:var(--greenv)}
@@ -59,22 +63,20 @@ header{text-align:center; padding:18px 16px 14px}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(58,196,124,.6)}100%{box-shadow:0 0 0 7px rgba(58,196,124,0)}}
 @media (prefers-reduced-motion:reduce){.dot{animation:none}}
 
-/* ---------- stage rail ---------- */
+/* ---------- tab rail ---------- */
 .rail{display:flex; gap:8px; padding:0 0 12px}
-.pills-scroll{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none}
-.pills-scroll::-webkit-scrollbar{display:none}
-.rp{border-radius:999px; padding:8px 0; width:36px; font-weight:700; font-size:11px; letter-spacing:.06em; text-align:center;
-  transition:background .15s,color .15s; flex-shrink:0; background:transparent; color:rgba(246,241,232,.45); border:1px solid rgba(255,255,255,.11)}
-.rp.done{background:rgba(230,195,119,.14); color:var(--gold); border:1px solid rgba(230,195,119,.45)}
+.rp{border-radius:999px; flex:1; padding:9px 6px; font-weight:700; font-size:11px; letter-spacing:.06em; text-align:center;
+  transition:background .15s,color .15s; background:transparent; color:rgba(246,241,232,.45); border:1px solid rgba(255,255,255,.11)}
 .rp.on{background:var(--pink); color:var(--inkcream); border:1px solid var(--pink)}
-.rp.sum{width:auto; padding:8px 14px; margin-left:auto; border:1px solid rgba(230,195,119,.4); color:var(--gold)}
+.rp.sum{border:1px solid rgba(230,195,119,.4); color:var(--gold)}
 .rp.sum.on{background:var(--gold); color:var(--inkgold); border-color:var(--gold)}
 
-/* ---------- stage body ---------- */
-.panelbody{min-height:472px; padding:2px 0 18px}
+/* ---------- tab body ---------- */
+.panelbody{min-height:420px; padding:2px 0 18px}
 .kicker{font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--pink)}
-h2.stageh{font-family:'Playfair Display',serif; font-weight:800; font-size:25px; margin:6px 0 3px; letter-spacing:0}
+h2.stageh{font-family:'Playfair Display',serif; font-weight:800; font-size:25px; margin:6px 0 3px}
 .subline{font-size:12px; line-height:1.6; color:var(--t2); margin:0 0 17px}
+.sectionhead{margin:26px 0 12px}
 
 .grouplabel{font-size:9.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--t3); margin-bottom:8px}
 .pillrow{display:flex; flex-wrap:wrap; gap:7px}
@@ -104,20 +106,21 @@ label.fl{display:block; font-size:9.5px; letter-spacing:.15em; text-transform:up
 .footrow .btn.pink,.footrow .btn.gold{flex:1; width:auto}
 
 .rowcard{display:flex; gap:11px; align-items:center; padding:13px 14px; border-radius:14px; background:var(--card);
-  border:1px solid rgba(255,255,255,.06); color:var(--text); text-align:left; width:100%}
+  border:1px solid rgba(255,255,255,.06); color:var(--text); text-align:left; width:100%; cursor:pointer}
 .rowcard .rt{font-family:'Playfair Display',serif; font-weight:700; font-size:15px; line-height:1.3}
 .rowcard .rm{font-size:10.5px; color:var(--t3); margin-top:2px}
 .rowcard.sel{background:var(--pink); border-color:var(--pink); color:var(--inkcream)}
 .rowcard.sel .rm{color:rgba(42,19,43,.7)}
 .rowgrid{display:grid; gap:9px}
 .chip{padding:4px 9px; border-radius:999px; background:rgba(230,195,119,.16); color:var(--gold); font-size:10px; white-space:nowrap; margin-left:auto; flex-shrink:0}
+.rowcard.sel .chip{background:rgba(42,19,43,.15); color:var(--inkcream)}
 .dropbtn{width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,.12); background:transparent; color:rgba(246,241,232,.6); flex-shrink:0}
 .dropbtn:hover{border-color:var(--pink); color:var(--pink)}
+.rowcard.sel .dropbtn{border-color:rgba(42,19,43,.35); color:var(--inkcream)}
 
-.callout{border-radius:14px; background:rgba(239,111,146,.12); border:1px solid rgba(239,111,146,.25); padding:12px 14px; margin-bottom:16px;
+.callout{border-radius:14px; background:rgba(239,111,146,.12); border:1px solid rgba(239,111,146,.25); padding:12px 14px; margin-bottom:14px;
   font-size:12px; line-height:1.65; color:#f9dbe4}
 .dashcard{border:1px dashed rgba(255,255,255,.14); background:var(--card); padding:18px; border-radius:16px; text-align:center; color:var(--t2)}
-.dashcard .btn{width:auto; padding:11px 15px; border-radius:12px; margin-top:12px}
 
 .holding{border-radius:14px; padding:12px 14px; background:var(--card); border-left:3px solid var(--pink); margin-bottom:16px}
 .holding .hl{font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:rgba(246,241,232,.42)}
@@ -127,10 +130,10 @@ label.fl{display:block; font-size:9.5px; letter-spacing:.15em; text-transform:up
   background:var(--card); border:1px solid rgba(255,255,255,.1); color:rgba(246,241,232,.85)}
 .togglecard.on{background:rgba(230,195,119,.16); border:1px solid var(--gold); color:var(--text)}
 .togglecard .t1{font-family:'Playfair Display',serif; font-weight:700; font-size:15px}
-.togglecard .t2x{font-size:10.5px; opacity:.72; font-family:'Space Mono',monospace}
+.togglecard .t2x{font-size:10.5px; opacity:.72}
 
 /* clock */
-.clockcard{border-radius:18px; padding:24px 18px; background:var(--cream); color:var(--inkcream); text-align:center; margin-bottom:16px}
+.clockcard{border-radius:18px; padding:24px 18px; background:var(--cream); color:var(--inkcream); text-align:center; margin-bottom:14px}
 .clockcard .cl{font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:rgba(42,19,43,.5)}
 .clockcard .cv{font-family:'Playfair Display',serif; font-weight:800; font-size:56px; line-height:1; letter-spacing:-.02em; margin:10px 0 6px}
 .clockcard .cn{font-size:11px; color:rgba(42,19,43,.55)}
@@ -202,9 +205,13 @@ footer{max-width:480px; margin:0 auto; padding:12px 16px; border-top:1px solid r
   <div id="banners"></div>
 
   <div class="strip" id="strip">
-    <div class="cell"><div class="k" id="c1k">30-Day Balance</div><div class="v" id="c1v">0.0<small> hrs</small></div></div>
-    <div class="cell" id="c2"><div class="k" id="c2k">Dates / Mo</div><div class="v" id="c2v">0</div></div>
-    <div class="cell"><div class="k">Avg ♥</div><div class="v hearts" id="c3v">—</div></div>
+    <div class="hero"><div class="k" id="c1k">30-Day Balance</div><div class="v" id="c1v">0.0<small> hrs</small></div></div>
+    <div class="statrow">
+      <div class="cell" id="c2"><div class="k" id="c2k">Dates / Mo</div><div class="v" id="c2v">0</div></div>
+      <div class="cell"><div class="k">Avg ♥</div><div class="v hearts" id="c3v">—</div></div>
+      <div class="cell"><div class="k">Wk Streak</div><div class="v" id="c4v">0</div></div>
+      <div class="cell"><div class="k">Hrs / Wk</div><div class="v" id="c5v">0.0</div></div>
+    </div>
   </div>
 
   <div class="rail" id="rail"></div>
@@ -217,24 +224,25 @@ footer{max-width:480px; margin:0 auto; padding:12px 16px; border-top:1px solid r
 
 <script>
 /* =============================================================
-   Book'd — stepped-tab flow. All state lives in localStorage ("bookd.*")
+   Book'd — three tabs: Tonight / Plan a date / Summary.
+   All state lives in localStorage ("bookd.*")
    ============================================================= */
 const store = {
   get(k, fb){ try{ const v=localStorage.getItem('bookd.'+k); return v===null?fb:JSON.parse(v); }catch(e){ return fb; } },
   set(k, v){ try{ localStorage.setItem('bookd.'+k, JSON.stringify(v)); }catch(e){} }
 };
 let entries    = store.get('entries', []);
-let reservation= store.get('reservation', null);   // {weekday, time, since}
-let planned    = store.get('planned', null);       // {title, date, time?}
+let reservation= store.get('reservation', null);
+let planned    = store.get('planned', null);
 let flow       = store.get('flow', {hand:[], picked:null, who:null});
-let timer      = store.get('timer', null);         // {startedAt, elapsed, running, date, title}
+let timer      = store.get('timer', null);
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
 const DAY=86400000, MISS_HRS=3;
 const WD=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const todayISO=()=>{const d=new Date(); return toISO(d);};
+const todayISO=()=>toISO(new Date());
 const toISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const parseISO=s=>{const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d);};
 const fmtDate=s=>parseISO(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
@@ -243,7 +251,6 @@ const isDate=e=>(e.type||'date')==='date';
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
 
-/* ---------- withdrawals: reservation weeks with no date logged ---------- */
 function missedOccurrences(){
   if(!reservation) return [];
   const out=[], since=parseISO(reservation.since), now=new Date(); now.setHours(0,0,0,0);
@@ -255,7 +262,7 @@ function missedOccurrences(){
   return out;
 }
 
-/* ---------- ideas (52, with categories for the insight engine) ---------- */
+/* ---------- ideas ---------- */
 const IDEAS=[
  {n:'Board game night',c:1,w:'in',v:'chill',cat:'At home'},
  {n:'Build-a-fort movie night',c:1,w:'in',v:'chill',cat:'At home'},
@@ -311,20 +318,16 @@ const IDEAS=[
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv',cat:'Music & culture'}
 ];
 
-const STEPS=[
- {label:'Plan',        kick:'Stage 01 · idea roulette',       sub:'What are we even in the mood for?'},
- {label:'Decide',      kick:'Stage 02 · portfolio',           sub:'Your own hearts, doing the arguing for you.'},
- {label:'Choose',      kick:'Stage 03 · the pick',            sub:'One night, one plan. Say it out loud.'},
- {label:'Book it',     kick:'Stage 04 · standing reservation',sub:'On the books before the week eats it.'},
- {label:'On the clock',kick:'Stage 05 · the date clock',      sub:'Phones down. Quality time is the only thing this app counts.'},
- {label:'Rate the Date',kick:'Stage 06 · make a deposit',     sub:'Log the hours, rate the night, close the loop.'}
+const TABS=[
+ {label:'Tonight',     kick:'Tonight · the date clock',        sub:'Phones down. Clock the night, then put it on the books.'},
+ {label:'Plan a date', kick:'Plan · idea roulette & the map',  sub:'What are we even in the mood for?'},
+ {label:'Summary',     kick:'Ledger · account statement',      sub:''}
 ];
 
-/* ---------- ui state (session) ---------- */
-const ui={ stage:0, summary:false, planMode:'ideas', justSaved:false };
+const ui={ tab:0, planMode:'ideas', justSaved:false };
 const filters={cost:'any', where:'any', vibe:'any'};
-const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], sel:null, busy:false, err:null };
-let dep={ etype:'date', rating:0, planner:null, editingId:null };  // stage-06 working state
+const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], view:[], sel:null, busy:false, err:null };
+let dep={ etype:'date', rating:0, planner:null, editingId:null };
 let clockTick=null;
 
 /* ---------- ledger math ---------- */
@@ -335,12 +338,19 @@ function stats30(){
   const hrs=recent.reduce((s,e)=>s+e.hours,0);
   const missed=missedOccurrences().filter(d=>d>=cutoff).length;
   const rated=recent.filter(e=>isDate(e)&&e.rating>0);
-  return {
-    balance:hrs-missed*MISS_HRS,
-    dates:recent.filter(isDate).length,
-    avg: rated.length ? rated.reduce((s,e)=>s+e.rating,0)/rated.length : null,
-    missed
-  };
+  return { balance:hrs-missed*MISS_HRS, dates:recent.filter(isDate).length,
+    avg: rated.length ? rated.reduce((s,e)=>s+e.rating,0)/rated.length : null };
+}
+function weekStreak(){
+  const weeks=new Set(entries.filter(isDate).map(e=>monday(parseISO(e.date)).getTime()));
+  let s=0, w=monday(new Date()).getTime();
+  if(!weeks.has(w)) w-=7*DAY;
+  while(weeks.has(w)){ s++; w-=7*DAY; }
+  return s;
+}
+function hrsPerWeek(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  return entries.filter(e=>parseISO(e.date)>=new Date(now.getTime()-28*DAY)).reduce((s,e)=>s+e.hours,0)/4;
 }
 function elapsedSecs(){ if(!timer) return 0; return Math.floor((timer.elapsed||0)+(timer.running?(Date.now()-timer.startedAt)/1000:0)); }
 const fmtMS=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
@@ -349,18 +359,15 @@ function renderStrip(){
   const s=stats30();
   $('#c1v').innerHTML=s.balance.toFixed(1)+'<small> hrs</small>';
   $('#c1v').style.color = s.balance<0 ? '#b0402f' : '';
-  $('#c3v').textContent = s.avg!=null ? s.avg.toFixed(1) : '—';
-  const live = timer && (timer.running || (timer.elapsed||0)>0);
   $('#c1k').innerHTML='30-Day Balance'+(timer&&timer.running?' <span class="dot"></span>':'');
+  $('#c3v').textContent = s.avg!=null ? s.avg.toFixed(1) : '—';
+  $('#c4v').textContent = weekStreak();
+  $('#c5v').textContent = hrsPerWeek().toFixed(1);
   const c2=$('#c2');
   if(timer&&timer.running){
-    c2.classList.add('live');
-    $('#c2k').textContent='Banking now';
-    $('#c2v').textContent=fmtMS(elapsedSecs());
+    c2.classList.add('live'); $('#c2k').textContent='Banking now'; $('#c2v').textContent=fmtMS(elapsedSecs());
   } else {
-    c2.classList.remove('live');
-    $('#c2k').textContent='Dates / Mo';
-    $('#c2v').textContent=s.dates;
+    c2.classList.remove('live'); $('#c2k').textContent='Dates / Mo'; $('#c2v').textContent=s.dates;
   }
 }
 function startTicking(){
@@ -373,7 +380,7 @@ function startTicking(){
   },500);
 }
 
-/* ---------- banners (kept from production) ---------- */
+/* ---------- banners ---------- */
 function renderBanners(){
   const el=$('#banners'); el.innerHTML='';
   const now=new Date(); now.setHours(0,0,0,0);
@@ -382,7 +389,7 @@ function renderBanners(){
     if(days>0) el.insertAdjacentHTML('beforeend',
       `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go · <a href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆</a></span><button onclick="clearPlanned()">✕</button></div>`);
     else if(days===0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}. It's on the books.</span><button onclick="goClock()">Clock in</button></div>`);
+      `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}. It's on the books.</span><button onclick="goTonight()">Clock in</button></div>`);
     else el.insertAdjacentHTML('beforeend',
       `<div class="banner memory"><span>Did "${esc(planned.title)}" happen?</span><button onclick="logPlanned()">Log it</button></div>`);
   }
@@ -395,18 +402,18 @@ function renderBanners(){
   if(mem) el.insertAdjacentHTML('beforeend',
     `<div class="banner memory"><span>On this day, ${mem.date.slice(0,4)}: ${esc(mem.title)}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
 }
-window.goClock=()=>{ ui.summary=false; ui.stage=4; renderAll(); };
+window.goTonight=()=>{ ui.tab=0; renderAll(); };
 window.clearPlanned=()=>{ planned=null; store.set('planned',null); toast('Booking cleared'); renderAll(); };
 window.logPlanned=()=>{
   if(!planned) return;
   const p=planned; planned=null; store.set('planned',null);
   flow.hand=[{n:p.title, cat:'Something new', w:'out'}]; flow.picked=0; saveFlow();
-  ui.summary=false; ui.stage=5; dep.editingId=null;
+  ui.tab=0; dep.editingId=null;
   renderAll();
   $('#d-date') && ($('#d-date').value=p.date);
 };
 
-/* ---------- calendar hand-offs (kept) ---------- */
+/* ---------- calendar hand-offs ---------- */
 const gcalStamp=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
 function nextOccurrence(){
   const [h,m]=reservation.time.split(':').map(Number);
@@ -427,19 +434,14 @@ function gcalOneOffURL(p){
     +'&dates='+d1+'/'+d2+'&details='+encodeURIComponent("Date booked in Book'd");
 }
 
-/* ---------- stage rail ---------- */
+/* ---------- rail ---------- */
 function renderRail(){
-  const rail=$('#rail');
-  rail.innerHTML='<div class="pills-scroll">'+STEPS.map((s,i)=>{
-    const cls = ui.summary ? (i<ui.stage?'done':'') : (i===ui.stage?'on':(i<ui.stage?'done':''));
-    return `<button class="rp ${cls}" data-s="${i}" aria-label="${esc(s.label)}">${String(i+1).padStart(2,'0')}</button>`;
-  }).join('')+'</div>'+`<button class="rp sum ${ui.summary?'on':''}" id="sumpill">Summary</button>`;
-  rail.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ ui.summary=false; ui.stage=+b.dataset.s; renderAll(); });
-  $('#sumpill').onclick=()=>{ ui.summary=true; renderAll(); };
+  $('#rail').innerHTML=TABS.map((t,i)=>
+    `<button class="rp ${i===2?'sum':''} ${ui.tab===i?'on':''}" data-t="${i}">${t.label}</button>`).join('');
+  document.querySelectorAll('#rail [data-t]').forEach(b=>b.onclick=()=>{ ui.tab=+b.dataset.t; renderAll(); });
 }
 
-/* ---------- stage bodies ---------- */
-function head(i){ const s=STEPS[i]; return `<div class="kicker">${s.kick}</div><h2 class="stageh">${s.label}</h2><p class="subline">${s.sub}</p>`; }
+function tabHead(i){ const t=TABS[i]; return `<div class="kicker">${t.kick}</div><h2 class="stageh">${t.label}</h2>${t.sub?`<p class="subline">${t.sub}</p>`:''}`; }
 function saveFlow(){ store.set('flow',flow); }
 function catAvg(cat){
   const r=entries.filter(e=>isDate(e)&&e.rating>0&&e.cat===cat);
@@ -452,181 +454,32 @@ function bestCat(){
   return rows[0]||null;
 }
 
-/* Stage 01 — Plan */
-function st0(){
-  const modes=`<div class="pillrow" style="margin-bottom:18px">
-    <button class="fp ${ui.planMode==='ideas'?'on':''}" onclick="setMode('ideas')">Idea cards</button>
-    <button class="fp ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Real places near me</button></div>`;
-  if(ui.planMode==='ideas'){
-    const pool=ideaPool();
-    const match = pool.length
-      ? `${pool.length} of ${IDEAS.length} ideas match. Three come out — you keep what survives.`
-      : 'Nothing matches those three filters — dealing from the whole jar instead.';
-    const grp=(label,group,opts)=>`<div style="margin-bottom:14px"><div class="grouplabel">${label}</div><div class="pillrow">`+
-      opts.map(([v,t])=>`<button class="fp ${filters[group]===v?'on':''}" onclick="setFilter('${group}','${v}')">${t}</button>`).join('')+'</div></div>';
-    return head(0)+modes
-      +grp('Budget','cost',[['any','Any'],['1','$'],['2','$$'],['3','$$$']])
-      +grp('Setting','where',[['any','Any'],['in','Stay in'],['out','Go out']])
-      +grp('Energy','vibe',[['any','Any'],['chill','Chill'],['adv','Adventurous']])
-      +`<div class="matchline">${match}</div>
-        <button class="btn gold" onclick="deal()">✦ ${pool.length?'Deal three ideas':'Deal anyway'}</button>`;
-  }
-  /* Mode B — real places near me */
-  return head(0)+modes
-    +`<div id="mapbox"><div class="mapmsg" id="mapmsg">${near.coords?'':'Map loads once a location is set.'}</div><div class="mapbadge" id="mapbadge"></div></div>
-      <div class="fgroup"><label class="fl" for="near-loc">Where (blank = use my location)</label>
-        <div style="display:flex; gap:8px">
-          <input class="field" type="text" id="near-loc" placeholder="Town or ZIP — or leave blank for GPS" value="${esc(near.locText)}">
-          <button class="btn gold" style="width:auto; padding:11px 14px" onclick="setLoc()">Go</button>
-        </div></div>
-      <div class="fgroup"><input class="field" type="text" id="near-q" placeholder="Filter the list — type part of a name…" value="${esc(near.query)}" oninput="near.query=this.value; updatePlaceList()"></div>
-      <div class="radrow"><div class="grouplabel" style="margin:0">How far</div><div class="radval">${near.radiusMi} mi</div></div>
-      <input type="range" min="1" max="10" step="1" value="${near.radiusMi}" onchange="setRadius(+this.value)">
-      <div style="margin-bottom:14px"><div class="grouplabel">Looking for</div><div class="pillrow">`+
-      [['food','Restaurants'],['cafe','Cafés & sweets'],['bar','Bars'],['park','Parks & nature'],['fun','Activities'],['culture','Culture']]
-        .map(([v,t])=>`<button class="fp ${near.ncat===v?'on':''}" onclick="setNcat('${v}')">${t}</button>`).join('')
-      +`</div></div>`
-    +`<div id="placelist">${placeListHTML()}</div>
-      <div id="takewrap" style="margin-top:16px">${takeHTML()}</div>`;
-}
-function placeListHTML(){
-  const rows=near.results
-    .filter(p=>!near.query || p.name.toLowerCase().includes(near.query.toLowerCase()))
-    .slice(0,20);
-  near.view=rows;   // rows are referenced by index — names never travel through inline JS
-  return near.busy ? `<div class="matchline">Scanning the neighborhood…</div>`
-    : near.err ? `<div class="matchline">${esc(near.err)}</div>`
-    : !near.coords ? `<div class="matchline">Set a location to load the map and real places.</div>`
-    : !rows.length ? `<div class="matchline">Nothing within ${near.radiusMi} mi matches that. Widen the radius or clear the search.</div>`
-    : `<div class="rowgrid">`+rows.map((p,i)=>`
-        <button class="rowcard ${near.sel===p.name?'sel':''}" onclick="selPlaceIdx(${i})">
-          <span style="flex:1"><span class="rt">${esc(p.name)}</span><br><span class="rm">${esc(p.kind)}</span></span>
-          <span style="font-size:11px; opacity:.75">${(p.km*0.621371).toFixed(1)} mi</span>
-        </button>`).join('')+'</div>';
-}
-window.selPlaceIdx=i=>{ const p=near.view&&near.view[i]; if(p) selPlace(p.name); };
-function takeHTML(){
-  return near.sel
-    ? `<button class="btn pink" onclick="takePlace()">Take ${esc(near.sel)} →</button>`
-    : `<button class="btn dis" disabled>Pick a spot on the map</button>`;
-}
-window.updatePlaceList=()=>{
-  const pl=$('#placelist'); if(pl) pl.innerHTML=placeListHTML();
-  const tw=$('#takewrap'); if(tw) tw.innerHTML=takeHTML();
-};
-window.setMode=m=>{ ui.planMode=m; renderStage(); if(m==='places') mountMap(); };
-window.setFilter=(g,v)=>{ filters[g]=v; renderStage(); };
-function ideaPool(){
-  return IDEAS.filter(i=>(filters.cost==='any'||i.c===+filters.cost)&&(filters.where==='any'||i.w===filters.where)&&(filters.vibe==='any'||i.v===filters.vibe));
-}
-window.deal=()=>{
-  let pool=ideaPool(); if(!pool.length) pool=[...IDEAS];
-  const hand=[]; const src=[...pool];
-  while(hand.length<3&&src.length) hand.push(src.splice(Math.floor(Math.random()*src.length),1)[0]);
-  flow.hand=hand; flow.picked=null; saveFlow();
-  ui.stage=1; renderAll();
-};
-
-/* Stage 02 — Decide */
-function st1(){
-  const best=bestCat();
-  const callout = best
-    ? `You rate <b>${esc(best.c.toLowerCase())}</b> nights ${best.avg.toFixed(1)}♥ across ${best.n} dates — your best-performing category. Drop whatever you already know is a maybe.`
-    : 'Nothing logged yet, so nothing to argue with. Keep all three.';
-  if(!flow.hand.length) return head(1)+`<div class="dashcard">Your hand is empty — nothing left to argue about.<br><button class="btn gold" onclick="ui.stage=0;renderAll()">✦ Deal three ideas</button></div>`;
-  return head(1)
-    +`<div class="callout">${callout}</div>
-      <div class="rowgrid">`+flow.hand.map((h,i)=>{
-        const a=h.cat?catAvg(h.cat):null;
-        return `<div class="rowcard"><span style="flex:1"><span class="rt">${esc(h.n)}</span><br>
-          <span class="rm">${esc([h.cat,h.c?'$'.repeat(h.c):null,h.w?(h.w==='in'?'stay in':'go out'):null].filter(Boolean).join(' · '))}</span></span>
-          <span class="chip">${a?a.avg.toFixed(1)+'♥ avg':'new ground'}</span>
-          <button class="dropbtn" title="Back in the jar" onclick="dropIdea(${i})">✕</button></div>`;
-      }).join('')+'</div>'
-    +`<div class="footrow"><button class="btn sec" onclick="ui.stage=0;renderAll()">↺ Re-deal</button>
-      <button class="btn pink" onclick="ui.stage=2;renderAll()">These are the finalists</button></div>`;
-}
-window.dropIdea=i=>{ flow.hand.splice(i,1); flow.picked=null; saveFlow(); renderStage(); };
-
-/* Stage 03 — Choose */
-function st2(){
-  if(!flow.hand.length) return head(2)+`<div class="dashcard">Nothing to choose from yet — start at Plan.<br><button class="btn gold" onclick="ui.stage=0;renderAll()">✦ Deal three ideas</button></div>`;
-  return head(2)
-    +`<div class="rowgrid">`+flow.hand.map((h,i)=>`
-      <button class="rowcard ${flow.picked===i?'sel':''}" style="flex-direction:column; gap:5px; align-items:flex-start" onclick="pick(${i})">
-        <span class="rt" style="font-size:16px">${esc(h.n)}</span>
-        <span class="rm" style="opacity:.7">${esc([h.cat,h.c?'$'.repeat(h.c):null,h.w?(h.w==='in'?'stay in':'go out'):null].filter(Boolean).join(' · '))}</span>
-      </button>`).join('')+'</div>'
-    +`<div class="footrow"><button class="btn sec" onclick="ui.stage=1;renderAll()">←</button>
-      ${flow.picked!=null
-        ? `<button class="btn pink" onclick="ui.stage=3;renderAll()">That's the one →</button>`
-        : `<button class="btn dis" style="flex:1" disabled>Pick one to continue</button>`}</div>`;
-}
-window.pick=i=>{ flow.picked=i; saveFlow(); renderStage(); };
-
-/* Stage 04 — Book it */
-function st3(){
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
-  const defDate = planned?planned.date:toISO(new Date(Date.now()+2*DAY));
-  const defTime = (planned&&planned.time)||(reservation&&reservation.time)||'19:00';
-  const calRow = planned ? `<div class="rowgrid" style="margin-top:14px">
-      <a class="btn sec" style="text-align:center; text-decoration:none" href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆 Add this date to Google Calendar</a>
-      ${reservation?`<a class="btn sec" style="text-align:center; text-decoration:none" href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 Add the weekly slot to Google Calendar</a>`:''}
-    </div><div class="savedline">Reserved ♥ — it's on the books.</div>`:'';
-  return head(3)
-    +`<div class="holding"><div class="hl">Holding</div><div class="hv">${esc(plan?plan.n:(planned?planned.title:'Pick a plan at Choose — or book a freestyle night'))}</div></div>
-      <div style="display:flex; gap:10px; margin-bottom:14px">
-        <div style="flex:1"><label class="fl" for="b-date">Date</label><input class="field" type="date" id="b-date" value="${defDate}"></div>
-        <div style="width:126px"><label class="fl" for="b-time">At</label><input class="field" type="time" id="b-time" value="${defTime}"></div>
-      </div>
-      <div class="fgroup"><div class="grouplabel">Who's booking it</div><div class="pillrow">
-        <button class="fp ${flow.who!=='partner'?'on':''}" onclick="flow.who='me';saveFlow();renderStage()">Me</button>
-        <button class="fp ${flow.who==='partner'?'on':''}" onclick="flow.who='partner';saveFlow();renderStage()">My partner</button></div></div>
-      <button class="togglecard ${reservation?'on':''}" onclick="toggleStanding()">
-        <span class="t1">${reservation?'♥':'○'} Make it standing</span>
-        <span class="t2x">${reservation
-          ?`Repeats every ${WD[reservation.weekday]} at ${fmtTime(reservation.time)} until one of you cancels.`
-          :'Same slot every week — the reservation that survives a busy month.'}</span>
-      </button>
-      <div class="footrow"><button class="btn sec" onclick="ui.stage=2;renderAll()">←</button>
-        <button class="btn pink" onclick="reserveIt()">Reserve it ♥</button></div>`
-    +calRow;
-}
-window.toggleStanding=()=>{
-  if(reservation){ reservation=null; store.set('reservation',null); toast('Standing reservation cancelled'); renderAll(); return; }
-  const date=$('#b-date')?$('#b-date').value:todayISO(), time=$('#b-time')?$('#b-time').value:'19:00';
-  reservation={ weekday:parseISO(date).getDay(), time, since:todayISO() };
-  store.set('reservation',reservation); toast('Standing · every '+WD[reservation.weekday]); renderAll();
-};
-window.reserveIt=()=>{
-  const date=$('#b-date').value, time=$('#b-time').value;
-  if(!date) return toast('Pick the day');
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
-  planned={ title:plan?plan.n:'Date night', date, time };
-  store.set('planned',planned);
-  toast('Reserved ♥ '+fmtDate(date));
-  renderAll();
-};
-
-/* Stage 05 — On the clock */
-function st4(){
+/* ============ TONIGHT (home): clock + deposit ============ */
+function tonightTab(){
   const secs=elapsedSecs();
   const state = timer&&timer.running?'running':(timer&&secs>0?'paused':'idle');
   const note = state==='running'?'Running. Put the phone down.'
     : state==='paused'?`Paused — ${(secs/3600).toFixed(1)} hrs banked so far.`
     : 'Nothing banked yet. Start it when the night starts.';
+  const clockTitle=(timer&&timer.title)||(planned&&planned.date===todayISO()?planned.title:null)||(flow.picked!=null?flow.hand[flow.picked].n:'Tonight');
   const btn = state==='idle'?`<button class="btn pink" onclick="clockStart()">⏱ Start the date clock</button>`
     : state==='running'?`<button class="btn gold" onclick="clockPause()">⏸ Pause the clock</button>`
     : `<button class="btn pink" onclick="clockResume()">▶ Resume the clock</button>`;
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
-  return head(4)
-    +`<div class="clockcard"><div class="cl">${esc((timer&&timer.title)||(plan?plan.n:(planned?planned.title:'Tonight')))}</div>
+  return tabHead(0)
+    +`<div class="clockcard"><div class="cl">${esc(clockTitle)}</div>
        <div class="cv" id="clockv">${fmtMS(secs)}</div><div class="cn">${note}</div></div>`
     +btn
     +(state!=='idle'?`<button class="btn danger" style="margin-top:10px" onclick="openScrapSheet()">✕ Scrap the clock — log nothing</button>`:'')
-    +`<div class="footrow"><button class="btn sec" onclick="ui.stage=3;renderAll()">←</button>
-      <button class="btn sec grow" onclick="wrapUp()">Wrap it up →</button></div>`;
+    +`<div class="sectionhead"><div class="kicker">Stage · make a deposit</div><h2 class="stageh" style="font-size:20px">Rate the Date</h2></div>`
+    +depositFormHTML();
 }
+window.clockStart=()=>{
+  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
+  timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(), title:plan?plan.n:(planned&&planned.date===todayISO()?planned.title:null)};
+  store.set('timer',timer); toast('Date clock started ♥'); renderAll();
+};
+window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); renderAll(); };
+window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); renderAll(); };
 window.openScrapSheet=()=>{
   const secs=elapsedSecs();
   openSheet(`
@@ -643,61 +496,51 @@ window.scrapClock=()=>{
   toast('Clock scrapped — hope everything’s okay ♥');
   renderAll();
 };
-window.wrapUp=()=>{ if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); } ui.stage=5; renderAll(); };
-window.clockStart=()=>{
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
-  timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(), title:plan?plan.n:(planned?planned.title:null)};
-  store.set('timer',timer); toast('Date clock started ♥'); renderAll();
-};
-window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); renderAll(); };
-window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); renderAll(); };
 
-/* Stage 06 — Rate the Date */
-function st5(){
+function depositFormHTML(){
   const plan=flow.picked!=null?flow.hand[flow.picked]:null;
   const secs=elapsedSecs();
   const mins=Math.max(secs>0?1:0, Math.round(secs/60));
-  if(dep.hours==null && !dep._auto && mins>0){ dep._auto=true; if(mins<45) dep.etype='small'; }  // short clock → everyday moment
+  if(dep.hours==null && !dep._auto && mins>0){ dep._auto=true; if(mins<45) dep.etype='small'; }
   const small = dep.etype==='small';
-  const defTitle = dep.title!=null?dep.title:(timer&&timer.title)||(plan?plan.n:(planned?planned.title:''));
+  const defTitle = dep.title!=null?dep.title:(timer&&timer.title)||(plan?plan.n:(planned&&planned.date===todayISO()?planned.title:''));
   const defHours = dep.hours!=null?dep.hours:(mins>0 ? (small?mins:Math.max(0.1,Math.round(mins/6)/10)) : (small?30:2.5));
-  const defDate = dep.date || (timer&&timer.date) || (planned?planned.date:todayISO());
+  const defDate = dep.date || (timer&&timer.date) || todayISO();
   const cats=['Food & drink','Movies & shows','Outdoors','At home','Music & culture','Active','Something new'];
   const defCat = dep.cat || (plan&&plan.cat) || 'Food & drink';
-  return head(5)
-    +`<div style="margin-bottom:14px" class="pillrow">
-        <button class="fp ${!small?'on':''}" onclick="dep.etype='date';renderStage()">Date night</button>
-        <button class="fp ${small?'on':''}" onclick="dep.etype='small';renderStage()">Everyday moment</button></div>
-      <div class="fgroup"><label class="fl" for="d-title">What you did</label>
-        <input class="field" type="text" id="d-title" maxlength="60" value="${esc(defTitle)}" placeholder="${small?'Morning walk, phones at home':'Dinner at that new ramen place'}"></div>
-      <div style="display:flex; gap:10px" class="fgroup">
-        <div style="flex:1"><label class="fl" for="d-date">Date</label><input class="field" type="date" id="d-date" value="${defDate}"></div>
-        <div style="width:126px"><label class="fl" for="d-cat">Category</label>
-          <select class="field" id="d-cat">${cats.map(c=>`<option ${c===defCat?'selected':''}>${c}</option>`).join('')}</select></div>
-      </div>
-      <div style="display:flex; gap:12px; align-items:flex-start" class="fgroup">
-        <div style="width:104px"><label class="fl" for="d-hours" id="d-hours-label">${small?'Minutes':'Hours'}</label>
-          <input class="field" type="number" id="d-hours" min="${small?1:0.1}" max="${small?600:24}" step="${small?1:0.1}" value="${defHours}"></div>
-        <div style="flex:1"><label class="fl">How was it?</label>
-          <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="dep.rating=${i};renderStage(true)">♥</button>`).join('')}</div></div>
-      </div>
-      <div class="fgroup"><label class="fl" for="d-moment">Best moment (optional)</label>
-        <input class="field" type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
-      <div class="fgroup"><div class="grouplabel">Who booked it?</div><div class="pillrow">
-        <button class="fp ${dep.planner==='me'?'on':''}" onclick="dep.planner=dep.planner==='me'?null:'me';renderStage(true)">Me</button>
-        <button class="fp ${dep.planner==='partner'?'on':''}" onclick="dep.planner=dep.planner==='partner'?null:'partner';renderStage(true)">My partner</button></div></div>
-      <button class="btn pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Deposit this date'}</button>
-      ${dep.editingId?`<button class="btn sec" style="width:100%; margin-top:10px" onclick="cancelEdit()">Cancel edit</button>`:''}
-      ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is in <b>Summary</b>.</div>`:''}`;
+  return `<div style="margin-bottom:14px" class="pillrow">
+      <button class="fp ${!small?'on':''}" onclick="dep.etype='date';renderTab(true)">Date night</button>
+      <button class="fp ${small?'on':''}" onclick="dep.etype='small';renderTab(true)">Everyday moment</button></div>
+    <div class="fgroup"><label class="fl" for="d-title">What you did</label>
+      <input class="field" type="text" id="d-title" maxlength="60" value="${esc(defTitle)}" placeholder="${small?'Morning walk, phones at home':'Dinner at that new ramen place'}"></div>
+    <div style="display:flex; gap:10px" class="fgroup">
+      <div style="flex:1"><label class="fl" for="d-date">Date</label><input class="field" type="date" id="d-date" value="${defDate}"></div>
+      <div style="width:126px"><label class="fl" for="d-cat">Category</label>
+        <select class="field" id="d-cat">${cats.map(c=>`<option ${c===defCat?'selected':''}>${c}</option>`).join('')}</select></div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:flex-start" class="fgroup">
+      <div style="width:104px"><label class="fl" for="d-hours" id="d-hours-label">${small?'Minutes':'Hours'}</label>
+        <input class="field" type="number" id="d-hours" min="${small?1:0.1}" max="${small?600:24}" step="${small?1:0.1}" value="${defHours}"></div>
+      <div style="flex:1"><label class="fl">How was it?</label>
+        <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="dep.rating=${i};grabDep();renderTab(true)">♥</button>`).join('')}</div></div>
+    </div>
+    <div class="fgroup"><label class="fl" for="d-moment">Best moment (optional)</label>
+      <input class="field" type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
+    <div class="fgroup"><div class="grouplabel">Who booked it?</div><div class="pillrow">
+      <button class="fp ${dep.planner==='me'?'on':''}" onclick="dep.planner=dep.planner==='me'?null:'me';grabDep();renderTab(true)">Me</button>
+      <button class="fp ${dep.planner==='partner'?'on':''}" onclick="dep.planner=dep.planner==='partner'?null:'partner';grabDep();renderTab(true)">My partner</button></div></div>
+    <button class="btn pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Deposit this date'}</button>
+    ${dep.editingId?`<button class="btn sec" style="width:100%; margin-top:10px" onclick="cancelEdit()">Cancel edit</button>`:''}
+    ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is in <b>Summary</b>.</div>`:''}`;
 }
 function grabDep(){
-  dep.title=$('#d-title')?$('#d-title').value:dep.title;
-  dep.date=$('#d-date')?$('#d-date').value:dep.date;
-  dep.cat=$('#d-cat')?$('#d-cat').value:dep.cat;
-  dep.hours=$('#d-hours')?$('#d-hours').value:dep.hours;
-  dep.moment=$('#d-moment')?$('#d-moment').value:dep.moment;
+  if($('#d-title')) dep.title=$('#d-title').value;
+  if($('#d-date')) dep.date=$('#d-date').value;
+  if($('#d-cat')) dep.cat=$('#d-cat').value;
+  if($('#d-hours')) dep.hours=$('#d-hours').value;
+  if($('#d-moment')) dep.moment=$('#d-moment').value;
 }
-window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; renderStage(); toast('Edit cancelled'); };
+window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; renderTab(); toast('Edit cancelled'); };
 window.openDepositSheet=()=>{
   grabDep();
   const title=(dep.title||'').trim(), raw=parseFloat(dep.hours);
@@ -721,109 +564,172 @@ window.commitDeposit=()=>{
   closeSheet();
   const small=dep.etype==='small', raw=parseFloat(dep.hours);
   const record={ id:dep.editingId??Date.now(), title:dep.title.trim(), date:dep.date,
-    hours: small?raw/60:raw, cat:dep.cat, rating:dep.rating||(small?0:4),
+    hours: small?raw/60:raw, cat:dep.cat||'Food & drink', rating:dep.rating||(small?0:4),
     type:small?'small':'date', planner:dep.planner||flow.who||null, moment:(dep.moment||'').trim()||null };
   if(dep.editingId){ entries=entries.map(e=>e.id===dep.editingId?record:e); toast('Entry updated'); }
   else { entries.unshift(record); toast(small?'Deposited +'+Math.round(raw)+' min':'Deposited +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
   if(planned && planned.title===record.title){ planned=null; store.set('planned',null); }
-  if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); }  // backfilling an old date never kills tonight's running clock
+  if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); }  // backfills never kill tonight's running clock
   flow={hand:[], picked:null, who:null}; saveFlow();
   dep={etype:'date',rating:0,planner:null,editingId:null};
-  ui.justSaved=true;
+  ui.justSaved=true; ui.tab=0;
   renderAll();
 };
 
-/* ---------- Summary ---------- */
-function stSummary(){
-  const s=stats30();
-  const all=entries.length, hrs=entries.reduce((t,e)=>t+e.hours,0);
-  const weeks=new Set(entries.filter(isDate).map(e=>monday(parseISO(e.date)).getTime()));
-  let streak=0, w=monday(new Date()).getTime();
-  if(!weeks.has(w)) w-=7*DAY;
-  while(weeks.has(w)){ streak++; w-=7*DAY; }
-  const me=entries.filter(e=>isDate(e)&&e.planner==='me').length, pa=entries.filter(e=>isDate(e)&&e.planner==='partner').length;
-  const rows=[
-    ...entries.map(e=>({sort:e.date, html:`
-      <div class="sumrow"><span style="flex:1"><span class="st">${esc(e.title)}</span>
-        <div class="sm">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'} · ${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}${e.planner?` · booked by ${e.planner==='me'?'me':'partner'}`:''}
-          · <button class="mini" onclick="editEntry(${e.id})">edit</button> · <button class="mini" onclick="delEntry(${e.id})">delete</button></div>
-        ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}</span>
-      <span class="sh">${e.rating?'♥'.repeat(e.rating):''}</span></div>`})),
-    ...missedOccurrences().map(d=>{const iso=toISO(d); return {sort:iso, html:`
-      <div class="sumrow wd"><span style="flex:1"><span class="st">Missed date night</span>
-        <div class="sm">${fmtDate(iso)} · no date logged · −${MISS_HRS.toFixed(1)} hrs</div></span></div>`};})
-  ].sort((a,b)=>b.sort.localeCompare(a.sort));
+/* ============ PLAN A DATE: ideas / map / booking, one page ============ */
+function planTab(){
+  const modes=`<div class="pillrow" style="margin-bottom:18px">
+    <button class="fp ${ui.planMode==='ideas'?'on':''}" onclick="setMode('ideas')">Idea cards</button>
+    <button class="fp ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Real places near me</button></div>`;
+  return tabHead(1)+modes
+    +(ui.planMode==='ideas'?ideasBlock():placesBlock())
+    +handSection()
+    +bookingSection();
+}
+window.setMode=m=>{ ui.planMode=m; renderTab(); if(m==='places') mountMap(); };
+window.setFilter=(g,v)=>{ filters[g]=v; renderTab(); };
+function ideaPool(){
+  return IDEAS.filter(i=>(filters.cost==='any'||i.c===+filters.cost)&&(filters.where==='any'||i.w===filters.where)&&(filters.vibe==='any'||i.v===filters.vibe));
+}
+function ideasBlock(){
+  const pool=ideaPool();
+  const match = pool.length
+    ? `${pool.length} of ${IDEAS.length} ideas match. Three come out — you keep what survives.`
+    : 'Nothing matches those three filters — dealing from the whole jar instead.';
+  const grp=(label,group,opts)=>`<div style="margin-bottom:14px"><div class="grouplabel">${label}</div><div class="pillrow">`+
+    opts.map(([v,t])=>`<button class="fp ${filters[group]===v?'on':''}" onclick="setFilter('${group}','${v}')">${t}</button>`).join('')+'</div></div>';
+  return grp('Budget','cost',[['any','Any'],['1','$'],['2','$$'],['3','$$$']])
+    +grp('Setting','where',[['any','Any'],['in','Stay in'],['out','Go out']])
+    +grp('Energy','vibe',[['any','Any'],['chill','Chill'],['adv','Adventurous']])
+    +`<div class="matchline">${match}</div>
+      <button class="btn gold" onclick="deal()">✦ ${flow.hand.length?'Re-deal three':'Deal three ideas'}${pool.length?'':' anyway'}</button>`;
+}
+window.deal=()=>{
+  let pool=ideaPool(); if(!pool.length) pool=[...IDEAS];
+  const hand=[]; const src=[...pool];
+  while(hand.length<3&&src.length) hand.push(src.splice(Math.floor(Math.random()*src.length),1)[0]);
+  flow.hand=hand; flow.picked=null; saveFlow();
+  renderTab();
+  setTimeout(()=>{ const h=$('#handsec'); if(h) h.scrollIntoView({behavior:'smooth', block:'start'}); },60);
+};
+function handSection(){
+  if(!flow.hand.length) return '';
   const best=bestCat();
-  return `<div class="kicker">Ledger · account statement</div><h2 class="stageh">Summary</h2>
-    <p class="subline">${all} deposit${all===1?'':'s'} · ${hrs.toFixed(1)} hrs on the books · ${streak} wk streak${(me+pa)?` · booked by me ${me} / partner ${pa}`:''}</p>
-    ${best?`<div class="callout">Best investment: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ average across ${best.n} dates. Book more of these.</div>`:''}
-    ${rows.length?`<div class="rowgrid">${rows.map(r=>r.html).join('')}</div>`
-      :`<div class="dashcard">No transactions yet. Log your first date to open the account. ♥</div>`}
-    <div class="footrow"><button class="btn sec grow" id="backup-btn">⬇ Back up</button><button class="btn sec grow" id="restore-btn">⬆ Restore</button></div>
-    <div class="fineprint">Your ledger lives only on this device. Keep a copy somewhere safe.</div>
-    <div class="danger-zone"><button class="btn danger" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
-    <input type="file" id="restore-file" accept="application/json,.json" hidden>
-    <button class="btn sec" style="width:100%; margin-top:18px" onclick="ui.summary=false;renderAll()">← Back to stage ${String(ui.stage+1).padStart(2,'0')}</button>`;
+  const callout = best
+    ? `You rate <b>${esc(best.c.toLowerCase())}</b> nights ${best.avg.toFixed(1)}♥ across ${best.n} dates — your best-performing category. Tap the winner; ✕ what you already know is a maybe.`
+    : 'Nothing logged yet, so nothing to argue with. Tap your favorite.';
+  return `<div id="handsec" class="sectionhead"><div class="kicker">The hand · tap your favorite</div></div>
+    <div class="callout">${callout}</div>
+    <div class="rowgrid">`+flow.hand.map((h,i)=>{
+      const a=h.cat?catAvg(h.cat):null;
+      return `<div class="rowcard ${flow.picked===i?'sel':''}" tabindex="0" onclick="pick(${i})">
+        <span style="flex:1"><span class="rt">${esc(h.n)}</span><br>
+        <span class="rm">${esc([h.cat,h.c?'$'.repeat(h.c):null,h.w?(h.w==='in'?'stay in':'go out'):null].filter(Boolean).join(' · '))}</span></span>
+        <span class="chip">${a?a.avg.toFixed(1)+'♥ avg':'new ground'}</span>
+        <button class="dropbtn" title="Back in the jar" onclick="event.stopPropagation();dropIdea(${i})">✕</button></div>`;
+    }).join('')+'</div>';
 }
-window.editEntry=id=>{
-  const e=entries.find(x=>x.id===id); if(!e) return;
-  dep={ etype:isDate(e)?'date':'small', rating:e.rating||0, planner:e.planner||null, editingId:id,
-    title:e.title, date:e.date, cat:e.cat, moment:e.moment||'',
-    hours: isDate(e)?e.hours:Math.round(e.hours*60) };
-  ui.summary=false; ui.stage=5; ui.justSaved=false; renderAll();
+window.dropIdea=i=>{ flow.hand.splice(i,1); if(flow.picked===i) flow.picked=null; else if(flow.picked>i) flow.picked--; saveFlow(); renderTab(); };
+window.pick=i=>{
+  flow.picked=i; saveFlow(); renderTab();
+  setTimeout(()=>{ const b=$('#booksec'); if(b) b.scrollIntoView({behavior:'smooth', block:'start'}); },60);
 };
-window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); renderAll(); toast('Removed'); };
-window.openWipeSheet=()=>{
-  openSheet(`
-    <div class="kicker">Close the account</div><h3>Erase everything?</h3>
-    <div class="sheetnote">This erases every deposit, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.</div>
-    <div class="footrow" style="margin-top:0">
-      <button class="btn sec grow" onclick="closeSheet()">Never mind</button>
-      <button class="btn pink" style="background:#e2694f" onclick="wipeAll()">Yes — erase it all</button></div>`);
-};
-window.wipeAll=()=>{
-  closeSheet();
-  Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
-  entries=[]; reservation=null; planned=null; timer=null; flow={hand:[],picked:null,who:null};
-  dep={etype:'date',rating:0,planner:null,editingId:null};
-  renderAll(); toast('Account closed — fresh books');
-};
-function wireSummary(){
-  const b=$('#backup-btn'); if(!b) return;
-  b.onclick=()=>{
-    const data={app:'bookd', exported:todayISO(), entries, reservation, planned};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bookd-backup-'+todayISO()+'.json';
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-    toast('Backup downloaded');
-  };
-  $('#restore-btn').onclick=()=>$('#restore-file').click();
-  $('#restore-file').onchange=ev=>{
-    const f=ev.target.files[0]; ev.target.value=''; if(!f) return;
-    const r=new FileReader();
-    r.onload=()=>{ try{
-      const d=JSON.parse(r.result);
-      if(d.app!=='bookd'||!Array.isArray(d.entries)) throw 0;
-      openSheet(`<div class="kicker">Restore</div><h3>Replace everything with the backup?</h3>
-        <div class="sheetnote">${d.entries.length} entries from ${esc(d.exported||'an earlier backup')}. This overwrites what's on this phone.</div>
-        <div class="footrow" style="margin-top:0"><button class="btn sec grow" onclick="closeSheet()">Cancel</button>
-        <button class="btn pink" id="do-restore">Restore it</button></div>`);
-      $('#do-restore').onclick=()=>{ closeSheet();
-        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null;
-        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned);
-        renderAll(); toast('Ledger restored'); };
-    }catch(e){ toast("That file isn't a Book'd backup"); } };
-    r.readAsText(f);
-  };
+function bookingSection(){
+  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
+  if(!plan && !planned) return flow.hand.length?`<div class="matchline" style="margin-top:18px">Tap a card above and the booking desk opens.</div>`:'';
+  const defDate = planned?planned.date:toISO(new Date(Date.now()+2*DAY));
+  const defTime = (planned&&planned.time)||(reservation&&reservation.time)||'19:00';
+  const calRow = planned ? `<div class="rowgrid" style="margin-top:14px">
+      <a class="btn sec" style="text-align:center; text-decoration:none" href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆 Add this date to Google Calendar</a>
+      ${reservation?`<a class="btn sec" style="text-align:center; text-decoration:none" href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 Add the weekly slot to Google Calendar</a>`:''}
+    </div><div class="savedline">Reserved ♥ — it's on the books.</div>`:'';
+  return `<div id="booksec" class="sectionhead"><div class="kicker">Book it · standing reservation</div></div>
+    <div class="holding"><div class="hl">Holding</div><div class="hv">${esc(plan?plan.n:planned.title)}</div></div>
+    <div style="display:flex; gap:10px; margin-bottom:14px">
+      <div style="flex:1"><label class="fl" for="b-date">Date</label><input class="field" type="date" id="b-date" value="${defDate}"></div>
+      <div style="width:126px"><label class="fl" for="b-time">At</label><input class="field" type="time" id="b-time" value="${defTime}"></div>
+    </div>
+    <div class="fgroup"><div class="grouplabel">Who's booking it</div><div class="pillrow">
+      <button class="fp ${flow.who!=='partner'?'on':''}" onclick="flow.who='me';saveFlow();renderTab(true)">Me</button>
+      <button class="fp ${flow.who==='partner'?'on':''}" onclick="flow.who='partner';saveFlow();renderTab(true)">My partner</button></div></div>
+    <button class="togglecard ${reservation?'on':''}" onclick="toggleStanding()">
+      <span class="t1">${reservation?'♥':'○'} Make it standing</span>
+      <span class="t2x">${reservation
+        ?`Repeats every ${WD[reservation.weekday]} at ${fmtTime(reservation.time)} until one of you cancels.`
+        :'Same slot every week — the reservation that survives a busy month.'}</span>
+    </button>
+    <div class="footrow"><button class="btn pink" onclick="reserveIt()">Reserve it ♥</button></div>`
+    +calRow;
 }
+window.toggleStanding=()=>{
+  if(reservation){ reservation=null; store.set('reservation',null); toast('Standing reservation cancelled'); renderAll(); return; }
+  const date=$('#b-date')?$('#b-date').value:todayISO(), time=$('#b-time')?$('#b-time').value:'19:00';
+  reservation={ weekday:parseISO(date).getDay(), time, since:todayISO() };
+  store.set('reservation',reservation); toast('Standing · every '+WD[reservation.weekday]); renderAll();
+};
+window.reserveIt=()=>{
+  const date=$('#b-date').value, time=$('#b-time').value;
+  if(!date) return toast('Pick the day');
+  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
+  planned={ title:plan?plan.n:(planned?planned.title:'Date night'), date, time };
+  store.set('planned',planned);
+  toast('Reserved ♥ '+fmtDate(date));
+  renderAll();
+};
 
-/* ---------- sheet ---------- */
-function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.add('show'); }
-window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); };
-$('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
+/* ---- places (mode B) ---- */
+function placesBlock(){
+  return `<div id="mapbox"><div class="mapmsg" id="mapmsg">${near.coords?'':'Map loads once a location is set.'}</div><div class="mapbadge" id="mapbadge"></div></div>
+    <div class="fgroup"><label class="fl" for="near-loc">Where (blank = use my location)</label>
+      <div style="display:flex; gap:8px">
+        <input class="field" type="text" id="near-loc" placeholder="Town or ZIP — or leave blank for GPS" value="${esc(near.locText)}">
+        <button class="btn gold" style="width:auto; padding:11px 14px" onclick="setLoc()">Go</button>
+      </div></div>
+    <div class="fgroup"><input class="field" type="text" id="near-q" placeholder="Filter the list — type part of a name…" value="${esc(near.query)}" oninput="near.query=this.value; updatePlaceList()"></div>
+    <div class="radrow"><div class="grouplabel" style="margin:0">How far</div><div class="radval">${near.radiusMi} mi</div></div>
+    <input type="range" min="1" max="10" step="1" value="${near.radiusMi}" onchange="setRadius(+this.value)">
+    <div style="margin-bottom:14px"><div class="grouplabel">Looking for</div><div class="pillrow">`+
+    [['food','Restaurants'],['cafe','Cafés & sweets'],['bar','Bars'],['park','Parks & nature'],['fun','Activities'],['culture','Culture']]
+      .map(([v,t])=>`<button class="fp ${near.ncat===v?'on':''}" onclick="setNcat('${v}')">${t}</button>`).join('')
+    +`</div></div>
+    <div id="placelist">${placeListHTML()}</div>
+    <div id="takewrap" style="margin-top:16px">${takeHTML()}</div>`;
+}
+function placeListHTML(){
+  const rows=near.results
+    .filter(p=>!near.query || p.name.toLowerCase().includes(near.query.toLowerCase()))
+    .slice(0,20);
+  near.view=rows;
+  return near.busy ? `<div class="matchline">Scanning the neighborhood…</div>`
+    : near.err ? `<div class="matchline">${esc(near.err)}</div>`
+    : !near.coords ? `<div class="matchline">Set a location to load the map and real places.</div>`
+    : !rows.length ? `<div class="matchline">Nothing within ${near.radiusMi} mi matches that. Widen the radius or clear the search.</div>`
+    : `<div class="rowgrid">`+rows.map((p,i)=>`
+        <button class="rowcard ${near.sel===p.name?'sel':''}" onclick="selPlaceIdx(${i})">
+          <span style="flex:1"><span class="rt">${esc(p.name)}</span><br><span class="rm">${esc(p.kind)}</span></span>
+          <span style="font-size:11px; opacity:.75">${(p.km*0.621371).toFixed(1)} mi</span>
+        </button>`).join('')+'</div>';
+}
+function takeHTML(){
+  return near.sel
+    ? `<button class="btn pink" onclick="takePlace()">Take ${esc(near.sel)} →</button>`
+    : `<button class="btn dis" disabled>Pick a spot on the map</button>`;
+}
+window.updatePlaceList=()=>{
+  const pl=$('#placelist'); if(pl) pl.innerHTML=placeListHTML();
+  const tw=$('#takewrap'); if(tw) tw.innerHTML=takeHTML();
+};
+window.selPlaceIdx=i=>{ const p=near.view&&near.view[i]; if(p) selPlace(p.name); };
+window.selPlace=name=>{ near.sel=name; updatePlaceList(); mapDraw(false); };
+window.takePlace=()=>{
+  const p=near.results.find(x=>x.name===near.sel); if(!p) return;
+  const catMap={food:'Food & drink',cafe:'Food & drink',bar:'Food & drink',park:'Outdoors',fun:'Active',culture:'Music & culture'};
+  flow.hand=[{n:p.name, cat:catMap[near.ncat], w:'out'}]; flow.picked=0; saveFlow();
+  renderTab();
+  setTimeout(()=>{ const b=$('#booksec'); if(b) b.scrollIntoView({behavior:'smooth', block:'start'}); },60);
+};
 
-/* ---------- real places nearby (production engine, kept) ---------- */
 const NEAR_TAGS={
   food:['amenity=restaurant'], cafe:['amenity=cafe','amenity=ice_cream'],
   bar:['amenity=bar','amenity=pub','amenity=biergarten'],
@@ -877,8 +783,8 @@ async function fetchNear(){
   }catch(e){ near.err='The map services are not answering — try again in a minute.'; near.results=[]; }
   near.busy=false; updatePlaceList(); mapDraw(true);
 }
-window.setNcat=v=>{ near.ncat=v; near.sel=null; renderStage(true); fetchNear(); };
-window.setRadius=v=>{ near.radiusMi=v; near.sel=null; renderStage(true); fetchNear(); };
+window.setNcat=v=>{ near.ncat=v; near.sel=null; renderTab(true); fetchNear(); };
+window.setRadius=v=>{ near.radiusMi=v; near.sel=null; renderTab(true); fetchNear(); };
 window.setLoc=async()=>{
   near.locText=$('#near-loc')?$('#near-loc').value.trim():'';
   near.busy=true; near.err=null; updatePlaceList();
@@ -902,27 +808,20 @@ window.setLoc=async()=>{
     mountMap(); fetchNear();
   }catch(err){ near.busy=false; near.err=err.message; updatePlaceList(); }
 };
-window.selPlace=name=>{ near.sel=name; updatePlaceList(); mapDraw(false); };
-window.takePlace=()=>{
-  const p=near.results.find(x=>x.name===near.sel); if(!p) return;
-  const catMap={food:'Food & drink',cafe:'Food & drink',bar:'Food & drink',park:'Outdoors',fun:'Active',culture:'Music & culture'};
-  flow.hand=[{n:p.name, cat:catMap[near.ncat], w:'out'}]; flow.picked=0; saveFlow();
-  ui.stage=3; renderAll();
-};
 
-/* ---------- map (Leaflet, per handoff spec) ---------- */
-let map=null, mapMarkers=[], mapRing=null, mapYou=null;
+/* ---------- map (Leaflet) ---------- */
+let map=null, mapMarkers=[], mapRing=null;
 const zoomFor=r=>r<=2?14:r<=4?13:r<=7?12:11.25;
 function mountMap(){
-  if(ui.planMode!=='places'||!near.coords) return;
+  if(!(ui.tab===1&&ui.planMode==='places')||!near.coords) return;
   if(!window.L){ const m=$('#mapmsg'); if(m) m.textContent='The map library could not load — check your connection and try again.'; return; }
   setTimeout(()=>{
     const box=$('#mapbox'); if(!box) return;
     if(map){ map.remove(); map=null; }
-    $('#mapmsg')&&($('#mapmsg').textContent='');
+    const mm=$('#mapmsg'); if(mm) mm.textContent='';
     map=L.map(box,{center:[near.coords.lat,near.coords.lon], zoom:zoomFor(near.radiusMi), zoomControl:true, zoomSnap:0.25});
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors', maxZoom:19}).addTo(map);
-    mapYou=L.marker([near.coords.lat,near.coords.lon],{icon:L.divIcon({className:'',html:'<div class="you" style="width:12px;height:12px"></div>',iconSize:[12,12],iconAnchor:[6,6]}),interactive:false,keyboard:false}).addTo(map);
+    L.marker([near.coords.lat,near.coords.lon],{icon:L.divIcon({className:'',html:'<div class="you" style="width:12px;height:12px"></div>',iconSize:[12,12],iconAnchor:[6,6]}),interactive:false,keyboard:false}).addTo(map);
     mapDraw(true);
   },50);
 }
@@ -942,22 +841,102 @@ function mapDraw(recenter){
   if(recenter) map.setView([near.coords.lat,near.coords.lon], zoomFor(near.radiusMi));
 }
 
+/* ============ SUMMARY ============ */
+function summaryTab(){
+  const all=entries.length, hrs=entries.reduce((t,e)=>t+e.hours,0);
+  const me=entries.filter(e=>isDate(e)&&e.planner==='me').length, pa=entries.filter(e=>isDate(e)&&e.planner==='partner').length;
+  const rows=[
+    ...entries.map(e=>({sort:e.date, html:`
+      <div class="sumrow"><span style="flex:1"><span class="st">${esc(e.title)}</span>
+        <div class="sm">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'} · ${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}${e.planner?` · booked by ${e.planner==='me'?'me':'partner'}`:''}
+          · <button class="mini" onclick="editEntry(${e.id})">edit</button> · <button class="mini" onclick="delEntry(${e.id})">delete</button></div>
+        ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}</span>
+      <span class="sh">${e.rating?'♥'.repeat(e.rating):''}</span></div>`})),
+    ...missedOccurrences().map(d=>{const iso=toISO(d); return {sort:iso, html:`
+      <div class="sumrow wd"><span style="flex:1"><span class="st">Missed date night</span>
+        <div class="sm">${fmtDate(iso)} · no date logged · −${MISS_HRS.toFixed(1)} hrs</div></span></div>`};})
+  ].sort((a,b)=>b.sort.localeCompare(a.sort));
+  const best=bestCat();
+  return `<div class="kicker">${TABS[2].kick}</div><h2 class="stageh">Summary</h2>
+    <p class="subline">${all} deposit${all===1?'':'s'} · ${hrs.toFixed(1)} hrs on the books${(me+pa)?` · booked by me ${me} / partner ${pa}`:''}</p>
+    ${best?`<div class="callout">Best investment: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ average across ${best.n} dates. Book more of these.</div>`:''}
+    ${rows.length?`<div class="rowgrid">${rows.map(r=>r.html).join('')}</div>`
+      :`<div class="dashcard">No transactions yet. Log your first date to open the account. ♥</div>`}
+    <div class="footrow"><button class="btn sec grow" id="backup-btn">⬇ Back up</button><button class="btn sec grow" id="restore-btn">⬆ Restore</button></div>
+    <div class="fineprint">Your ledger lives only on this device. Keep a copy somewhere safe.</div>
+    <div class="danger-zone"><button class="btn danger" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
+    <input type="file" id="restore-file" accept="application/json,.json" hidden>`;
+}
+window.editEntry=id=>{
+  const e=entries.find(x=>x.id===id); if(!e) return;
+  dep={ etype:isDate(e)?'date':'small', rating:e.rating||0, planner:e.planner||null, editingId:id,
+    title:e.title, date:e.date, cat:e.cat, moment:e.moment||'',
+    hours: isDate(e)?e.hours:Math.round(e.hours*60), _auto:true };
+  ui.tab=0; ui.justSaved=false; renderAll();
+};
+window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); renderAll(); toast('Removed'); };
+window.openWipeSheet=()=>{
+  openSheet(`
+    <div class="kicker">Close the account</div><h3>Erase everything?</h3>
+    <div class="sheetnote">This erases every deposit, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.</div>
+    <div class="footrow" style="margin-top:0">
+      <button class="btn sec grow" onclick="closeSheet()">Never mind</button>
+      <button class="btn pink" style="background:#e2694f" onclick="wipeAll()">Yes — erase it all</button></div>`);
+};
+window.wipeAll=()=>{
+  closeSheet();
+  Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
+  entries=[]; reservation=null; planned=null; timer=null; flow={hand:[],picked:null,who:null};
+  dep={etype:'date',rating:0,planner:null,editingId:null};
+  renderAll(); toast('Account closed — fresh books');
+};
+function wireSummary(){
+  const b=$('#backup-btn'); if(!b) return;
+  b.onclick=()=>{
+    const data={app:'bookd', exported:todayISO(), entries, reservation, planned};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bookd-backup-'+todayISO()+'.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    toast('Backup downloaded');
+  };
+  $('#restore-btn').onclick=()=>$('#restore-file').click();
+  $('#restore-file').onchange=ev=>{
+    const f=ev.target.files[0]; ev.target.value=''; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{ try{
+      const d=JSON.parse(r.result);
+      if(d.app!=='bookd'||!Array.isArray(d.entries)) throw 0;
+      openSheet(`<div class="kicker">Restore</div><h3>Replace everything with the backup?</h3>
+        <div class="sheetnote">${d.entries.length} entries from ${esc(d.exported||'an earlier backup')}. This overwrites what's on this phone.</div>
+        <div class="footrow" style="margin-top:0"><button class="btn sec grow" onclick="closeSheet()">Cancel</button>
+        <button class="btn pink" id="do-restore">Restore it</button></div>`);
+      $('#do-restore').onclick=()=>{ closeSheet();
+        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null;
+        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned);
+        renderAll(); toast('Ledger restored'); };
+    }catch(e){ toast("That file isn't a Book'd backup"); } };
+    r.readAsText(f);
+  };
+}
+
+/* ---------- sheet ---------- */
+function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.add('show'); }
+window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); };
+$('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
+
 /* ---------- render ---------- */
-function renderStage(keepScroll){
-  const stagers=[st0,st1,st2,st3,st4,st5];
-  const inPlaces = !ui.summary && ui.stage===0 && ui.planMode==='places';
+function renderTab(keepScroll){
+  const inPlaces = ui.tab===1 && ui.planMode==='places';
   if(map && !inPlaces){ map.remove(); map=null; mapMarkers=[]; mapRing=null; }
-  const liveMap = (inPlaces && map) ? $('#mapbox') : null;   // keep the living map across re-renders
-  $('#stagebox').innerHTML = ui.summary ? stSummary() : stagers[ui.stage]();
+  const liveMap = (inPlaces && map) ? $('#mapbox') : null;
+  $('#stagebox').innerHTML=[tonightTab,planTab,summaryTab][ui.tab]();
   if(liveMap && $('#mapbox')) $('#mapbox').replaceWith(liveMap);
-  if(ui.summary) wireSummary();
+  if(ui.tab===2) wireSummary();
   if(inPlaces && near.coords && !map) mountMap();
 }
-function renderAll(){ renderStrip(); renderBanners(); renderRail(); renderStage(); }
+function renderAll(){ renderStrip(); renderBanners(); renderRail(); renderTab(); }
 
 /* ---------- boot ---------- */
-if(timer&&timer.running) ui.stage=4;
-else if(planned && planned.date===todayISO()) ui.stage=4;
 renderAll(); startTicking();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
