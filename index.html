@@ -123,6 +123,7 @@ select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.o
 .countdown{font-family:'Spline Sans Mono',monospace; font-size:26px; font-weight:600; color:var(--champagne); margin-top:10px}
 .countdown .u{font-size:12px; color:var(--dimmer); margin-right:8px}
 .callout{border-radius:12px; background:rgba(242,125,152,.12); border:1px solid rgba(242,125,152,.3); padding:12px 14px; margin:0 0 14px; font-size:14px; line-height:1.55; color:#F9DBE4}
+.secsub{font-size:13.5px; color:var(--dim); line-height:1.55; margin:-6px 0 12px}
 
 /* ---------- map ---------- */
 #mapbox{height:230px; border-radius:14px; border:1px solid rgba(246,239,227,.1); overflow:hidden; margin-bottom:12px; background:var(--plum); position:relative}
@@ -515,6 +516,7 @@ function planPage(){
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
     </div>
     <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
+    <p class="secsub">Different from booking one date: this is the weekly slot your balance holds you to. Skip a week and the ledger withdraws ${MISS_HRS.toFixed(1)} hrs.</p>
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
 }
 window.setMode=m=>{ ui.planMode=m; renderPage(); if(m==='places') mountMap(); };
