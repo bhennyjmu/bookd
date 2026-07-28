@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1d1222">
+<meta name="theme-color" content="#1D1320">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Book'd — your relationship, on the books</title>
@@ -11,185 +11,186 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Karla:wght@400;500;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous" defer></script>
 <style>
 :root{
-  --ground:#1d1222; --card:#2a1a31; --well:#160d1b;
-  --cream:#f7f2e7; --inkcream:#2a132b;
-  --text:#f6f1e8; --t2:rgba(246,241,232,.55); --t3:rgba(246,241,232,.45); --t4:rgba(246,241,232,.32);
-  --pink:#ef6f92; --pinkdeep:#d4527a; --gold:#e6c377; --inkgold:#3a2410;
+  --plum:#1D1320; --card:#2A1B2E; --rose:#F27D98; --champagne:#E9C580;
+  --deposit:#8FD6A8; --withdrawal:#F08A7E; --cream:#F6EFE3; --ink:#2A1B2E;
+  --dim:rgba(246,239,227,.6); --dimmer:rgba(246,239,227,.38);
   --green:#2f9e63; --greenv:#1f7a4a;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%; color-scheme:dark}
-body{background:var(--ground); color:var(--text); font-family:'Space Mono',monospace; font-size:12px; line-height:1.6;
-  -webkit-font-smoothing:antialiased; padding-bottom:40px}
-.wrap{max-width:480px; margin:0 auto; padding:0 14px}
-button{font-family:'Space Mono',monospace; cursor:pointer}
-input,select{font-family:'Space Mono',monospace}
-:focus-visible{outline:2px solid var(--pink); outline-offset:2px}
+body{background:var(--plum); color:var(--cream); font-family:'Karla',sans-serif; font-size:16px; line-height:1.5;
+  padding:0 0 calc(86px + env(safe-area-inset-bottom))}
+.mono{font-family:'Spline Sans Mono',monospace}
+.wrap{max-width:480px; margin:0 auto; padding:0 16px}
+:focus-visible{outline:2px solid var(--rose); outline-offset:1px}
 
-/* ---------- wordmark ---------- */
-header{text-align:center; padding:18px 16px 14px}
-.brand{font-family:'Playfair Display',serif; font-weight:900; font-size:29px; letter-spacing:-.01em; color:var(--text)}
-.brand .hrt{font-size:16px; color:var(--pink); vertical-align:22%; margin:0 1px}
-.tagline{font-size:8.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-top:7px}
+/* ---------- header ---------- */
+header{text-align:center; padding:26px 16px 6px}
+.brand{font-family:'Fraunces',serif; font-weight:900; font-size:34px; letter-spacing:-.5px; color:var(--cream)}
+.brand .hrt{color:var(--rose); font-size:24px; vertical-align:6%}
+.tagline{font-family:'Spline Sans Mono',monospace; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--rose); margin-top:6px}
 
 /* ---------- banners ---------- */
-.banner{margin:0 0 10px; padding:10px 13px; border-radius:12px; font-size:11.5px; display:flex; gap:10px; align-items:center; justify-content:space-between}
-.banner.booked{background:rgba(230,195,119,.16); border:1px solid rgba(230,195,119,.45); color:var(--gold)}
-.banner.tonight{background:var(--pink); color:var(--inkcream); font-weight:700}
-.banner.memory{background:var(--card); border:1px dashed rgba(230,195,119,.45); color:var(--gold)}
-.banner button{border:0; border-radius:8px; padding:6px 10px; font-weight:700; font-size:11px; flex-shrink:0; background:var(--ground); color:var(--text)}
+.banner{margin:14px 0 0; padding:12px 14px; border-radius:12px; font-size:14.5px; display:flex; gap:10px; align-items:center; justify-content:space-between}
+.banner.tonight{background:var(--rose); color:var(--plum); font-weight:700}
+.banner.booked{background:rgba(233,197,128,.16); border:1px solid rgba(233,197,128,.5); color:var(--champagne)}
+.banner.memory{background:var(--card); border:1px dashed var(--champagne); color:var(--champagne)}
+.banner button{border:0; border-radius:8px; padding:7px 12px; font-family:'Karla'; font-weight:700; font-size:13px; cursor:pointer; flex-shrink:0; background:var(--plum); color:var(--cream)}
 .banner a{color:inherit}
 
-/* ---------- love ledger (hero + four stats) ---------- */
-.strip{margin:0 0 14px; border-radius:16px; background:var(--cream); color:var(--inkcream); box-shadow:0 10px 28px rgba(0,0,0,.35); padding:18px 16px 14px}
-.hero{text-align:center; padding-bottom:12px; border-bottom:1px solid rgba(42,19,43,.14)}
-.hero .k{font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(42,19,43,.5); display:flex; justify-content:center; align-items:center; gap:6px}
-.hero .v{font-family:'Playfair Display',serif; font-weight:800; font-size:44px; line-height:1.2; margin-top:2px}
-.hero .v small{font-family:'Space Mono',monospace; font-size:14px; font-weight:400; color:rgba(42,19,43,.55)}
-.statrow{display:flex; padding-top:12px}
-.cell{flex:1; text-align:center}
-.cell+.cell{border-left:1px solid rgba(42,19,43,.14)}
-.cell .k{font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(42,19,43,.5); display:flex; justify-content:center; align-items:center; gap:5px}
-.cell .v{font-family:'Playfair Display',serif; font-weight:800; font-size:20px; line-height:1.25; margin-top:2px}
-.cell .v.hearts{color:var(--pinkdeep)}
-.cell.live .k{color:rgba(31,122,74,.75)}
-.cell.live .v{color:var(--greenv)}
-.dot{width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 1.8s ease-out infinite}
+/* ---------- passbook: The Joint Account ---------- */
+.passbook{background:var(--cream); color:var(--ink); border-radius:14px 14px 0 0;
+  margin-top:20px; padding:18px 20px 30px; position:relative; text-align:center;
+  box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.pb-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:9px; text-align:left}
+.pb-title{font-family:'Fraunces',serif; font-weight:700; font-size:17px}
+.acct{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.12em; color:rgba(42,27,46,.55)}
+.balance-label{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:18px;
+  display:flex; justify-content:center; align-items:center; gap:7px}
+.balance{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:52px; letter-spacing:2px; line-height:1.05}
+.balance small{font-size:20px; font-weight:500; letter-spacing:0}
+.balance.neg{color:#B0402F}
+.balance-sub{font-size:12.5px; color:rgba(42,27,46,.65); margin-top:2px}
+.pb-rule{border:0; border-top:1.5px dashed rgba(42,27,46,.3); margin:16px 0 14px}
+.pb-stats{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px}
+.stat .v{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:22px}
+.stat .v.hearts{color:#d4527a}
+.stat .k{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:2px}
+.stat.live .v{color:var(--greenv); animation:glow 1.8s ease-in-out infinite}
+.stat.live .k{color:rgba(31,122,74,.75)}
+@keyframes glow{0%,100%{text-shadow:0 0 0 rgba(47,158,99,0)}50%{text-shadow:0 0 14px rgba(47,158,99,.55)}}
+.pb-split{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:14px}
+.tear{position:absolute; left:0; right:0; bottom:-7px; height:16px; overflow:hidden; text-align:center;
+  color:var(--plum); font-size:15px; letter-spacing:5px; line-height:14px; user-select:none; pointer-events:none}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--green); display:none; animation:pulse 1.8s ease-out infinite}
+.dot.show{display:inline-block}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(58,196,124,.6)}100%{box-shadow:0 0 0 7px rgba(58,196,124,0)}}
-@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+@media (prefers-reduced-motion:reduce){.dot,.stat.live .v{animation:none}}
 
-/* ---------- tab rail ---------- */
-.rail{display:flex; gap:8px; padding:0 0 12px}
-.rp{border-radius:999px; flex:1; padding:9px 6px; font-weight:700; font-size:11px; letter-spacing:.06em; text-align:center;
-  transition:background .15s,color .15s; background:transparent; color:rgba(246,241,232,.45); border:1px solid rgba(255,255,255,.11)}
-.rp.on{background:var(--pink); color:var(--inkcream); border:1px solid var(--pink)}
-.rp.sum{border:1px solid rgba(230,195,119,.4); color:var(--gold)}
-.rp.sum.on{background:var(--gold); color:var(--inkgold); border-color:var(--gold)}
-
-/* ---------- tab body ---------- */
-.panelbody{min-height:420px; padding:2px 0 18px}
-.kicker{font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--pink)}
-h2.stageh{font-family:'Playfair Display',serif; font-weight:800; font-size:25px; margin:6px 0 3px}
-.subline{font-size:12px; line-height:1.6; color:var(--t2); margin:0 0 17px}
-.sectionhead{margin:26px 0 12px}
-
-.grouplabel{font-size:9.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--t3); margin-bottom:8px}
-.pillrow{display:flex; flex-wrap:wrap; gap:7px}
-.fp{padding:9px 13px; border-radius:999px; font-size:12px; white-space:nowrap; background:var(--card); color:rgba(246,241,232,.72); border:1px solid rgba(255,255,255,.13)}
-.fp:hover{background:#332040}
-.fp.on{background:var(--pink); color:var(--inkcream); border:1px solid var(--pink)}
-.matchline{font-size:11px; color:rgba(246,241,232,.42); margin:14px 0}
-
-.field{width:100%; min-height:44px; padding:11px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.1);
-  background:var(--well); color:var(--text); font-size:13px}
-.field::placeholder{color:var(--t4)}
-select.field{appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23ef6f92'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px}
-label.fl{display:block; font-size:9.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--t3); margin:0 0 6px}
+/* ---------- sections & cards ---------- */
+.sechead{display:flex; align-items:baseline; gap:12px; margin:34px 0 14px}
+.sechead h2{font-family:'Fraunces',serif; font-weight:700; font-size:22px; white-space:nowrap}
+.sechead .lead{flex:1; border-bottom:1.5px dotted rgba(246,239,227,.25); transform:translateY(-4px)}
+.sechead .tag{font-family:'Spline Sans Mono',monospace; font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--rose); white-space:nowrap}
+.cardbox{background:var(--card); border-radius:14px; padding:18px 16px}
+label.f{display:block; font-family:'Spline Sans Mono',monospace; font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--dimmer); margin:0 0 6px}
 .fgroup{margin-bottom:14px}
+input[type=text],input[type=date],input[type=number],input[type=time],select{
+  width:100%; background:var(--plum); border:1px solid rgba(246,239,227,.12); border-radius:10px;
+  color:var(--cream); font-family:'Karla'; font-size:16px; padding:11px 12px; appearance:none}
+input::placeholder{color:var(--dimmer)}
+select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23F27D98'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.hearts{display:flex; gap:5px}
+.hearts button{background:none; border:0; font-size:24px; cursor:pointer; color:rgba(246,239,227,.2); padding:2px; line-height:1}
+.hearts button.on{color:var(--rose)}
+.cta{width:100%; margin-top:16px; border:0; border-radius:12px;
+  font-family:'Karla'; font-weight:700; font-size:16px; padding:14px; cursor:pointer}
+.cta.pink{background:var(--rose); color:var(--plum)}
+.cta.gold{background:var(--champagne); color:var(--plum)}
+.cta.ghost{background:transparent; color:var(--rose); border:1px solid var(--rose)}
+.cta.ghostd{background:transparent; color:var(--dim); border:1px solid rgba(246,239,227,.2)}
+.cta.danger{background:transparent; color:var(--withdrawal); border:1px solid rgba(240,138,126,.45)}
+.cta:active{transform:translateY(1px)}
+.divline{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--dimmer); text-align:center; margin:14px 0 16px}
+.row2{display:flex; gap:8px}
+.row2 .cta{margin-top:10px}
+.savedline{font-family:'Spline Sans Mono',monospace; font-size:11.5px; color:var(--champagne); margin-top:14px; text-align:center}
 
-.btn{width:100%; padding:14px 16px; border-radius:14px; border:0; font-weight:700; font-size:13.5px; letter-spacing:.03em}
-.btn.pink{background:var(--pink); color:var(--inkcream)}
-.btn.pink:hover{background:#f382a1}
-.btn.gold{background:var(--gold); color:var(--inkgold)}
-.btn.gold:hover{background:#edd08d}
-.btn.sec{background:transparent; color:rgba(246,241,232,.75); border:1px solid rgba(255,255,255,.14); font-size:12.5px; padding:13px 15px; width:auto}
-.btn.sec:hover{background:var(--card)}
-.btn.sec.grow{flex:1; width:auto}
-.btn.dis{background:rgba(255,255,255,.07); color:rgba(246,241,232,.35); cursor:not-allowed}
-.btn.danger{background:transparent; border:1px solid rgba(239,111,146,.5); color:var(--pink)}
-.footrow{display:flex; gap:8px; margin-top:20px}
-.footrow .btn.pink,.footrow .btn.gold{flex:1; width:auto}
+/* ---------- pills ---------- */
+.pillgroup{margin-bottom:12px}
+.pills{display:flex; gap:6px; flex-wrap:wrap}
+.pill{background:var(--plum); border:1px solid rgba(246,239,227,.14); color:var(--dim); border-radius:999px; padding:6px 14px; font-size:13px; font-family:'Karla'; font-weight:500; cursor:pointer}
+.pill.on{background:var(--rose); border-color:var(--rose); color:var(--plum); font-weight:700}
+.pill.gold.on{background:var(--champagne); border-color:var(--champagne); color:var(--plum); font-weight:700}
 
-.rowcard{display:flex; gap:11px; align-items:center; padding:13px 14px; border-radius:14px; background:var(--card);
-  border:1px solid rgba(255,255,255,.06); color:var(--text); text-align:left; width:100%; cursor:pointer}
-.rowcard .rt{font-family:'Playfair Display',serif; font-weight:700; font-size:15px; line-height:1.3}
-.rowcard .rm{font-size:10.5px; color:var(--t3); margin-top:2px}
-.rowcard.sel{background:var(--pink); border-color:var(--pink); color:var(--inkcream)}
-.rowcard.sel .rm{color:rgba(42,19,43,.7)}
-.rowgrid{display:grid; gap:9px}
-.chip{padding:4px 9px; border-radius:999px; background:rgba(230,195,119,.16); color:var(--gold); font-size:10px; white-space:nowrap; margin-left:auto; flex-shrink:0}
-.rowcard.sel .chip{background:rgba(42,19,43,.15); color:var(--inkcream)}
-.dropbtn{width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,.12); background:transparent; color:rgba(246,241,232,.6); flex-shrink:0}
-.dropbtn:hover{border-color:var(--pink); color:var(--pink)}
-.rowcard.sel .dropbtn{border-color:rgba(42,19,43,.35); color:var(--inkcream)}
+/* ---------- roulette ---------- */
+.spin-card{background:var(--plum); border:1px dashed rgba(246,239,227,.2); border-radius:12px; min-height:96px; margin-top:14px; padding:18px; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px}
+.spin-card.show{display:flex}
+.spin-idea{font-family:'Fraunces',serif; font-size:22px; font-weight:700; line-height:1.2}
+.spin-meta{font-family:'Spline Sans Mono',monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dimmer)}
+.spin-meta a{color:var(--rose)}
+.spin-empty{color:var(--dimmer); font-size:14px}
+.favs{margin-top:16px}
+.fav{display:flex; justify-content:space-between; align-items:center; border-bottom:1px dotted rgba(246,239,227,.15); padding:9px 2px; font-size:14.5px; cursor:pointer}
+.fav button{background:none; border:0; color:var(--dimmer); font-size:16px; cursor:pointer}
+.eyebrow{font-family:'Spline Sans Mono',monospace; font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--dimmer)}
+.countdown{font-family:'Spline Sans Mono',monospace; font-size:26px; font-weight:600; color:var(--champagne); margin-top:10px}
+.countdown .u{font-size:12px; color:var(--dimmer); margin-right:8px}
+.callout{border-radius:12px; background:rgba(242,125,152,.12); border:1px solid rgba(242,125,152,.3); padding:12px 14px; margin:0 0 14px; font-size:14px; line-height:1.55; color:#F9DBE4}
 
-.callout{border-radius:14px; background:rgba(239,111,146,.12); border:1px solid rgba(239,111,146,.25); padding:12px 14px; margin-bottom:14px;
-  font-size:12px; line-height:1.65; color:#f9dbe4}
-.dashcard{border:1px dashed rgba(255,255,255,.14); background:var(--card); padding:18px; border-radius:16px; text-align:center; color:var(--t2)}
-
-.holding{border-radius:14px; padding:12px 14px; background:var(--card); border-left:3px solid var(--pink); margin-bottom:16px}
-.holding .hl{font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:rgba(246,241,232,.42)}
-.holding .hv{font-family:'Playfair Display',serif; font-weight:700; font-size:16px; margin-top:3px}
-
-.togglecard{width:100%; padding:14px; border-radius:16px; display:flex; flex-direction:column; gap:5px; align-items:flex-start; text-align:left;
-  background:var(--card); border:1px solid rgba(255,255,255,.1); color:rgba(246,241,232,.85)}
-.togglecard.on{background:rgba(230,195,119,.16); border:1px solid var(--gold); color:var(--text)}
-.togglecard .t1{font-family:'Playfair Display',serif; font-weight:700; font-size:15px}
-.togglecard .t2x{font-size:10.5px; opacity:.72}
-
-/* clock */
-.clockcard{border-radius:18px; padding:24px 18px; background:var(--cream); color:var(--inkcream); text-align:center; margin-bottom:14px}
-.clockcard .cl{font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:rgba(42,19,43,.5)}
-.clockcard .cv{font-family:'Playfair Display',serif; font-weight:800; font-size:56px; line-height:1; letter-spacing:-.02em; margin:10px 0 6px}
-.clockcard .cn{font-size:11px; color:rgba(42,19,43,.55)}
-
-/* hearts */
-.hearts{display:flex; align-items:center; min-height:44px}
-.hearts button{background:none; border:0; font-size:21px; padding:0 3px; line-height:1; color:rgba(246,241,232,.22); transition:color .12s}
-.hearts button.on{color:var(--pink)}
-
-/* map */
-#mapbox{height:230px; border-radius:16px; border:1px solid rgba(255,255,255,.08); overflow:hidden; margin-bottom:12px; background:var(--well); position:relative}
-#mapbox .mapmsg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:16px; color:var(--t2); font-size:11px; z-index:400; pointer-events:none}
+/* ---------- map ---------- */
+#mapbox{height:230px; border-radius:14px; border:1px solid rgba(246,239,227,.1); overflow:hidden; margin-bottom:12px; background:var(--plum); position:relative}
+#mapbox .mapmsg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:16px; color:var(--dim); font-size:13px; z-index:400; pointer-events:none}
 .leaflet-tile-pane{filter:grayscale(.55) brightness(.62) contrast(1.08) sepia(.28) hue-rotate(-12deg)}
-.leaflet-container{background:var(--well); font-family:'Space Mono',monospace}
-.leaflet-control-attribution{background:rgba(22,13,27,.78)!important;color:rgba(246,241,232,.5)!important;font-size:8px!important}
-.leaflet-control-attribution a{color:rgba(246,241,232,.7)!important}
-.leaflet-bar a{background:var(--card)!important;color:var(--text)!important;border-color:rgba(255,255,255,.12)!important}
-.leaflet-bar a:hover{background:#3a2440!important}
-.pin{display:grid;place-items:center;border-radius:999px;background:var(--pink);color:var(--inkcream);font-size:10px;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.5);cursor:pointer}
-.pin.onp{background:var(--gold);box-shadow:0 0 0 6px rgba(230,195,119,.25),0 2px 8px rgba(0,0,0,.5)}
+.leaflet-container{background:var(--plum); font-family:'Spline Sans Mono',monospace}
+.leaflet-control-attribution{background:rgba(29,19,32,.78)!important;color:rgba(246,239,227,.5)!important;font-size:8px!important}
+.leaflet-control-attribution a{color:rgba(246,239,227,.7)!important}
+.leaflet-bar a{background:var(--card)!important;color:var(--cream)!important;border-color:rgba(246,239,227,.12)!important}
+.pin{display:grid;place-items:center;border-radius:999px;background:var(--rose);color:var(--plum);font-size:10px;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.5);cursor:pointer}
+.pin.onp{background:var(--champagne);box-shadow:0 0 0 6px rgba(233,197,128,.25),0 2px 8px rgba(0,0,0,.5)}
 .you{border-radius:999px;background:#6fc3ef;box-shadow:0 0 0 6px rgba(111,195,239,.22)}
-.mapbadge{position:absolute;left:10px;bottom:10px;z-index:500;padding:5px 9px;border-radius:999px;background:rgba(22,13,27,.85);
-  font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(246,241,232,.6)}
-.leaflet-popup-content-wrapper{background:var(--card);color:var(--text);border-radius:12px}
+.mapbadge{position:absolute;left:10px;bottom:10px;z-index:500;padding:5px 9px;border-radius:999px;background:rgba(29,19,32,.85);
+  font-family:'Spline Sans Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(246,239,227,.6)}
+.leaflet-popup-content-wrapper{background:var(--card);color:var(--cream);border-radius:12px}
 .leaflet-popup-content{margin:9px 12px;font-size:11px;line-height:1.5}
 .leaflet-popup-tip{background:var(--card)}
 .radrow{display:flex; justify-content:space-between; align-items:baseline}
-.radval{font-size:11px; color:var(--gold)}
-input[type=range]{width:100%; accent-color:var(--pink); margin:6px 0 14px}
+.radval{font-family:'Spline Sans Mono',monospace; font-size:11px; color:var(--champagne)}
+input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
+.place{display:flex; justify-content:space-between; align-items:center; gap:10px; border-bottom:1px dotted rgba(246,239,227,.15); padding:10px 2px; font-size:14.5px; cursor:pointer}
+.place.sel .pn{color:var(--rose); font-weight:700}
+.place .pd{font-family:'Spline Sans Mono',monospace; font-size:11px; color:var(--dimmer); white-space:nowrap}
+.statusline{font-family:'Spline Sans Mono',monospace; font-size:11.5px; color:var(--dim); margin-top:10px; min-height:1.2em}
 
-/* summary */
-.sumrow{display:flex; gap:11px; align-items:center; padding:12px 14px; border-radius:14px; background:var(--card); border:1px solid rgba(255,255,255,.06)}
-.sumrow .st{font-size:13px; font-weight:700}
-.sumrow .sm{font-size:10px; color:rgba(246,241,232,.42); margin-top:2px}
-.sumrow .sh{margin-left:auto; font-size:11px; color:var(--pink); letter-spacing:.06em; white-space:nowrap; text-align:right}
-.sumrow .sm .mini{background:none; border:0; color:var(--t3); font-size:10px; padding:0; text-decoration:underline}
-.sumrow.wd .st{color:var(--pink)}
-.moment{font-size:11px; font-style:italic; color:var(--t2); margin-top:3px}
-.danger-zone{margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,.08)}
-.fineprint{font-size:10px; color:rgba(246,241,232,.38); text-align:center; margin-top:10px}
+/* ---------- history (statement, per Brad's pic) ---------- */
+.entry{display:flex; justify-content:space-between; gap:10px; padding:14px 2px; border-bottom:1px dotted rgba(246,239,227,.15)}
+.entry:last-child{border-bottom:0}
+.entry .t{font-weight:700; font-size:15.5px}
+.entry .m{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--dimmer); margin-top:3px}
+.entry .m .hearts-s{color:var(--rose); letter-spacing:1px}
+.entry .moment{font-size:13px; font-style:italic; color:var(--dim); margin-top:3px}
+.entry .amt{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:16px; white-space:nowrap; text-align:right}
+.entry .amt.dep{color:var(--deposit)}
+.entry .amt.wd{color:var(--withdrawal)}
+.entry .links{font-size:12.5px; color:var(--dimmer); text-align:right; margin-top:3px}
+.entry .links button{background:none; border:0; color:var(--dimmer); cursor:pointer; font-size:12.5px; padding:0}
+.entry .links button:hover{color:var(--rose)}
+.empty{font-family:'Spline Sans Mono',monospace; color:var(--dim); text-align:center; padding:24px 10px; font-size:13.5px; line-height:1.7}
+.empty .hrt{color:var(--rose)}
+.datanote{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--dimmer); text-align:center; margin-top:10px}
+.danger-zone{margin-top:18px; padding-top:16px; border-top:1px solid rgba(246,239,227,.1)}
 
-/* confirm sheet */
-.sheetwrap{position:fixed; inset:0; background:rgba(15,8,19,.72); backdrop-filter:blur(2px); z-index:60; display:none; align-items:flex-end; padding:14px}
+/* ---------- confirm sheet ---------- */
+.sheetwrap{position:fixed; inset:0; background:rgba(20,12,22,.75); backdrop-filter:blur(2px); z-index:60; display:none; align-items:flex-end; padding:14px; padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 .sheetwrap.show{display:flex}
-.sheet{width:100%; max-width:452px; margin:0 auto; border-radius:20px; padding:18px; background:var(--card); border:1px solid rgba(255,255,255,.1); box-shadow:0 18px 40px rgba(0,0,0,.5)}
-.sheet h3{font-family:'Playfair Display',serif; font-weight:700; font-size:20px; margin:6px 0 12px}
-.recap{border-radius:14px; background:var(--well); border:1px solid rgba(255,255,255,.07); padding:12px 14px; margin-bottom:12px}
-.recap .rt{font-family:'Playfair Display',serif; font-weight:700; font-size:15px}
-.recap .rm{font-size:10.5px; color:rgba(246,241,232,.5); margin-top:2px}
-.sheetnote{font-size:11.5px; color:rgba(246,241,232,.5); margin-bottom:14px}
+.sheet{width:100%; max-width:452px; margin:0 auto; border-radius:18px; padding:18px; background:var(--card); border:1px solid rgba(246,239,227,.12); box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.sheet .eyebrow{color:var(--rose)}
+.sheet h3{font-family:'Fraunces',serif; font-weight:700; font-size:21px; margin:6px 0 12px}
+.recap{border-radius:12px; background:var(--plum); border:1px solid rgba(246,239,227,.1); padding:12px 14px; margin-bottom:12px}
+.recap .rt{font-family:'Fraunces',serif; font-weight:700; font-size:16px}
+.recap .rm{font-family:'Spline Sans Mono',monospace; font-size:10.5px; color:var(--dim); margin-top:3px}
+.sheetnote{font-size:13.5px; color:var(--dim); margin-bottom:6px}
 
-.savedline{font-size:11.5px; color:var(--gold); margin-top:14px; text-align:center}
+/* ---------- bottom tab bar (mobile banking style) ---------- */
+.tabbar{position:fixed; left:0; right:0; bottom:0; z-index:50; background:#241629; border-top:1px solid rgba(246,239,227,.1);
+  padding-bottom:env(safe-area-inset-bottom)}
+.tabbar .inner{max-width:480px; margin:0 auto; display:flex}
+.tabbar button{flex:1; background:none; border:0; cursor:pointer; padding:10px 4px 12px; color:var(--dimmer);
+  display:flex; flex-direction:column; align-items:center; gap:3px}
+.tabbar .ico{font-size:20px; line-height:1}
+.tabbar .lbl{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.18em; text-transform:uppercase}
+.tabbar button.on{color:var(--rose)}
+.tabbar button.on .ico{transform:translateY(-1px)}
 
-footer{max-width:480px; margin:0 auto; padding:12px 16px; border-top:1px solid rgba(255,255,255,.06); text-align:center;
-  font-size:8px; letter-spacing:.16em; text-transform:uppercase; color:rgba(246,241,232,.32)}
-.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(24px + env(safe-area-inset-bottom)); background:var(--gold); color:var(--inkgold); font-weight:700; font-size:13px; border-radius:10px; padding:10px 16px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:80}
+footer{max-width:480px; margin:40px auto 0; padding:0 16px; text-align:center}
+footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--dimmer)}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom)); background:var(--champagne); color:var(--plum); font-weight:700; font-size:14px; border-radius:10px; padding:10px 16px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:70}
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -203,28 +204,23 @@ footer{max-width:480px; margin:0 auto; padding:12px 16px; border-top:1px solid r
 
 <div class="wrap">
   <div id="banners"></div>
-
-  <div class="strip" id="strip">
-    <div class="hero"><div class="k" id="c1k">30-Day Balance</div><div class="v" id="c1v">0.0<small> hrs</small></div></div>
-    <div class="statrow">
-      <div class="cell" id="c2"><div class="k" id="c2k">Dates / Mo</div><div class="v" id="c2v">0</div></div>
-      <div class="cell"><div class="k">Avg ♥</div><div class="v hearts" id="c3v">—</div></div>
-      <div class="cell"><div class="k">Wk Streak</div><div class="v" id="c4v">0</div></div>
-      <div class="cell"><div class="k">Hrs / Wk</div><div class="v" id="c5v">0.0</div></div>
-    </div>
-  </div>
-
-  <div class="rail" id="rail"></div>
-  <div class="panelbody" id="stagebox"></div>
+  <div id="page"></div>
 </div>
 
-<footer>Book♥d · member FDIC (fully devoted to each other, ideally weekly)</footer>
+<footer><p>Book'd · Member FDIC (Fully Devoted to Each Other, Ideally Weekly)</p></footer>
+
+<nav class="tabbar"><div class="inner">
+  <button data-t="0" class="on"><span class="ico">⌂</span><span class="lbl">Home</span></button>
+  <button data-t="1"><span class="ico">✦</span><span class="lbl">Plan</span></button>
+  <button data-t="2"><span class="ico">≡</span><span class="lbl">History</span></button>
+</div></nav>
+
 <div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 /* =============================================================
-   Book'd — three tabs: Tonight / Plan a date / Summary.
+   Book'd — Home / Plan / History with a bottom tab bar.
    All state lives in localStorage ("bookd.*")
    ============================================================= */
 const store = {
@@ -234,8 +230,9 @@ const store = {
 let entries    = store.get('entries', []);
 let reservation= store.get('reservation', null);
 let planned    = store.get('planned', null);
-let flow       = store.get('flow', {hand:[], picked:null, who:null});
-let timer      = store.get('timer', null);
+let favorites  = store.get('favorites', []);
+let lastSpin   = store.get('lastSpin', null);
+let timer      = store.get('timer', null);   // {startedAt, elapsed, running, date, title}
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
 const DAY=86400000, MISS_HRS=3;
@@ -249,6 +246,7 @@ const fmtDate=s=>parseISO(s).toLocaleDateString(undefined,{month:'short',day:'nu
 const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x;};
 const isDate=e=>(e.type||'date')==='date';
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
+const fmtMS=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
 
 function missedOccurrences(){
@@ -262,7 +260,6 @@ function missedOccurrences(){
   return out;
 }
 
-/* ---------- ideas ---------- */
 const IDEAS=[
  {n:'Board game night',c:1,w:'in',v:'chill',cat:'At home'},
  {n:'Build-a-fort movie night',c:1,w:'in',v:'chill',cat:'At home'},
@@ -318,176 +315,101 @@ const IDEAS=[
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv',cat:'Music & culture'}
 ];
 
-const TABS=[
- {label:'Tonight',     kick:'Tonight · the date clock',        sub:'Phones down. Clock the night, then put it on the books.'},
- {label:'Plan a date', kick:'Plan · idea roulette & the map',  sub:'What are we even in the mood for?'},
- {label:'Summary',     kick:'Ledger · account statement',      sub:''}
-];
-
 const ui={ tab:0, planMode:'ideas', justSaved:false };
 const filters={cost:'any', where:'any', vibe:'any'};
 const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], view:[], sel:null, busy:false, err:null };
 let dep={ etype:'date', rating:0, planner:null, editingId:null };
-let clockTick=null;
+let currentIdea=null, tickInt=null, cdTimer=null;
 
 /* ---------- ledger math ---------- */
-function stats30(){
+const elapsedSecs=()=>!timer?0:Math.floor((timer.elapsed||0)+(timer.running?(Date.now()-timer.startedAt)/1000:0));
+function stats(){
   const now=new Date(); now.setHours(0,0,0,0);
   const cutoff=new Date(now.getTime()-30*DAY);
   const recent=entries.filter(e=>parseISO(e.date)>=cutoff);
   const hrs=recent.reduce((s,e)=>s+e.hours,0);
   const missed=missedOccurrences().filter(d=>d>=cutoff).length;
   const rated=recent.filter(e=>isDate(e)&&e.rating>0);
-  return { balance:hrs-missed*MISS_HRS, dates:recent.filter(isDate).length,
-    avg: rated.length ? rated.reduce((s,e)=>s+e.rating,0)/rated.length : null };
-}
-function weekStreak(){
   const weeks=new Set(entries.filter(isDate).map(e=>monday(parseISO(e.date)).getTime()));
-  let s=0, w=monday(new Date()).getTime();
+  let streak=0, w=monday(new Date()).getTime();
   if(!weeks.has(w)) w-=7*DAY;
-  while(weeks.has(w)){ s++; w-=7*DAY; }
-  return s;
-}
-function hrsPerWeek(){
-  const now=new Date(); now.setHours(0,0,0,0);
-  return entries.filter(e=>parseISO(e.date)>=new Date(now.getTime()-28*DAY)).reduce((s,e)=>s+e.hours,0)/4;
-}
-function elapsedSecs(){ if(!timer) return 0; return Math.floor((timer.elapsed||0)+(timer.running?(Date.now()-timer.startedAt)/1000:0)); }
-const fmtMS=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
-
-function renderStrip(){
-  const s=stats30();
-  $('#c1v').innerHTML=s.balance.toFixed(1)+'<small> hrs</small>';
-  $('#c1v').style.color = s.balance<0 ? '#b0402f' : '';
-  $('#c1k').innerHTML='30-Day Balance'+(timer&&timer.running?' <span class="dot"></span>':'');
-  $('#c3v').textContent = s.avg!=null ? s.avg.toFixed(1) : '—';
-  $('#c4v').textContent = weekStreak();
-  $('#c5v').textContent = hrsPerWeek().toFixed(1);
-  const c2=$('#c2');
-  if(timer&&timer.running){
-    c2.classList.add('live'); $('#c2k').textContent='Banking now'; $('#c2v').textContent=fmtMS(elapsedSecs());
-  } else {
-    c2.classList.remove('live'); $('#c2k').textContent='Dates / Mo'; $('#c2v').textContent=s.dates;
-  }
-}
-function startTicking(){
-  clearInterval(clockTick);
-  clockTick=setInterval(()=>{
-    if(timer&&timer.running){
-      if($('#c2').classList.contains('live')) $('#c2v').textContent=fmtMS(elapsedSecs());
-      const cv=$('#clockv'); if(cv) cv.textContent=fmtMS(elapsedSecs());
-    }
-  },500);
+  while(weeks.has(w)){ streak++; w-=7*DAY; }
+  return {
+    balance:hrs-missed*MISS_HRS,
+    dates:recent.filter(isDate).length,
+    avg: rated.length?rated.reduce((s,e)=>s+e.rating,0)/rated.length:null,
+    streak,
+    hrsWk: entries.filter(e=>parseISO(e.date)>=new Date(now.getTime()-28*DAY)).reduce((s,e)=>s+e.hours,0)/4,
+    me: entries.filter(e=>isDate(e)&&e.planner==='me').length,
+    pa: entries.filter(e=>isDate(e)&&e.planner==='partner').length
+  };
 }
 
-/* ---------- banners ---------- */
-function renderBanners(){
-  const el=$('#banners'); el.innerHTML='';
-  const now=new Date(); now.setHours(0,0,0,0);
-  if(planned){
-    const days=Math.round((parseISO(planned.date)-now)/DAY);
-    if(days>0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go · <a href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆</a></span><button onclick="clearPlanned()">✕</button></div>`);
-    else if(days===0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}. It's on the books.</span><button onclick="goTonight()">Clock in</button></div>`);
-    else el.insertAdjacentHTML('beforeend',
-      `<div class="banner memory"><span>Did "${esc(planned.title)}" happen?</span><button onclick="logPlanned()">Log it</button></div>`);
-  }
-  if(reservation && new Date().getDay()===reservation.weekday && !(planned && Math.round((parseISO(planned.date)-now)/DAY)===0)){
-    el.insertAdjacentHTML('beforeend',
-      `<div class="banner tonight"><span>Tonight's the night. ${fmtTime(reservation.time)}, be there.</span></div>`);
-  }
-  const mmdd=todayISO().slice(5), yr=todayISO().slice(0,4);
-  const mem=entries.filter(e=>isDate(e)&&e.date.slice(5)===mmdd&&e.date.slice(0,4)<yr).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  if(mem) el.insertAdjacentHTML('beforeend',
-    `<div class="banner memory"><span>On this day, ${mem.date.slice(0,4)}: ${esc(mem.title)}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
+/* ---------- HOME ---------- */
+function passbookHTML(){
+  const s=stats();
+  const running=timer&&timer.running;
+  const liveCell = running
+    ? `<div class="stat live"><div class="v" id="livev">${fmtMS(elapsedSecs())}</div><div class="k">Banking now</div></div>`
+    : `<div class="stat"><div class="v">${s.dates}</div><div class="k">Dates / Mo</div></div>`;
+  return `<div class="passbook">
+    <div class="pb-head"><span class="pb-title">The Joint Account</span><span class="acct">ACCT № US-4EVR</span></div>
+    <div class="balance-label"><span>30-Day Balance</span><span class="dot ${running?'show':''}"></span></div>
+    <div class="balance ${s.balance<0?'neg':''}">${s.balance.toFixed(1)}<small> hrs</small></div>
+    <div class="balance-sub">Quality time deposited, minus missed date nights</div>
+    <hr class="pb-rule">
+    <div class="pb-stats">
+      ${liveCell}
+      <div class="stat"><div class="v">${s.streak}</div><div class="k">Week Streak</div></div>
+      <div class="stat"><div class="v">${s.hrsWk.toFixed(1)}</div><div class="k">Hrs / Wk</div></div>
+      <div class="stat"><div class="v hearts">${s.avg!=null?s.avg.toFixed(1):'—'}</div><div class="k">Avg ♥</div></div>
+    </div>
+    ${(s.me+s.pa)?`<div class="pb-split">Booked by · Me ${s.me} · Partner ${s.pa}</div>`:''}
+    <div class="tear" aria-hidden="true">${'♥ '.repeat(30)}</div>
+  </div>`;
 }
-window.goTonight=()=>{ ui.tab=0; renderAll(); };
-window.clearPlanned=()=>{ planned=null; store.set('planned',null); toast('Booking cleared'); renderAll(); };
-window.logPlanned=()=>{
-  if(!planned) return;
-  const p=planned; planned=null; store.set('planned',null);
-  flow.hand=[{n:p.title, cat:'Something new', w:'out'}]; flow.picked=0; saveFlow();
-  ui.tab=0; dep.editingId=null;
-  renderAll();
-  $('#d-date') && ($('#d-date').value=p.date);
-};
-
-/* ---------- calendar hand-offs ---------- */
-const gcalStamp=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
-function nextOccurrence(){
-  const [h,m]=reservation.time.split(':').map(Number);
-  const n=new Date(); const d=new Date(); d.setHours(h,m,0,0);
-  d.setDate(d.getDate()+((reservation.weekday-d.getDay()+7)%7));
-  if(d<=n) d.setDate(d.getDate()+7);
-  return d;
-}
-function gcalWeeklyURL(){
-  const s=nextOccurrence(), e=new Date(s.getTime()+2*3600000);
-  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Date night ♥')
-    +'&dates='+gcalStamp(s)+'/'+gcalStamp(e)+'&recur='+encodeURIComponent('RRULE:FREQ=WEEKLY')
-    +'&details='+encodeURIComponent("Standing reservation — booked in Book'd");
-}
-function gcalOneOffURL(p){
-  const d1=p.date.replace(/-/g,''), d2=toISO(new Date(parseISO(p.date).getTime()+DAY)).replace(/-/g,'');
-  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(p.title+' ♥')
-    +'&dates='+d1+'/'+d2+'&details='+encodeURIComponent("Date booked in Book'd");
-}
-
-/* ---------- rail ---------- */
-function renderRail(){
-  $('#rail').innerHTML=TABS.map((t,i)=>
-    `<button class="rp ${i===2?'sum':''} ${ui.tab===i?'on':''}" data-t="${i}">${t.label}</button>`).join('');
-  document.querySelectorAll('#rail [data-t]').forEach(b=>b.onclick=()=>{ ui.tab=+b.dataset.t; renderAll(); });
-}
-
-function tabHead(i){ const t=TABS[i]; return `<div class="kicker">${t.kick}</div><h2 class="stageh">${t.label}</h2>${t.sub?`<p class="subline">${t.sub}</p>`:''}`; }
-function saveFlow(){ store.set('flow',flow); }
-function catAvg(cat){
-  const r=entries.filter(e=>isDate(e)&&e.rating>0&&e.cat===cat);
-  return r.length?{avg:r.reduce((s,e)=>s+e.rating,0)/r.length, n:r.length}:null;
-}
-function bestCat(){
-  const by={};
-  entries.filter(e=>isDate(e)&&e.rating>0).forEach(e=>{const b=by[e.cat]=by[e.cat]||{n:0,s:0}; b.n++; b.s+=e.rating;});
-  const rows=Object.entries(by).map(([c,v])=>({c,avg:v.s/v.n,n:v.n})).filter(r=>r.n>=2).sort((a,b)=>b.avg-a.avg);
-  return rows[0]||null;
-}
-
-/* ============ TONIGHT (home): clock + deposit ============ */
-function tonightTab(){
+function clockButtonsHTML(){
   const secs=elapsedSecs();
   const state = timer&&timer.running?'running':(timer&&secs>0?'paused':'idle');
-  const note = state==='running'?'Running. Put the phone down.'
-    : state==='paused'?`Paused — ${(secs/3600).toFixed(1)} hrs banked so far.`
-    : 'Nothing banked yet. Start it when the night starts.';
-  const clockTitle=(timer&&timer.title)||(planned&&planned.date===todayISO()?planned.title:null)||(flow.picked!=null?flow.hand[flow.picked].n:'Tonight');
-  const btn = state==='idle'?`<button class="btn pink" onclick="clockStart()">⏱ Start the date clock</button>`
-    : state==='running'?`<button class="btn gold" onclick="clockPause()">⏸ Pause the clock</button>`
-    : `<button class="btn pink" onclick="clockResume()">▶ Resume the clock</button>`;
-  return tabHead(0)
-    +`<div class="clockcard"><div class="cl">${esc(clockTitle)}</div>
-       <div class="cv" id="clockv">${fmtMS(secs)}</div><div class="cn">${note}</div></div>`
-    +btn
-    +(state!=='idle'?`<button class="btn danger" style="margin-top:10px" onclick="openScrapSheet()">✕ Scrap the clock — log nothing</button>`:'')
-    +`<div class="sectionhead"><div class="kicker">Stage · make a deposit</div><h2 class="stageh" style="font-size:20px">Rate the Date</h2></div>`
-    +depositFormHTML();
+  if(state==='idle') return `<button class="cta gold" id="timer-btn" onclick="clockIn()">⏱ Clock in — we're on a date</button>`;
+  const main = state==='running'
+    ? `<button class="cta gold" id="timer-btn" onclick="clockOut()">■ Clock out — <span class="mono" id="tbtn-t">${fmtMS(secs)}</span> so far</button>`
+    : `<button class="cta gold" id="timer-btn" onclick="clockResume()">▶ Resume — <span class="mono">${fmtMS(secs)}</span> banked</button>`;
+  return main+`<div class="row2">
+    ${state==='running'?`<button class="cta ghostd" style="flex:1" onclick="clockPause()">⏸ Pause</button>`
+                       :`<button class="cta ghostd" style="flex:1" onclick="clockOut()">■ Clock out</button>`}
+    <button class="cta danger" style="flex:1" onclick="openScrapSheet()">✕ Scrap it</button>
+  </div>`;
 }
-window.clockStart=()=>{
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
-  timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(), title:plan?plan.n:(planned&&planned.date===todayISO()?planned.title:null)};
-  store.set('timer',timer); toast('Date clock started ♥'); renderAll();
+function homePage(){
+  return passbookHTML()
+    +`<div class="sechead"><h2>Make a deposit</h2><span class="lead"></span><span class="tag">Live or after the fact</span></div>
+    <div class="cardbox">
+      ${clockButtonsHTML()}
+      <div class="divline">— already happened &amp; never clocked? deposit it below —</div>
+      ${depositFormHTML()}
+    </div>`;
+}
+window.clockIn=()=>{
+  timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(),
+    title:(planned&&planned.date===todayISO())?planned.title:null};
+  store.set('timer',timer); toast('Clocked in — enjoy each other ♥'); renderAll();
 };
 window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); renderAll(); };
 window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); renderAll(); };
+window.clockOut=()=>{
+  if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); }
+  dep={etype:'date', rating:0, planner:null, editingId:null};   // fresh form; prefill logic reads the clock
+  ui.justSaved=false;
+  renderAll();
+  setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
+};
 window.openScrapSheet=()=>{
-  const secs=elapsedSecs();
   openSheet(`
-    <div class="kicker">Scrap the clock</div><h3>Call it off?</h3>
-    <div class="sheetnote">${fmtMS(secs)} on the clock gets discarded — nothing goes in the ledger, no withdrawal, no judgment. Life happens.</div>
-    <div class="footrow" style="margin-top:0">
-      <button class="btn sec grow" onclick="closeSheet()">Keep the clock</button>
-      <button class="btn pink" style="background:#e2694f" onclick="scrapClock()">Scrap it</button></div>`);
+    <div class="eyebrow">Scrap the clock</div><h3>Call it off?</h3>
+    <div class="sheetnote">${fmtMS(elapsedSecs())} on the clock gets discarded — nothing goes in the ledger, no withdrawal, no judgment. Life happens.</div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep the clock</button>
+    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="scrapClock()">Scrap it</button></div>`);
 };
 window.scrapClock=()=>{
   closeSheet();
@@ -498,40 +420,44 @@ window.scrapClock=()=>{
 };
 
 function depositFormHTML(){
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
   const secs=elapsedSecs();
   const mins=Math.max(secs>0?1:0, Math.round(secs/60));
-  if(dep.hours==null && !dep._auto && mins>0){ dep._auto=true; if(mins<45) dep.etype='small'; }
-  const small = dep.etype==='small';
-  const defTitle = dep.title!=null?dep.title:(timer&&timer.title)||(plan?plan.n:(planned&&planned.date===todayISO()?planned.title:''));
-  const defHours = dep.hours!=null?dep.hours:(mins>0 ? (small?mins:Math.max(0.1,Math.round(mins/6)/10)) : (small?30:2.5));
+  if(dep.hours==null && !dep._auto && mins>0 && !(timer&&timer.running)){ dep._auto=true; if(mins<45) dep.etype='small'; }
+  const small=dep.etype==='small';
+  const clocked = mins>0 && !(timer&&timer.running);
+  const defTitle = dep.title!=null?dep.title:(timer&&timer.title)||'';
+  const defHours = dep.hours!=null?dep.hours:(clocked ? (small?mins:Math.max(0.1,Math.round(mins/6)/10)) : '');
   const defDate = dep.date || (timer&&timer.date) || todayISO();
   const cats=['Food & drink','Movies & shows','Outdoors','At home','Music & culture','Active','Something new'];
-  const defCat = dep.cat || (plan&&plan.cat) || 'Food & drink';
-  return `<div style="margin-bottom:14px" class="pillrow">
-      <button class="fp ${!small?'on':''}" onclick="dep.etype='date';renderTab(true)">Date night</button>
-      <button class="fp ${small?'on':''}" onclick="dep.etype='small';renderTab(true)">Everyday moment</button></div>
-    <div class="fgroup"><label class="fl" for="d-title">What you did</label>
-      <input class="field" type="text" id="d-title" maxlength="60" value="${esc(defTitle)}" placeholder="${small?'Morning walk, phones at home':'Dinner at that new ramen place'}"></div>
-    <div style="display:flex; gap:10px" class="fgroup">
-      <div style="flex:1"><label class="fl" for="d-date">Date</label><input class="field" type="date" id="d-date" value="${defDate}"></div>
-      <div style="width:126px"><label class="fl" for="d-cat">Category</label>
-        <select class="field" id="d-cat">${cats.map(c=>`<option ${c===defCat?'selected':''}>${c}</option>`).join('')}</select></div>
+  const defCat = dep.cat || 'Food & drink';
+  return `<div class="fgroup"><label class="f">Deposit type</label>
+      <div class="pills">
+        <button class="pill ${!small?'on':''}" onclick="grabDep();dep.etype='date';renderPage()">Date night</button>
+        <button class="pill ${small?'on':''}" onclick="grabDep();dep.etype='small';renderPage()">Everyday moment</button>
+      </div></div>
+    <div class="fgroup"><label class="f" for="d-title">What did you do?</label>
+      <input type="text" id="d-title" maxlength="60" value="${esc(defTitle)}" placeholder="${small?'Morning walk, phones at home':'Dinner at that new ramen place'}"></div>
+    <div class="grid2 fgroup">
+      <div><label class="f" for="d-date">Date</label><input type="date" id="d-date" value="${defDate}"></div>
+      <div><label class="f" for="d-hours" id="d-hours-label">${small?'Minutes together':'Hours together'}</label>
+        <input type="number" id="d-hours" min="${small?1:0.1}" max="${small?600:24}" step="${small?1:0.1}" value="${defHours}" placeholder="${small?'45':'2.5'}"></div>
     </div>
-    <div style="display:flex; gap:12px; align-items:flex-start" class="fgroup">
-      <div style="width:104px"><label class="fl" for="d-hours" id="d-hours-label">${small?'Minutes':'Hours'}</label>
-        <input class="field" type="number" id="d-hours" min="${small?1:0.1}" max="${small?600:24}" step="${small?1:0.1}" value="${defHours}"></div>
-      <div style="flex:1"><label class="fl">How was it?</label>
-        <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="dep.rating=${i};grabDep();renderTab(true)">♥</button>`).join('')}</div></div>
+    <div class="grid2 fgroup">
+      <div><label class="f" for="d-cat">Category</label>
+        <select id="d-cat">${cats.map(c=>`<option ${c===defCat?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label class="f">How was it?</label>
+        <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="grabDep();dep.rating=${i};renderPage()">♥</button>`).join('')}</div></div>
     </div>
-    <div class="fgroup"><label class="fl" for="d-moment">Best moment (optional)</label>
-      <input class="field" type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
-    <div class="fgroup"><div class="grouplabel">Who booked it?</div><div class="pillrow">
-      <button class="fp ${dep.planner==='me'?'on':''}" onclick="dep.planner=dep.planner==='me'?null:'me';grabDep();renderTab(true)">Me</button>
-      <button class="fp ${dep.planner==='partner'?'on':''}" onclick="dep.planner=dep.planner==='partner'?null:'partner';grabDep();renderTab(true)">My partner</button></div></div>
-    <button class="btn pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Deposit this date'}</button>
-    ${dep.editingId?`<button class="btn sec" style="width:100%; margin-top:10px" onclick="cancelEdit()">Cancel edit</button>`:''}
-    ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is in <b>Summary</b>.</div>`:''}`;
+    <div class="fgroup"><label class="f" for="d-moment">Best moment (optional)</label>
+      <input type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
+    <div class="fgroup"><label class="f">Who booked it?</label>
+      <div class="pills">
+        <button class="pill gold ${dep.planner==='me'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='me'?null:'me';renderPage()">Me</button>
+        <button class="pill gold ${dep.planner==='partner'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='partner'?null:'partner';renderPage()">My partner</button>
+      </div></div>
+    <button class="cta pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Deposit this date'}</button>
+    ${dep.editingId?`<button class="cta ghost" onclick="cancelEdit()">Cancel edit</button>`:''}
+    ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is in History.</div>`:''}`;
 }
 function grabDep(){
   if($('#d-title')) dep.title=$('#d-title').value;
@@ -540,7 +466,8 @@ function grabDep(){
   if($('#d-hours')) dep.hours=$('#d-hours').value;
   if($('#d-moment')) dep.moment=$('#d-moment').value;
 }
-window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; renderTab(); toast('Edit cancelled'); };
+window.grabDep=grabDep;
+window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; renderPage(); toast('Edit cancelled'); };
 window.openDepositSheet=()=>{
   grabDep();
   const title=(dep.title||'').trim(), raw=parseFloat(dep.hours);
@@ -548,186 +475,189 @@ window.openDepositSheet=()=>{
   if(!dep.date) return toast('Pick the date');
   if(!(raw>0)) return toast(dep.etype==='small'?'How many minutes?':'How many hours?');
   const small=dep.etype==='small';
-  const meta = small ? Math.round(raw)+' min' : raw+' hrs';
-  const rate = dep.rating>0 ? '♥'.repeat(dep.rating) : 'no rating yet (saves as 4♥)';
-  const note = (dep.moment||'').trim() ? '“'+esc(dep.moment.trim())+'”'
-    : 'It lands in Summary and updates your balance. No best moment saved — you can still add one later.';
+  const meta = small?Math.round(raw)+' min':raw+' hrs';
+  const rate = dep.rating>0?'♥'.repeat(dep.rating):'no rating yet (saves as 4♥)';
+  const note = (dep.moment||'').trim()?'“'+esc(dep.moment.trim())+'”'
+    :'It lands in History and updates your balance.';
   openSheet(`
-    <div class="kicker">Confirm deposit</div><h3>Put this on the books?</h3>
+    <div class="eyebrow">Confirm deposit</div><h3>Put this on the books?</h3>
     <div class="recap"><div class="rt">${esc(title)}</div><div class="rm">${meta} · ${rate}</div></div>
     <div class="sheetnote">${note}</div>
-    <div class="footrow" style="margin-top:0">
-      <button class="btn sec grow" onclick="closeSheet()">Keep editing</button>
-      <button class="btn pink" onclick="commitDeposit()">Yes, deposit it ♥</button></div>`);
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep editing</button>
+    <button class="cta pink" style="flex:1" onclick="commitDeposit()">Yes, deposit it ♥</button></div>`);
 };
 window.commitDeposit=()=>{
   closeSheet();
   const small=dep.etype==='small', raw=parseFloat(dep.hours);
   const record={ id:dep.editingId??Date.now(), title:dep.title.trim(), date:dep.date,
     hours: small?raw/60:raw, cat:dep.cat||'Food & drink', rating:dep.rating||(small?0:4),
-    type:small?'small':'date', planner:dep.planner||flow.who||null, moment:(dep.moment||'').trim()||null };
+    type:small?'small':'date', planner:dep.planner||null, moment:(dep.moment||'').trim()||null };
   if(dep.editingId){ entries=entries.map(e=>e.id===dep.editingId?record:e); toast('Entry updated'); }
   else { entries.unshift(record); toast(small?'Deposited +'+Math.round(raw)+' min':'Deposited +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
   if(planned && planned.title===record.title){ planned=null; store.set('planned',null); }
-  if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); }  // backfills never kill tonight's running clock
-  flow={hand:[], picked:null, who:null}; saveFlow();
+  if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); }
   dep={etype:'date',rating:0,planner:null,editingId:null};
   ui.justSaved=true; ui.tab=0;
   renderAll();
 };
 
-/* ============ PLAN A DATE: ideas / map / booking, one page ============ */
-function planTab(){
-  const modes=`<div class="pillrow" style="margin-bottom:18px">
-    <button class="fp ${ui.planMode==='ideas'?'on':''}" onclick="setMode('ideas')">Idea cards</button>
-    <button class="fp ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Real places near me</button></div>`;
-  return tabHead(1)+modes
-    +(ui.planMode==='ideas'?ideasBlock():placesBlock())
-    +handSection()
-    +bookingSection();
+/* ---------- PLAN ---------- */
+function planPage(){
+  const best=bestCat();
+  return `<div class="sechead"><h2>Need a plan?</h2><span class="lead"></span><span class="tag">Idea roulette</span></div>
+    ${best?`<div class="callout">Best investment: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ average across ${best.n} dates. Book more of these.</div>`:''}
+    <div class="cardbox">
+      <div class="pillgroup"><div class="pills">
+        <button class="pill ${ui.planMode==='ideas'?'on':''}" onclick="setMode('ideas')">Idea cards</button>
+        <button class="pill ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Real places near me</button>
+      </div></div>
+      ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
+    </div>
+    <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
+    <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
 }
-window.setMode=m=>{ ui.planMode=m; renderTab(); if(m==='places') mountMap(); };
-window.setFilter=(g,v)=>{ filters[g]=v; renderTab(); };
-function ideaPool(){
-  return IDEAS.filter(i=>(filters.cost==='any'||i.c===+filters.cost)&&(filters.where==='any'||i.w===filters.where)&&(filters.vibe==='any'||i.v===filters.vibe));
-}
+window.setMode=m=>{ ui.planMode=m; renderPage(); if(m==='places') mountMap(); };
 function ideasBlock(){
-  const pool=ideaPool();
-  const match = pool.length
-    ? `${pool.length} of ${IDEAS.length} ideas match. Three come out — you keep what survives.`
-    : 'Nothing matches those three filters — dealing from the whole jar instead.';
-  const grp=(label,group,opts)=>`<div style="margin-bottom:14px"><div class="grouplabel">${label}</div><div class="pillrow">`+
-    opts.map(([v,t])=>`<button class="fp ${filters[group]===v?'on':''}" onclick="setFilter('${group}','${v}')">${t}</button>`).join('')+'</div></div>';
+  const grp=(label,group,opts)=>`<div class="pillgroup"><label class="f">${label}</label><div class="pills">`+
+    opts.map(([v,t])=>`<button class="pill ${filters[group]===v?'on':''}" onclick="filters.${group}='${v}';renderPage()">${t}</button>`).join('')+'</div></div>';
   return grp('Budget','cost',[['any','Any'],['1','$'],['2','$$'],['3','$$$']])
     +grp('Setting','where',[['any','Any'],['in','Stay in'],['out','Go out']])
     +grp('Energy','vibe',[['any','Any'],['chill','Chill'],['adv','Adventurous']])
-    +`<div class="matchline">${match}</div>
-      <button class="btn gold" onclick="deal()">✦ ${flow.hand.length?'Re-deal three':'Deal three ideas'}${pool.length?'':' anyway'}</button>`;
+    +`<div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
+    <button class="cta gold" onclick="spin()">🎲 Spin the roulette</button>
+    ${currentIdea&&!favorites.includes(currentIdea.n)?`<button class="cta ghost" onclick="saveFav()">♥ Save idea</button>`:''}
+    <div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
+      favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
 }
-window.deal=()=>{
-  let pool=ideaPool(); if(!pool.length) pool=[...IDEAS];
-  const hand=[]; const src=[...pool];
-  while(hand.length<3&&src.length) hand.push(src.splice(Math.floor(Math.random()*src.length),1)[0]);
-  flow.hand=hand; flow.picked=null; saveFlow();
-  renderTab();
-  setTimeout(()=>{ const h=$('#handsec'); if(h) h.scrollIntoView({behavior:'smooth', block:'start'}); },60);
-};
-function handSection(){
-  if(!flow.hand.length) return '';
-  const best=bestCat();
-  const callout = best
-    ? `You rate <b>${esc(best.c.toLowerCase())}</b> nights ${best.avg.toFixed(1)}♥ across ${best.n} dates — your best-performing category. Tap the winner; ✕ what you already know is a maybe.`
-    : 'Nothing logged yet, so nothing to argue with. Tap your favorite.';
-  return `<div id="handsec" class="sectionhead"><div class="kicker">The hand · tap your favorite</div></div>
-    <div class="callout">${callout}</div>
-    <div class="rowgrid">`+flow.hand.map((h,i)=>{
-      const a=h.cat?catAvg(h.cat):null;
-      return `<div class="rowcard ${flow.picked===i?'sel':''}" tabindex="0" onclick="pick(${i})">
-        <span style="flex:1"><span class="rt">${esc(h.n)}</span><br>
-        <span class="rm">${esc([h.cat,h.c?'$'.repeat(h.c):null,h.w?(h.w==='in'?'stay in':'go out'):null].filter(Boolean).join(' · '))}</span></span>
-        <span class="chip">${a?a.avg.toFixed(1)+'♥ avg':'new ground'}</span>
-        <button class="dropbtn" title="Back in the jar" onclick="event.stopPropagation();dropIdea(${i})">✕</button></div>`;
-    }).join('')+'</div>';
+function spinCardHTML(){
+  const i=currentIdea;
+  const meta = i.place
+    ? `${esc(i.kindLabel||'Real place')}${i.mi!=null?' · '+i.mi.toFixed(1)+' mi away':''}${i.lat?` · <a href="https://www.google.com/maps/search/?api=1&query=${i.lat}%2C${i.lon}" target="_blank" rel="noopener">map ↗</a>`:''}`
+    : `${'$'.repeat(i.c||1)} · ${i.w==='in'?'Stay in':'Go out'} · ${i.v==='adv'?'Adventurous':'Chill'}`;
+  return `<div class="spin-idea">${esc(i.n)}</div>
+    <div class="spin-meta">${meta}</div>
+    <button class="cta pink" style="margin-top:10px" onclick="logIdea()">We did it — log it</button>
+    <button class="cta ghost" style="margin-top:8px" onclick="bookIdea()">📅 Book it for later</button>
+    <div id="bookrow" style="width:100%"></div>`;
 }
-window.dropIdea=i=>{ flow.hand.splice(i,1); if(flow.picked===i) flow.picked=null; else if(flow.picked>i) flow.picked--; saveFlow(); renderTab(); };
-window.pick=i=>{
-  flow.picked=i; saveFlow(); renderTab();
-  setTimeout(()=>{ const b=$('#booksec'); if(b) b.scrollIntoView({behavior:'smooth', block:'start'}); },60);
-};
-function bookingSection(){
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
-  if(!plan && !planned) return flow.hand.length?`<div class="matchline" style="margin-top:18px">Tap a card above and the booking desk opens.</div>`:'';
-  const defDate = planned?planned.date:toISO(new Date(Date.now()+2*DAY));
-  const defTime = (planned&&planned.time)||(reservation&&reservation.time)||'19:00';
-  const calRow = planned ? `<div class="rowgrid" style="margin-top:14px">
-      <a class="btn sec" style="text-align:center; text-decoration:none" href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆 Add this date to Google Calendar</a>
-      ${reservation?`<a class="btn sec" style="text-align:center; text-decoration:none" href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 Add the weekly slot to Google Calendar</a>`:''}
-    </div><div class="savedline">Reserved ♥ — it's on the books.</div>`:'';
-  return `<div id="booksec" class="sectionhead"><div class="kicker">Book it · standing reservation</div></div>
-    <div class="holding"><div class="hl">Holding</div><div class="hv">${esc(plan?plan.n:planned.title)}</div></div>
-    <div style="display:flex; gap:10px; margin-bottom:14px">
-      <div style="flex:1"><label class="fl" for="b-date">Date</label><input class="field" type="date" id="b-date" value="${defDate}"></div>
-      <div style="width:126px"><label class="fl" for="b-time">At</label><input class="field" type="time" id="b-time" value="${defTime}"></div>
-    </div>
-    <div class="fgroup"><div class="grouplabel">Who's booking it</div><div class="pillrow">
-      <button class="fp ${flow.who!=='partner'?'on':''}" onclick="flow.who='me';saveFlow();renderTab(true)">Me</button>
-      <button class="fp ${flow.who==='partner'?'on':''}" onclick="flow.who='partner';saveFlow();renderTab(true)">My partner</button></div></div>
-    <button class="togglecard ${reservation?'on':''}" onclick="toggleStanding()">
-      <span class="t1">${reservation?'♥':'○'} Make it standing</span>
-      <span class="t2x">${reservation
-        ?`Repeats every ${WD[reservation.weekday]} at ${fmtTime(reservation.time)} until one of you cancels.`
-        :'Same slot every week — the reservation that survives a busy month.'}</span>
-    </button>
-    <div class="footrow"><button class="btn pink" onclick="reserveIt()">Reserve it ♥</button></div>`
-    +calRow;
+function ideaPool(){
+  return IDEAS.filter(i=>(filters.cost==='any'||i.c===+filters.cost)&&(filters.where==='any'||i.w===filters.where)&&(filters.vibe==='any'||i.v===filters.vibe));
 }
-window.toggleStanding=()=>{
-  if(reservation){ reservation=null; store.set('reservation',null); toast('Standing reservation cancelled'); renderAll(); return; }
-  const date=$('#b-date')?$('#b-date').value:todayISO(), time=$('#b-time')?$('#b-time').value:'19:00';
-  reservation={ weekday:parseISO(date).getDay(), time, since:todayISO() };
-  store.set('reservation',reservation); toast('Standing · every '+WD[reservation.weekday]); renderAll();
+window.spin=()=>{
+  let pool=ideaPool();
+  if(!pool.length){ currentIdea=null; renderPage(); const c=$('#spin-card'); c.classList.add('show'); c.innerHTML='<span class="spin-empty">Nothing fits those filters — loosen one.</span>'; return; }
+  if(pool.length>1&&lastSpin) pool=pool.filter(i=>i.n!==lastSpin);
+  currentIdea={...pool[Math.floor(Math.random()*pool.length)]};
+  lastSpin=currentIdea.n; store.set('lastSpin',lastSpin);
+  renderPage();
 };
-window.reserveIt=()=>{
-  const date=$('#b-date').value, time=$('#b-time').value;
-  if(!date) return toast('Pick the day');
-  const plan=flow.picked!=null?flow.hand[flow.picked]:null;
-  planned={ title:plan?plan.n:(planned?planned.title:'Date night'), date, time };
-  store.set('planned',planned);
-  toast('Reserved ♥ '+fmtDate(date));
+window.saveFav=()=>{ if(currentIdea&&!favorites.includes(currentIdea.n)){ favorites.push(currentIdea.n); store.set('favorites',favorites); renderPage(); } };
+window.unfav=i=>{ favorites.splice(i,1); store.set('favorites',favorites); renderPage(); };
+window.loadFav=i=>{
+  const name=favorites[i];
+  const idea=IDEAS.find(x=>x.n===name);
+  currentIdea=idea?{...idea}:{n:name, c:2, w:'out', v:'chill', cat:'Something new'};
+  renderPage();
+};
+window.logIdea=()=>{
+  if(!currentIdea) return;
+  dep={etype:'date', rating:0, planner:null, editingId:null, title:currentIdea.n, cat:currentIdea.cat||(currentIdea.w==='in'?'At home':'Something new'), _auto:true};
+  ui.tab=0; ui.justSaved=false; renderAll();
+  setTimeout(()=>{ const f=$('#d-hours'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
+};
+window.bookIdea=()=>{
+  if(!currentIdea || $('#book-date')) return;
+  const def = reservation?toISO(nextOccurrence()):toISO(new Date(Date.now()+DAY));
+  $('#bookrow').innerHTML=`<div style="display:flex; gap:8px; width:100%; margin-top:10px">
+    <input type="date" id="book-date" value="${def}" min="${todayISO()}">
+    <button class="cta gold" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button></div>`;
+};
+window.confirmBook=()=>{
+  const date=$('#book-date').value; if(!date) return toast('Pick a day');
+  planned={ title:currentIdea.n, date }; store.set('planned',planned);
+  toast('Booked · '+fmtDate(date));
   renderAll();
+  window.scrollTo({top:0, behavior:'smooth'});
 };
 
-/* ---- places (mode B) ---- */
+/* reservation (old style, with countdown + calendar) */
+function reservationHTML(){
+  if(!reservation) return `<div class="grid2">
+      <div><label class="f" for="r-day">Every</label>
+        <select id="r-day">${WD.map((d,i)=>`<option value="${i}" ${i===5?'selected':''}>${d}</option>`).join('')}</select></div>
+      <div><label class="f" for="r-time">At</label><input type="time" id="r-time" value="19:00"></div>
+    </div>
+    <button class="cta gold" onclick="setResv()">Book it weekly</button>`;
+  return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s · ${fmtTime(reservation.time)}</div>
+    <div class="countdown" id="countdown"></div>
+    <a class="cta gold" style="display:block; text-align:center; text-decoration:none" href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 Add to my calendar</a>
+    <button class="cta ghost" onclick="clearResv()">Cancel reservation</button>`;
+}
+window.setResv=()=>{
+  reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO() };
+  store.set('reservation',reservation); toast('Reservation booked'); renderAll();
+};
+window.clearResv=()=>{ reservation=null; store.set('reservation',null); renderAll(); };
+function nextOccurrence(){
+  const [h,m]=reservation.time.split(':').map(Number);
+  const n=new Date(); const d=new Date(); d.setHours(h,m,0,0);
+  d.setDate(d.getDate()+((reservation.weekday-d.getDay()+7)%7));
+  if(d<=n) d.setDate(d.getDate()+7);
+  return d;
+}
+function tickCountdown(){
+  clearInterval(cdTimer);
+  const el=$('#countdown'); if(!el||!reservation) return;
+  const target=nextOccurrence();
+  const step=()=>{ const el2=$('#countdown'); if(!el2){ clearInterval(cdTimer); return; }
+    const ms=target-new Date(); if(ms<=0){ renderPage(); return; }
+    const dd=Math.floor(ms/DAY), hh=Math.floor(ms%DAY/3600000), mm=Math.floor(ms%3600000/60000);
+    el2.innerHTML=`${dd}<span class="u">d</span>${hh}<span class="u">h</span>${mm}<span class="u">m</span>`; };
+  step(); cdTimer=setInterval(step,30000);
+}
+
+/* places */
 function placesBlock(){
   return `<div id="mapbox"><div class="mapmsg" id="mapmsg">${near.coords?'':'Map loads once a location is set.'}</div><div class="mapbadge" id="mapbadge"></div></div>
-    <div class="fgroup"><label class="fl" for="near-loc">Where (blank = use my location)</label>
+    <div class="fgroup"><label class="f" for="near-loc">Where (blank = use my location)</label>
       <div style="display:flex; gap:8px">
-        <input class="field" type="text" id="near-loc" placeholder="Town or ZIP — or leave blank for GPS" value="${esc(near.locText)}">
-        <button class="btn gold" style="width:auto; padding:11px 14px" onclick="setLoc()">Go</button>
+        <input type="text" id="near-loc" placeholder="Town or ZIP — or leave blank for GPS" value="${esc(near.locText)}">
+        <button class="cta gold" style="width:auto; margin-top:0; padding:11px 16px" onclick="setLoc()">Go</button>
       </div></div>
-    <div class="fgroup"><input class="field" type="text" id="near-q" placeholder="Filter the list — type part of a name…" value="${esc(near.query)}" oninput="near.query=this.value; updatePlaceList()"></div>
-    <div class="radrow"><div class="grouplabel" style="margin:0">How far</div><div class="radval">${near.radiusMi} mi</div></div>
+    <div class="radrow"><label class="f" style="margin:0">How far</label><span class="radval">${near.radiusMi} mi</span></div>
     <input type="range" min="1" max="10" step="1" value="${near.radiusMi}" onchange="setRadius(+this.value)">
-    <div style="margin-bottom:14px"><div class="grouplabel">Looking for</div><div class="pillrow">`+
+    <div class="pillgroup"><label class="f">Looking for</label><div class="pills">`+
     [['food','Restaurants'],['cafe','Cafés & sweets'],['bar','Bars'],['park','Parks & nature'],['fun','Activities'],['culture','Culture']]
-      .map(([v,t])=>`<button class="fp ${near.ncat===v?'on':''}" onclick="setNcat('${v}')">${t}</button>`).join('')
+      .map(([v,t])=>`<button class="pill ${near.ncat===v?'on':''}" onclick="setNcat('${v}')">${t}</button>`).join('')
     +`</div></div>
+    <div class="fgroup" style="margin-top:12px"><input type="text" id="near-q" placeholder="Filter the list — type part of a name…" value="${esc(near.query)}" oninput="near.query=this.value; updatePlaceList()"></div>
     <div id="placelist">${placeListHTML()}</div>
-    <div id="takewrap" style="margin-top:16px">${takeHTML()}</div>`;
+    <div class="spin-card ${currentIdea&&currentIdea.place?'show':''}" id="spin-card">${currentIdea&&currentIdea.place?spinCardHTML():''}</div>`;
 }
 function placeListHTML(){
   const rows=near.results
     .filter(p=>!near.query || p.name.toLowerCase().includes(near.query.toLowerCase()))
     .slice(0,20);
   near.view=rows;
-  return near.busy ? `<div class="matchline">Scanning the neighborhood…</div>`
-    : near.err ? `<div class="matchline">${esc(near.err)}</div>`
-    : !near.coords ? `<div class="matchline">Set a location to load the map and real places.</div>`
-    : !rows.length ? `<div class="matchline">Nothing within ${near.radiusMi} mi matches that. Widen the radius or clear the search.</div>`
-    : `<div class="rowgrid">`+rows.map((p,i)=>`
-        <button class="rowcard ${near.sel===p.name?'sel':''}" onclick="selPlaceIdx(${i})">
-          <span style="flex:1"><span class="rt">${esc(p.name)}</span><br><span class="rm">${esc(p.kind)}</span></span>
-          <span style="font-size:11px; opacity:.75">${(p.km*0.621371).toFixed(1)} mi</span>
-        </button>`).join('')+'</div>';
+  return near.busy ? `<div class="statusline">Scanning the neighborhood…</div>`
+    : near.err ? `<div class="statusline">${esc(near.err)}</div>`
+    : !near.coords ? `<div class="statusline">Set a location to load the map and real places.</div>`
+    : !rows.length ? `<div class="statusline">Nothing within ${near.radiusMi} mi matches that. Widen the radius or clear the search.</div>`
+    : rows.map((p,i)=>`<div class="place ${near.sel===p.name?'sel':''}" onclick="selPlaceIdx(${i})">
+        <span class="pn">${esc(p.name)}</span><span class="pd">${esc(p.kind)} · ${(p.km*0.621371).toFixed(1)} mi</span>
+      </div>`).join('');
 }
-function takeHTML(){
-  return near.sel
-    ? `<button class="btn pink" onclick="takePlace()">Take ${esc(near.sel)} →</button>`
-    : `<button class="btn dis" disabled>Pick a spot on the map</button>`;
-}
-window.updatePlaceList=()=>{
-  const pl=$('#placelist'); if(pl) pl.innerHTML=placeListHTML();
-  const tw=$('#takewrap'); if(tw) tw.innerHTML=takeHTML();
-};
+window.updatePlaceList=()=>{ const pl=$('#placelist'); if(pl) pl.innerHTML=placeListHTML(); };
 window.selPlaceIdx=i=>{ const p=near.view&&near.view[i]; if(p) selPlace(p.name); };
-window.selPlace=name=>{ near.sel=name; updatePlaceList(); mapDraw(false); };
-window.takePlace=()=>{
-  const p=near.results.find(x=>x.name===near.sel); if(!p) return;
-  const catMap={food:'Food & drink',cafe:'Food & drink',bar:'Food & drink',park:'Outdoors',fun:'Active',culture:'Music & culture'};
-  flow.hand=[{n:p.name, cat:catMap[near.ncat], w:'out'}]; flow.picked=0; saveFlow();
-  renderTab();
-  setTimeout(()=>{ const b=$('#booksec'); if(b) b.scrollIntoView({behavior:'smooth', block:'start'}); },60);
+window.selPlace=name=>{
+  near.sel=name;
+  const p=near.results.find(x=>x.name===name);
+  if(p){
+    const catMap={food:'Food & drink',cafe:'Food & drink',bar:'Food & drink',park:'Outdoors',fun:'Active',culture:'Music & culture'};
+    currentIdea={ n:p.name, place:true, cat:catMap[near.ncat], kindLabel:p.kind, mi:p.km*0.621371, lat:p.lat, lon:p.lon, w:'out' };
+  }
+  renderPage(); mapDraw(false);
 };
 
 const NEAR_TAGS={
@@ -783,8 +713,8 @@ async function fetchNear(){
   }catch(e){ near.err='The map services are not answering — try again in a minute.'; near.results=[]; }
   near.busy=false; updatePlaceList(); mapDraw(true);
 }
-window.setNcat=v=>{ near.ncat=v; near.sel=null; renderTab(true); fetchNear(); };
-window.setRadius=v=>{ near.radiusMi=v; near.sel=null; renderTab(true); fetchNear(); };
+window.setNcat=v=>{ near.ncat=v; near.sel=null; renderPage(); fetchNear(); };
+window.setRadius=v=>{ near.radiusMi=v; near.sel=null; renderPage(); fetchNear(); };
 window.setLoc=async()=>{
   near.locText=$('#near-loc')?$('#near-loc').value.trim():'';
   near.busy=true; near.err=null; updatePlaceList();
@@ -809,7 +739,6 @@ window.setLoc=async()=>{
   }catch(err){ near.busy=false; near.err=err.message; updatePlaceList(); }
 };
 
-/* ---------- map (Leaflet) ---------- */
 let map=null, mapMarkers=[], mapRing=null;
 const zoomFor=r=>r<=2?14:r<=4?13:r<=7?12:11.25;
 function mountMap(){
@@ -829,7 +758,7 @@ function mapDraw(recenter){
   if(!map||!near.coords) return;
   mapMarkers.forEach(m=>map.removeLayer(m)); mapMarkers=[];
   if(mapRing) map.removeLayer(mapRing);
-  mapRing=L.circle([near.coords.lat,near.coords.lon],{radius:near.radiusMi*1609.34,color:'#ef6f92',weight:1,opacity:.35,fillColor:'#ef6f92',fillOpacity:.05,interactive:false}).addTo(map);
+  mapRing=L.circle([near.coords.lat,near.coords.lon],{radius:near.radiusMi*1609.34,color:'#F27D98',weight:1,opacity:.35,fillColor:'#F27D98',fillOpacity:.05,interactive:false}).addTo(map);
   near.results.slice(0,40).forEach(p=>{
     const on=p.name===near.sel, s=on?30:22;
     const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:'',html:`<div class="pin${on?' onp':''}" style="width:${s}px;height:${s}px;font-size:${on?14:10}px">♥</div>`,iconSize:[s,s],iconAnchor:[s/2,s/2]}),title:p.name}).addTo(map);
@@ -841,30 +770,40 @@ function mapDraw(recenter){
   if(recenter) map.setView([near.coords.lat,near.coords.lon], zoomFor(near.radiusMi));
 }
 
-/* ============ SUMMARY ============ */
-function summaryTab(){
-  const all=entries.length, hrs=entries.reduce((t,e)=>t+e.hours,0);
-  const me=entries.filter(e=>isDate(e)&&e.planner==='me').length, pa=entries.filter(e=>isDate(e)&&e.planner==='partner').length;
+/* ---------- HISTORY ---------- */
+function bestCat(){
+  const by={};
+  entries.filter(e=>isDate(e)&&e.rating>0).forEach(e=>{const b=by[e.cat]=by[e.cat]||{n:0,s:0}; b.n++; b.s+=e.rating;});
+  const rows=Object.entries(by).map(([c,v])=>({c,avg:v.s/v.n,n:v.n})).filter(r=>r.n>=2).sort((a,b)=>b.avg-a.avg);
+  return rows[0]||null;
+}
+function historyPage(){
   const rows=[
     ...entries.map(e=>({sort:e.date, html:`
-      <div class="sumrow"><span style="flex:1"><span class="st">${esc(e.title)}</span>
-        <div class="sm">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'} · ${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}${e.planner?` · booked by ${e.planner==='me'?'me':'partner'}`:''}
-          · <button class="mini" onclick="editEntry(${e.id})">edit</button> · <button class="mini" onclick="delEntry(${e.id})">delete</button></div>
-        ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}</span>
-      <span class="sh">${e.rating?'♥'.repeat(e.rating):''}</span></div>`})),
+      <div class="entry"><div style="flex:1">
+        <div class="t">${esc(e.title)}</div>
+        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${e.planner?` · booked by ${e.planner==='me'?'me':'partner'}`:''}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div>
+        ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}
+      </div>
+      <div>
+        <div class="amt dep">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</div>
+        <div class="links"><button onclick="editEntry(${e.id})">edit</button> · <button onclick="delEntry(${e.id})">delete</button></div>
+      </div></div>`})),
     ...missedOccurrences().map(d=>{const iso=toISO(d); return {sort:iso, html:`
-      <div class="sumrow wd"><span style="flex:1"><span class="st">Missed date night</span>
-        <div class="sm">${fmtDate(iso)} · no date logged · −${MISS_HRS.toFixed(1)} hrs</div></span></div>`};})
+      <div class="entry"><div style="flex:1">
+        <div class="t">Missed date night</div>
+        <div class="m">${fmtDate(iso)} · no date logged</div></div>
+      <div class="amt wd">−${MISS_HRS.toFixed(1)} hrs</div></div>`};})
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
-  const best=bestCat();
-  return `<div class="kicker">${TABS[2].kick}</div><h2 class="stageh">Summary</h2>
-    <p class="subline">${all} deposit${all===1?'':'s'} · ${hrs.toFixed(1)} hrs on the books${(me+pa)?` · booked by me ${me} / partner ${pa}`:''}</p>
-    ${best?`<div class="callout">Best investment: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ average across ${best.n} dates. Book more of these.</div>`:''}
-    ${rows.length?`<div class="rowgrid">${rows.map(r=>r.html).join('')}</div>`
-      :`<div class="dashcard">No transactions yet. Log your first date to open the account. ♥</div>`}
-    <div class="footrow"><button class="btn sec grow" id="backup-btn">⬇ Back up</button><button class="btn sec grow" id="restore-btn">⬆ Restore</button></div>
-    <div class="fineprint">Your ledger lives only on this device. Keep a copy somewhere safe.</div>
-    <div class="danger-zone"><button class="btn danger" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
+  return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span><span class="tag">History</span></div>
+    <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
+      :'<div class="empty">No transactions yet. Log your first date to open the account. <span class="hrt">♥</span></div>'}</div>
+    <div class="row2" style="margin-top:4px">
+      <button class="cta ghost" style="flex:1" id="backup-btn">⬇ Back up</button>
+      <button class="cta ghost" style="flex:1" id="restore-btn">⬆ Restore</button>
+    </div>
+    <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
+    <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
     <input type="file" id="restore-file" accept="application/json,.json" hidden>`;
 }
 window.editEntry=id=>{
@@ -873,27 +812,27 @@ window.editEntry=id=>{
     title:e.title, date:e.date, cat:e.cat, moment:e.moment||'',
     hours: isDate(e)?e.hours:Math.round(e.hours*60), _auto:true };
   ui.tab=0; ui.justSaved=false; renderAll();
+  setTimeout(()=>{ const f=$('#d-title'); if(f) f.scrollIntoView({behavior:'smooth', block:'center'}); },80);
 };
 window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); renderAll(); toast('Removed'); };
 window.openWipeSheet=()=>{
   openSheet(`
-    <div class="kicker">Close the account</div><h3>Erase everything?</h3>
+    <div class="eyebrow">Close the account</div><h3>Erase everything?</h3>
     <div class="sheetnote">This erases every deposit, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.</div>
-    <div class="footrow" style="margin-top:0">
-      <button class="btn sec grow" onclick="closeSheet()">Never mind</button>
-      <button class="btn pink" style="background:#e2694f" onclick="wipeAll()">Yes — erase it all</button></div>`);
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Never mind</button>
+    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="wipeAll()">Yes — erase it all</button></div>`);
 };
 window.wipeAll=()=>{
   closeSheet();
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
-  entries=[]; reservation=null; planned=null; timer=null; flow={hand:[],picked:null,who:null};
+  entries=[]; reservation=null; planned=null; timer=null; favorites=[]; lastSpin=null; currentIdea=null;
   dep={etype:'date',rating:0,planner:null,editingId:null};
   renderAll(); toast('Account closed — fresh books');
 };
-function wireSummary(){
+function wireHistory(){
   const b=$('#backup-btn'); if(!b) return;
   b.onclick=()=>{
-    const data={app:'bookd', exported:todayISO(), entries, reservation, planned};
+    const data={app:'bookd', exported:todayISO(), entries, reservation, planned, favorites};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bookd-backup-'+todayISO()+'.json';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -906,38 +845,95 @@ function wireSummary(){
     r.onload=()=>{ try{
       const d=JSON.parse(r.result);
       if(d.app!=='bookd'||!Array.isArray(d.entries)) throw 0;
-      openSheet(`<div class="kicker">Restore</div><h3>Replace everything with the backup?</h3>
+      openSheet(`<div class="eyebrow">Restore</div><h3>Replace everything with the backup?</h3>
         <div class="sheetnote">${d.entries.length} entries from ${esc(d.exported||'an earlier backup')}. This overwrites what's on this phone.</div>
-        <div class="footrow" style="margin-top:0"><button class="btn sec grow" onclick="closeSheet()">Cancel</button>
-        <button class="btn pink" id="do-restore">Restore it</button></div>`);
+        <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
+        <button class="cta pink" style="flex:1" id="do-restore">Restore it</button></div>`);
       $('#do-restore').onclick=()=>{ closeSheet();
-        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null;
-        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned);
+        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null; favorites=d.favorites||[];
+        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned); store.set('favorites',favorites);
         renderAll(); toast('Ledger restored'); };
     }catch(e){ toast("That file isn't a Book'd backup"); } };
     r.readAsText(f);
   };
 }
 
-/* ---------- sheet ---------- */
+/* ---------- banners ---------- */
+function renderBanners(){
+  const el=$('#banners'); el.innerHTML='';
+  const now=new Date(); now.setHours(0,0,0,0);
+  if(planned){
+    const days=Math.round((parseISO(planned.date)-now)/DAY);
+    if(days>0) el.insertAdjacentHTML('beforeend',
+      `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go · <a href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆</a></span><button onclick="clearPlanned()">✕</button></div>`);
+    else if(days===0) el.insertAdjacentHTML('beforeend',
+      `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}. It's on the books.</span><button onclick="goHome()">Clock in</button></div>`);
+    else el.insertAdjacentHTML('beforeend',
+      `<div class="banner memory"><span>Did "${esc(planned.title)}" happen?</span><button onclick="logPlanned()">Log it</button></div>`);
+  }
+  if(reservation && new Date().getDay()===reservation.weekday && !(planned && Math.round((parseISO(planned.date)-now)/DAY)===0)){
+    el.insertAdjacentHTML('beforeend',
+      `<div class="banner tonight"><span>Tonight's the night. ${fmtTime(reservation.time)}, be there.</span></div>`);
+  }
+  const mmdd=todayISO().slice(5), yr=todayISO().slice(0,4);
+  const mem=entries.filter(e=>isDate(e)&&e.date.slice(5)===mmdd&&e.date.slice(0,4)<yr).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  if(mem) el.insertAdjacentHTML('beforeend',
+    `<div class="banner memory"><span>On this day, ${mem.date.slice(0,4)}: ${esc(mem.title)}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
+}
+window.goHome=()=>{ ui.tab=0; renderAll(); };
+window.clearPlanned=()=>{ planned=null; store.set('planned',null); toast('Booking cleared'); renderAll(); };
+window.logPlanned=()=>{
+  if(!planned) return;
+  const p=planned; planned=null; store.set('planned',null);
+  dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true};
+  ui.tab=0; ui.justSaved=false; renderAll();
+};
+
+/* ---------- calendar ---------- */
+const gcalStamp=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
+function gcalWeeklyURL(){
+  const s=nextOccurrence(), e=new Date(s.getTime()+2*3600000);
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Date night ♥')
+    +'&dates='+gcalStamp(s)+'/'+gcalStamp(e)+'&recur='+encodeURIComponent('RRULE:FREQ=WEEKLY')
+    +'&details='+encodeURIComponent("Standing reservation — booked in Book'd");
+}
+function gcalOneOffURL(p){
+  const d1=p.date.replace(/-/g,''), d2=toISO(new Date(parseISO(p.date).getTime()+DAY)).replace(/-/g,'');
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(p.title+' ♥')
+    +'&dates='+d1+'/'+d2+'&details='+encodeURIComponent("Date booked in Book'd");
+}
+
+/* ---------- sheet & render ---------- */
 function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.add('show'); }
 window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); };
 $('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
 
-/* ---------- render ---------- */
-function renderTab(keepScroll){
+function renderPage(){
   const inPlaces = ui.tab===1 && ui.planMode==='places';
   if(map && !inPlaces){ map.remove(); map=null; mapMarkers=[]; mapRing=null; }
+  if(ui.tab!==1) clearInterval(cdTimer);
   const liveMap = (inPlaces && map) ? $('#mapbox') : null;
-  $('#stagebox').innerHTML=[tonightTab,planTab,summaryTab][ui.tab]();
+  $('#page').innerHTML=[homePage,planPage,historyPage][ui.tab]();
   if(liveMap && $('#mapbox')) $('#mapbox').replaceWith(liveMap);
-  if(ui.tab===2) wireSummary();
-  if(inPlaces && near.coords && !map) mountMap();
+  if(ui.tab===1){ tickCountdown(); if(inPlaces && near.coords && !map) mountMap(); }
+  if(ui.tab===2) wireHistory();
 }
-function renderAll(){ renderStrip(); renderBanners(); renderRail(); renderTab(); }
+function renderAll(){ renderBanners(); renderPage(); renderTabbar(); }
+function renderTabbar(){
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on', +b.dataset.t===ui.tab));
+}
+document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{ ui.tab=+b.dataset.t; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); });
+
+/* live second ticks: passbook cell + clock button */
+setInterval(()=>{
+  if(timer&&timer.running){
+    const lv=$('#livev'); if(lv) lv.textContent=fmtMS(elapsedSecs());
+    const tb=$('#tbtn-t'); if(tb) tb.textContent=fmtMS(elapsedSecs());
+  }
+},1000);
 
 /* ---------- boot ---------- */
-renderAll(); startTicking();
+renderAll();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
