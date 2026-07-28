@@ -245,6 +245,8 @@ let favorites  = store.get('favorites', []);
 let lastSpin   = store.get('lastSpin', null);
 let timer      = store.get('timer', null);   // {startedAt, elapsed, running, date, title}
 let goal       = store.get('goal', null);    // monthly hours goal (number) — the low-balance baseline
+let profile    = store.get('profile', {me:'', partner:'', anniv:''});   // first names + anniversary
+const nameMe=()=>profile.me||'Me', namePa=()=>profile.partner||'My partner';
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
 const DAY=86400000, MISS_HRS=3;
@@ -365,7 +367,7 @@ function passbookHTML(){
     ? `<div class="stat live"><div class="v" id="livev">${fmtMS(elapsedSecs())}</div><div class="k">Banking now</div></div>`
     : `<div class="stat"><div class="v">${s.dates}</div><div class="k">Dates / Mo</div></div>`;
   return `<div class="passbook">
-    <div class="pb-head"><span class="pb-title">The Joint Account</span><span class="acct">ACCT № US-4EVR</span></div>
+    <div class="pb-head"><span class="pb-title">${(profile.me&&profile.partner)?'The Joint Account of '+esc(profile.me)+' & '+esc(profile.partner):'The Joint Account'}</span><span class="acct">ACCT № US-4EVR${profile.anniv?' · est. '+profile.anniv.slice(0,4):''}</span></div>
     <div class="balance-label"><span>30-Day Balance</span><span class="dot ${running?'show':''}"></span></div>
     <div class="balance ${s.balance<0?'neg':''}">${s.balance.toFixed(1)}<small> hrs</small></div>
     <div class="balance-sub">Quality time deposited, minus missed date nights</div>
@@ -376,7 +378,7 @@ function passbookHTML(){
       <div class="stat"><div class="v">${s.hrsWk.toFixed(1)}</div><div class="k">Hrs / Wk</div></div>
       <div class="stat"><div class="v hearts">${s.avg!=null?s.avg.toFixed(1):'—'}</div><div class="k">Avg ♥</div></div>
     </div>
-    ${(s.me+s.pa)?`<div class="pb-split">Booked by · Me ${s.me} · Partner ${s.pa}</div>`:''}
+    ${(s.me+s.pa)?`<div class="pb-split">Booked by · ${esc(profile.me||'Me')} ${s.me} · ${esc(profile.partner||'Partner')} ${s.pa}</div>`:''}
     ${goalRowHTML(s)}
     <div class="tear" aria-hidden="true">${'♥ '.repeat(30)}</div>
   </div>`;
@@ -475,8 +477,8 @@ function depositFormHTML(){
       <input type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
     <div class="fgroup"><label class="f">Who booked it?</label>
       <div class="pills">
-        <button class="pill gold ${dep.planner==='me'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='me'?null:'me';renderPage()">Me</button>
-        <button class="pill gold ${dep.planner==='partner'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='partner'?null:'partner';renderPage()">My partner</button>
+        <button class="pill gold ${dep.planner==='me'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='me'?null:'me';renderPage()">${esc(nameMe())}</button>
+        <button class="pill gold ${dep.planner==='partner'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='partner'?null:'partner';renderPage()">${esc(namePa())}</button>
       </div></div>
     <button class="cta pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Deposit this date'}</button>
     ${dep.editingId?`<button class="cta ghost" onclick="cancelEdit()">Cancel edit</button>`:''}
@@ -816,7 +818,7 @@ function historyPage(){
     ...entries.map(e=>({sort:e.date, html:`
       <div class="entry"><div style="flex:1">
         <div class="t">${esc(e.title)}</div>
-        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${e.planner?` · booked by ${e.planner==='me'?'me':'partner'}`:''}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div>
+        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${e.planner?` · booked by ${esc(e.planner==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div>
         ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}
       </div>
       <div>
@@ -836,7 +838,18 @@ function historyPage(){
 
 /* ---------- SETTINGS ---------- */
 function settingsPage(){
-  return `<div class="sechead"><h2>Goals</h2><span class="lead"></span><span class="tag">The baseline</span></div>
+  return `<div class="sechead"><h2>Account holders</h2><span class="lead"></span><span class="tag">You two</span></div>
+    <p class="secsub">First names only — they label "who booked it" and sign the passbook. Nothing leaves this phone.</p>
+    <div class="cardbox">
+      <div class="grid2 fgroup">
+        <div><label class="f" for="p-me">You</label><input type="text" id="p-me" maxlength="20" value="${esc(profile.me)}" placeholder="Brad"></div>
+        <div><label class="f" for="p-pa">Your partner</label><input type="text" id="p-pa" maxlength="20" value="${esc(profile.partner)}" placeholder="First name"></div>
+      </div>
+      <div class="fgroup"><label class="f" for="p-anniv">Anniversary (optional)</label>
+        <input type="date" id="p-anniv" value="${esc(profile.anniv)}"></div>
+      <button class="cta gold" style="margin-top:0" onclick="saveProfile()">Save the account holders</button>
+    </div>
+    <div class="sechead"><h2>Goals</h2><span class="lead"></span><span class="tag">The baseline</span></div>
     <p class="secsub">Set a monthly hours goal and the passbook tracks your rolling 30-day balance against it. Fall under half and it flags you in red.</p>
     <div class="cardbox">
       <div class="fgroup"><label class="f" for="g-goal">Monthly hours goal</label>
@@ -855,6 +868,12 @@ function settingsPage(){
       <input type="file" id="restore-file" accept="application/json,.json" hidden>
     </div>`;
 }
+window.saveProfile=()=>{
+  profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'' };
+  store.set('profile',profile);
+  toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+' — on the books ♥':'Saved');
+  renderAll();
+};
 window.saveGoal=()=>{
   const v=parseFloat($('#g-goal').value);
   if(!(v>0)) return toast('Give the goal a number');
@@ -880,14 +899,14 @@ window.openWipeSheet=()=>{
 window.wipeAll=()=>{
   closeSheet();
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
-  entries=[]; reservation=null; planned=null; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null;
+  entries=[]; reservation=null; planned=null; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
   renderAll(); toast('Account closed — fresh books');
 };
 function wireSettings(){
   const b=$('#backup-btn'); if(!b) return;
   b.onclick=()=>{
-    const data={app:'bookd', exported:todayISO(), entries, reservation, planned, favorites, goal};
+    const data={app:'bookd', exported:todayISO(), entries, reservation, planned, favorites, goal, profile};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bookd-backup-'+todayISO()+'.json';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -905,8 +924,8 @@ function wireSettings(){
         <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
         <button class="cta pink" style="flex:1" id="do-restore">Restore it</button></div>`);
       $('#do-restore').onclick=()=>{ closeSheet();
-        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null; favorites=d.favorites||[]; goal=d.goal||null;
-        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned); store.set('favorites',favorites); store.set('goal',goal);
+        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null; favorites=d.favorites||[]; goal=d.goal||null; profile=d.profile||{me:'',partner:'',anniv:''};
+        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned); store.set('favorites',favorites); store.set('goal',goal); store.set('profile',profile);
         renderAll(); toast('Ledger restored'); };
     }catch(e){ toast("That file isn't a Book'd backup"); } };
     r.readAsText(f);
@@ -931,6 +950,11 @@ function renderBanners(){
       `<div class="banner tonight"><span>Tonight's the night. ${fmtTime(reservation.time)}, be there.</span></div>`);
   }
   const mmdd=todayISO().slice(5), yr=todayISO().slice(0,4);
+  if(profile.anniv && profile.anniv.slice(5)===mmdd && profile.anniv.slice(0,4)<yr){
+    const yrs=+yr-+profile.anniv.slice(0,4);
+    el.insertAdjacentHTML('beforeend',
+      `<div class="banner tonight"><span>Happy anniversary${profile.me&&profile.partner?', '+esc(profile.me)+' & '+esc(profile.partner):''} — ${yrs} year${yrs===1?'':'s'} on the books ♥</span></div>`);
+  }
   const mem=entries.filter(e=>isDate(e)&&e.date.slice(5)===mmdd&&e.date.slice(0,4)<yr).sort((a,b)=>a.date.localeCompare(b.date))[0];
   if(mem) el.insertAdjacentHTML('beforeend',
     `<div class="banner memory"><span>On this day, ${mem.date.slice(0,4)}: ${esc(mem.title)}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
