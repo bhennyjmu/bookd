@@ -65,6 +65,15 @@ header{text-align:center; padding:26px 16px 6px}
 .stat.live .k{color:rgba(31,122,74,.75)}
 @keyframes glow{0%,100%{text-shadow:0 0 0 rgba(47,158,99,0)}50%{text-shadow:0 0 14px rgba(47,158,99,.55)}}
 .pb-split{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:14px}
+.goalrow{margin-top:14px}
+.goaltrack{height:7px; border-radius:999px; background:rgba(42,27,46,.15); overflow:hidden}
+.goalfill{height:100%; border-radius:999px; transition:width .4s}
+.goalfill.lo{background:#B0402F}
+.goalfill.mid{background:#C99A3F}
+.goalfill.done{background:var(--green)}
+.goaltext{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:6px}
+.goaltext.lo{color:#B0402F; font-weight:600}
+.goaltext.done{color:var(--greenv)}
 .tear{position:absolute; left:0; right:0; bottom:-7px; height:16px; overflow:hidden; text-align:center;
   color:var(--plum); font-size:15px; letter-spacing:5px; line-height:14px; user-select:none; pointer-events:none}
 .dot{width:8px; height:8px; border-radius:50%; background:var(--green); display:none; animation:pulse 1.8s ease-out infinite}
@@ -214,6 +223,7 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
   <button data-t="0" class="on"><span class="ico">⌂</span><span class="lbl">Home</span></button>
   <button data-t="1"><span class="ico">✦</span><span class="lbl">Plan</span></button>
   <button data-t="2"><span class="ico">≡</span><span class="lbl">History</span></button>
+  <button data-t="3"><span class="ico">⚙</span><span class="lbl">Settings</span></button>
 </div></nav>
 
 <div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet"></div></div>
@@ -234,6 +244,7 @@ let planned    = store.get('planned', null);
 let favorites  = store.get('favorites', []);
 let lastSpin   = store.get('lastSpin', null);
 let timer      = store.get('timer', null);   // {startedAt, elapsed, running, date, title}
+let goal       = store.get('goal', null);    // monthly hours goal (number) — the low-balance baseline
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
 const DAY=86400000, MISS_HRS=3;
@@ -366,7 +377,18 @@ function passbookHTML(){
       <div class="stat"><div class="v hearts">${s.avg!=null?s.avg.toFixed(1):'—'}</div><div class="k">Avg ♥</div></div>
     </div>
     ${(s.me+s.pa)?`<div class="pb-split">Booked by · Me ${s.me} · Partner ${s.pa}</div>`:''}
+    ${goalRowHTML(s)}
     <div class="tear" aria-hidden="true">${'♥ '.repeat(30)}</div>
+  </div>`;
+}
+function goalRowHTML(s){
+  if(!goal) return '';
+  const pct=Math.max(0, Math.min(1, s.balance/goal));
+  const cls = pct>=1 ? 'done' : pct>=0.5 ? 'mid' : 'lo';
+  const label = cls==='done' ? 'Goal met ♥ · ' : cls==='lo' ? '⚠ Running behind · ' : '';
+  return `<div class="goalrow">
+    <div class="goaltrack"><div class="goalfill ${cls}" style="width:${(pct*100).toFixed(0)}%"></div></div>
+    <div class="goaltext ${cls}">${label}Goal · ${s.balance.toFixed(1)} / ${goal} hrs</div>
   </div>`;
 }
 function clockButtonsHTML(){
@@ -809,15 +831,36 @@ function historyPage(){
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
   return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span><span class="tag">History</span></div>
     <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
-      :'<div class="empty">No transactions yet. Log your first date to open the account. <span class="hrt">♥</span></div>'}</div>
-    <div class="row2" style="margin-top:4px">
-      <button class="cta ghost" style="flex:1" id="backup-btn">⬇ Back up</button>
-      <button class="cta ghost" style="flex:1" id="restore-btn">⬆ Restore</button>
-    </div>
-    <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
-    <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
-    <input type="file" id="restore-file" accept="application/json,.json" hidden>`;
+      :'<div class="empty">No transactions yet. Log your first date to open the account. <span class="hrt">♥</span></div>'}</div>`;
 }
+
+/* ---------- SETTINGS ---------- */
+function settingsPage(){
+  return `<div class="sechead"><h2>Goals</h2><span class="lead"></span><span class="tag">The baseline</span></div>
+    <p class="secsub">Set a monthly hours goal and the passbook tracks your rolling 30-day balance against it. Fall under half and it flags you in red.</p>
+    <div class="cardbox">
+      <div class="fgroup"><label class="f" for="g-goal">Monthly hours goal</label>
+        <input type="number" id="g-goal" min="1" max="200" step="0.5" value="${goal??''}" placeholder="15"></div>
+      <button class="cta gold" style="margin-top:0" onclick="saveGoal()">Set the goal</button>
+      ${goal?`<button class="cta ghost" onclick="clearGoal()">Clear the goal (no more flags)</button>`:''}
+    </div>
+    <div class="sechead"><h2>Your data</h2><span class="lead"></span><span class="tag">Keep it safe</span></div>
+    <div class="cardbox">
+      <div class="row2" style="margin-top:0">
+        <button class="cta ghost" style="flex:1; margin-top:0" id="backup-btn">⬇ Back up</button>
+        <button class="cta ghost" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
+      </div>
+      <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
+      <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
+      <input type="file" id="restore-file" accept="application/json,.json" hidden>
+    </div>`;
+}
+window.saveGoal=()=>{
+  const v=parseFloat($('#g-goal').value);
+  if(!(v>0)) return toast('Give the goal a number');
+  goal=v; store.set('goal',goal); toast('Goal set · '+v+' hrs a month'); renderAll();
+};
+window.clearGoal=()=>{ goal=null; store.set('goal',null); toast('Goal cleared'); renderAll(); };
 window.editEntry=id=>{
   const e=entries.find(x=>x.id===id); if(!e) return;
   dep={ etype:isDate(e)?'date':'small', rating:e.rating||0, planner:e.planner||null, editingId:id,
@@ -837,14 +880,14 @@ window.openWipeSheet=()=>{
 window.wipeAll=()=>{
   closeSheet();
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
-  entries=[]; reservation=null; planned=null; timer=null; favorites=[]; lastSpin=null; currentIdea=null;
+  entries=[]; reservation=null; planned=null; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null;
   dep={etype:'date',rating:0,planner:null,editingId:null};
   renderAll(); toast('Account closed — fresh books');
 };
-function wireHistory(){
+function wireSettings(){
   const b=$('#backup-btn'); if(!b) return;
   b.onclick=()=>{
-    const data={app:'bookd', exported:todayISO(), entries, reservation, planned, favorites};
+    const data={app:'bookd', exported:todayISO(), entries, reservation, planned, favorites, goal};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bookd-backup-'+todayISO()+'.json';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -862,8 +905,8 @@ function wireHistory(){
         <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
         <button class="cta pink" style="flex:1" id="do-restore">Restore it</button></div>`);
       $('#do-restore').onclick=()=>{ closeSheet();
-        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null; favorites=d.favorites||[];
-        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned); store.set('favorites',favorites);
+        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null; favorites=d.favorites||[]; goal=d.goal||null;
+        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned); store.set('favorites',favorites); store.set('goal',goal);
         renderAll(); toast('Ledger restored'); };
     }catch(e){ toast("That file isn't a Book'd backup"); } };
     r.readAsText(f);
@@ -925,10 +968,10 @@ function renderPage(){
   if(map && !inPlaces){ map.remove(); map=null; mapMarkers=[]; mapRing=null; }
   if(ui.tab!==1) clearInterval(cdTimer);
   const liveMap = (inPlaces && map) ? $('#mapbox') : null;
-  $('#page').innerHTML=[homePage,planPage,historyPage][ui.tab]();
+  $('#page').innerHTML=[homePage,planPage,historyPage,settingsPage][ui.tab]();
   if(liveMap && $('#mapbox')) $('#mapbox').replaceWith(liveMap);
   if(ui.tab===1){ tickCountdown(); if(inPlaces && near.coords && !map) mountMap(); }
-  if(ui.tab===2) wireHistory();
+  if(ui.tab===3) wireSettings();
 }
 function renderAll(){ renderBanners(); renderPage(); renderTabbar(); }
 function renderTabbar(){
