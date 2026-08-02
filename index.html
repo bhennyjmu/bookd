@@ -247,6 +247,13 @@ let timer      = store.get('timer', null);   // {startedAt, elapsed, running, da
 let goal       = store.get('goal', null);    // monthly hours goal (number) — the low-balance baseline
 let profile    = store.get('profile', {me:'', partner:'', anniv:''});   // first names + anniversary
 const nameMe=()=>profile.me||'Me', namePa=()=>profile.partner||'My partner';
+
+/* ---------- joint-account sync (Firebase Firestore, couple-code pairing) ---------- */
+const FIREBASE_CONFIG={apiKey:"AIzaSyBHfJKxOrHlfM65zVSOwbUXblPcuHvm94Q",authDomain:"bookd-78e02.firebaseapp.com",
+  projectId:"bookd-78e02",storageBucket:"bookd-78e02.firebasestorage.app",messagingSenderId:"956683695194",
+  appId:"1:956683695194:web:08718c5597ecbc8e831463"};   // public identifiers — security lives in the Firestore rules
+let sync=store.get('sync', null);   // {cid, role:'me'|'partner'}
+let db=null, unsubMeta=null, unsubEntries=null, syncStatus='off', pairRole='me';
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
 const DAY=86400000, MISS_HRS=3;
@@ -520,7 +527,8 @@ window.commitDeposit=()=>{
   if(dep.editingId){ entries=entries.map(e=>e.id===dep.editingId?record:e); toast('Entry updated'); }
   else { entries.unshift(record); toast(small?'Deposited +'+Math.round(raw)+' min':'Deposited +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
-  if(planned && planned.title===record.title){ planned=null; store.set('planned',null); }
+  pushEntry(record);
+  if(planned && planned.title===record.title){ planned=null; store.set('planned',null); pushMeta(); }
   if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); }
   dep={etype:'date',rating:0,planner:null,editingId:null};
   ui.justSaved=true; ui.tab=0;
@@ -588,8 +596,8 @@ window.spin=()=>{
   lastSpin=currentIdea.n; store.set('lastSpin',lastSpin);
   renderPage();
 };
-window.saveFav=()=>{ if(currentIdea&&!favorites.includes(currentIdea.n)){ favorites.push(currentIdea.n); store.set('favorites',favorites); renderPage(); } };
-window.unfav=i=>{ favorites.splice(i,1); store.set('favorites',favorites); renderPage(); };
+window.saveFav=()=>{ if(currentIdea&&!favorites.includes(currentIdea.n)){ favorites.push(currentIdea.n); store.set('favorites',favorites); pushMeta(); renderPage(); } };
+window.unfav=i=>{ favorites.splice(i,1); store.set('favorites',favorites); pushMeta(); renderPage(); };
 window.loadFav=i=>{
   const name=favorites[i];
   const idea=IDEAS.find(x=>x.n===name);
@@ -611,7 +619,7 @@ window.bookIdea=()=>{
 };
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
-  planned={ title:currentIdea.n, date }; store.set('planned',planned);
+  planned={ title:currentIdea.n, date }; store.set('planned',planned); pushMeta();
   toast('Booked · '+fmtDate(date));
   renderAll();
   window.scrollTo({top:0, behavior:'smooth'});
@@ -632,9 +640,9 @@ function reservationHTML(){
 }
 window.setResv=()=>{
   reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO() };
-  store.set('reservation',reservation); toast('Reservation booked'); renderAll();
+  store.set('reservation',reservation); pushMeta(); toast('Reservation booked'); renderAll();
 };
-window.clearResv=()=>{ reservation=null; store.set('reservation',null); renderAll(); };
+window.clearResv=()=>{ reservation=null; store.set('reservation',null); pushMeta(); renderAll(); };
 function nextOccurrence(){
   const [h,m]=reservation.time.split(':').map(Number);
   const n=new Date(); const d=new Date(); d.setHours(h,m,0,0);
@@ -837,8 +845,42 @@ function historyPage(){
 }
 
 /* ---------- SETTINGS ---------- */
+function syncSectionHTML(){
+  const rolePills=`<div class="fgroup"><label class="f">Who's holding this phone?</label>
+    <div class="pills">
+      <button class="pill gold ${pairRole==='me'?'on':''}" onclick="setPairRole('me')">${esc(nameMe())}</button>
+      <button class="pill gold ${pairRole==='partner'?'on':''}" onclick="setPairRole('partner')">${esc(namePa())}</button>
+    </div></div>`;
+  if(!sync) return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Two phones, one ledger</span></div>
+    <p class="secsub">One of you opens the vault and gets a code; the other joins with it. From then on, both phones share one ledger — deposits appear on both, even long-distance.</p>
+    <div class="cardbox">
+      ${rolePills}
+      <button class="cta gold" style="margin-top:0" onclick="openVault()">🔐 Open the vault (first phone)</button>
+      <div class="divline">— or, if your partner already opened it —</div>
+      <div class="fgroup"><label class="f" for="sync-code">Couple code</label>
+        <input type="text" id="sync-code" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocapitalize="characters"></div>
+      <button class="cta pink" style="margin-top:0" onclick="joinVault()">🔑 Join the joint account</button>
+    </div>`;
+  const statusLine = syncStatus==='live' ? '<span style="color:var(--deposit)">● Live — two phones, one ledger</span>'
+    : syncStatus==='connecting' ? '<span style="color:var(--champagne)">● Connecting…</span>'
+    : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Trouble reaching the vault — will retry</span>'
+    : '<span style="color:var(--dimmer)">● Waiting for the sync engine…</span>';
+  return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Connected</span></div>
+    <div class="cardbox">
+      <div class="statusline" style="margin-top:0">${statusLine}</div>
+      <div class="fgroup" style="margin-top:12px"><label class="f">Couple code — share only with your co-signer</label>
+        <div class="mono" style="font-size:15px; letter-spacing:.06em; word-break:break-all">${fmtCode(sync.cid)}</div></div>
+      <div class="row2" style="margin-top:0">
+        <button class="cta ghost" style="flex:1; margin-top:0" onclick="copyCode()">Copy code</button>
+        <button class="cta ghost" style="flex:1; margin-top:0" onclick="shareCode()">Share it</button>
+      </div>
+      <p class="datanote">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
+      <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>
+    </div>`;
+}
 function settingsPage(){
-  return `<div class="sechead"><h2>Account holders</h2><span class="lead"></span><span class="tag">You two</span></div>
+  return syncSectionHTML()
+    +`<div class="sechead"><h2>Account holders</h2><span class="lead"></span><span class="tag">You two</span></div>
     <p class="secsub">First names only — they label "who booked it" and sign the passbook. Nothing leaves this phone.</p>
     <div class="cardbox">
       <div class="grid2 fgroup">
@@ -870,16 +912,16 @@ function settingsPage(){
 }
 window.saveProfile=()=>{
   profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'' };
-  store.set('profile',profile);
+  store.set('profile',profile); pushMeta();
   toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+' — on the books ♥':'Saved');
   renderAll();
 };
 window.saveGoal=()=>{
   const v=parseFloat($('#g-goal').value);
   if(!(v>0)) return toast('Give the goal a number');
-  goal=v; store.set('goal',goal); toast('Goal set · '+v+' hrs a month'); renderAll();
+  goal=v; store.set('goal',goal); pushMeta(); toast('Goal set · '+v+' hrs a month'); renderAll();
 };
-window.clearGoal=()=>{ goal=null; store.set('goal',null); toast('Goal cleared'); renderAll(); };
+window.clearGoal=()=>{ goal=null; store.set('goal',null); pushMeta(); toast('Goal cleared'); renderAll(); };
 window.editEntry=id=>{
   const e=entries.find(x=>x.id===id); if(!e) return;
   dep={ etype:isDate(e)?'date':'small', rating:e.rating||0, planner:e.planner||null, editingId:id,
@@ -888,20 +930,25 @@ window.editEntry=id=>{
   ui.tab=0; ui.justSaved=false; renderAll();
   setTimeout(()=>{ const f=$('#d-title'); if(f) f.scrollIntoView({behavior:'smooth', block:'center'}); },80);
 };
-window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); renderAll(); toast('Removed'); };
+window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); pushDelete(id); renderAll(); toast('Removed'); };
 window.openWipeSheet=()=>{
   openSheet(`
     <div class="eyebrow">Close the account</div><h3>Erase everything?</h3>
-    <div class="sheetnote">This erases every deposit, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.</div>
+    <div class="sheetnote">${sync
+      ?'This wipes <b>this phone only</b> and disconnects it. The shared vault in the cloud — and your partner\'s phone — stay intact. Rejoin with the code to get everything back.'
+      :'This erases every deposit, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.'}</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Never mind</button>
     <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="wipeAll()">Yes — erase it all</button></div>`);
 };
 window.wipeAll=()=>{
   closeSheet();
+  const hadSync=!!sync;
+  if(hadSync) stopSync();
+  sync=null;
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
   entries=[]; reservation=null; planned=null; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
-  renderAll(); toast('Account closed — fresh books');
+  renderAll(); toast(hadSync?'This phone wiped — the vault is untouched':'Account closed — fresh books');
 };
 function wireSettings(){
   const b=$('#backup-btn'); if(!b) return;
@@ -926,6 +973,7 @@ function wireSettings(){
       $('#do-restore').onclick=()=>{ closeSheet();
         entries=d.entries; reservation=d.reservation||null; planned=d.planned||null; favorites=d.favorites||[]; goal=d.goal||null; profile=d.profile||{me:'',partner:'',anniv:''};
         store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned); store.set('favorites',favorites); store.set('goal',goal); store.set('profile',profile);
+        if(sync&&db){ pushMeta(); const b=window.fb.writeBatch(db); entries.forEach(r=>b.set(entryRef(r.id), r)); b.commit().catch(()=>{}); }
         renderAll(); toast('Ledger restored'); };
     }catch(e){ toast("That file isn't a Book'd backup"); } };
     r.readAsText(f);
@@ -960,10 +1008,10 @@ function renderBanners(){
     `<div class="banner memory"><span>On this day, ${mem.date.slice(0,4)}: ${esc(mem.title)}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
 }
 window.goHome=()=>{ ui.tab=0; renderAll(); };
-window.clearPlanned=()=>{ planned=null; store.set('planned',null); toast('Booking cleared'); renderAll(); };
+window.clearPlanned=()=>{ planned=null; store.set('planned',null); pushMeta(); toast('Booking cleared'); renderAll(); };
 window.logPlanned=()=>{
   if(!planned) return;
-  const p=planned; planned=null; store.set('planned',null);
+  const p=planned; planned=null; store.set('planned',null); pushMeta();
   dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true};
   ui.tab=0; ui.justSaved=false; renderAll();
 };
@@ -981,6 +1029,105 @@ function gcalOneOffURL(p){
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(p.title+' ♥')
     +'&dates='+d1+'/'+d2+'&details='+encodeURIComponent("Date booked in Book'd");
 }
+
+/* ---------- sync engine ---------- */
+const fmtCode=c=>c.replace(/(.{4})/g,'$1-').replace(/-$/,'');
+function newCid(){ const chars='ABCDEFGHJKMNPQRSTVWXYZ0123456789'; const a=new Uint32Array(20);
+  crypto.getRandomValues(a); let s=''; for(let i=0;i<20;i++) s+=chars[a[i]%chars.length]; return s; }
+function ensureDb(){
+  if(db) return db;
+  if(!window.fb) return null;
+  const app = window.fb.getApps().length ? window.fb.getApp() : window.fb.initializeApp(FIREBASE_CONFIG);
+  try{ db=window.fb.initializeFirestore(app,{localCache:window.fb.persistentLocalCache()}); }
+  catch(e){ db=window.fb.getFirestore(app); }
+  return db;
+}
+const metaRef=()=>window.fb.doc(db,'couples',sync.cid);
+const entryRef=id=>window.fb.doc(db,'couples',sync.cid,'entries',String(id));
+const metaPayload=()=>({profile, reservation, planned, goal, favorites, updatedAt:Date.now()});
+function startSync(){
+  if(!sync||!ensureDb()) return;
+  syncStatus='connecting';
+  unsubMeta=window.fb.onSnapshot(metaRef(), snap=>{
+    syncStatus='live';
+    const d=snap.data();
+    if(d && !snap.metadata.hasPendingWrites){
+      profile=d.profile||profile; reservation=d.reservation??null; planned=d.planned??null;
+      goal=d.goal??null; favorites=d.favorites||[];
+      store.set('profile',profile); store.set('reservation',reservation); store.set('planned',planned);
+      store.set('goal',goal); store.set('favorites',favorites);
+      renderAll();
+    }
+  }, ()=>{ syncStatus='error'; renderAll(); });
+  unsubEntries=window.fb.onSnapshot(window.fb.collection(db,'couples',sync.cid,'entries'), snap=>{
+    syncStatus='live';
+    entries=snap.docs.map(d=>d.data())
+      .sort((a,b)=>String(b.date).localeCompare(String(a.date))||((b.id||0)-(a.id||0)));
+    store.set('entries',entries);
+    renderAll();
+  }, ()=>{ syncStatus='error'; renderAll(); });
+}
+function stopSync(){ if(unsubMeta)unsubMeta(); if(unsubEntries)unsubEntries(); unsubMeta=unsubEntries=null; syncStatus='off'; }
+function pushMeta(){ if(sync&&db) window.fb.setDoc(metaRef(), metaPayload(), {merge:true}).catch(()=>{}); }
+function pushEntry(r){ if(sync&&db) window.fb.setDoc(entryRef(r.id), r).catch(()=>{}); }
+function pushDelete(id){ if(sync&&db) window.fb.deleteDoc(entryRef(id)).catch(()=>{}); }
+window.setPairRole=r=>{ pairRole=r; renderPage(); };
+window.openVault=async()=>{
+  if(!ensureDb()) return toast('Sync engine still loading — try again in a moment');
+  sync={cid:newCid(), role:pairRole}; store.set('sync',sync);
+  try{
+    await window.fb.setDoc(metaRef(), metaPayload(), {merge:true});
+    const b=window.fb.writeBatch(db);
+    entries.forEach(r=>b.set(entryRef(r.id), r));
+    await b.commit();
+  }catch(e){ sync=null; store.set('sync',null); return toast('The vault door stuck — check your connection and try again'); }
+  startSync();
+  toast('Vault open ♥ — send Marilee the code');
+  renderAll();
+};
+window.joinVault=async()=>{
+  if(!ensureDb()) return toast('Sync engine still loading — try again in a moment');
+  const cid=($('#sync-code')?$('#sync-code').value:'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(cid.length<16) return toast('That code looks short — check it and try again');
+  let snap=null;
+  try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
+  if(!snap||!snap.exists()) return toast("Couldn't find that vault — double-check the code");
+  sync={cid, role:pairRole}; store.set('sync',sync);
+  try{
+    const localOnly=[...entries];
+    const b=window.fb.writeBatch(db);
+    localOnly.forEach(r=>b.set(entryRef(r.id), r, {merge:true}));
+    await b.commit();
+  }catch(e){}
+  startSync();
+  toast('Joined the joint account ♥');
+  renderAll();
+};
+window.copyCode=()=>{
+  if(!sync) return;
+  (navigator.clipboard?navigator.clipboard.writeText(fmtCode(sync.cid)):Promise.reject())
+    .then(()=>toast('Code copied — text it to your co-signer'))
+    .catch(()=>toast(fmtCode(sync.cid)));
+};
+window.shareCode=()=>{
+  if(!sync) return;
+  if(navigator.share) navigator.share({title:"Book'd joint account", text:"Join our Book'd joint account — Settings → Join with a code: "+fmtCode(sync.cid)}).catch(()=>{});
+  else copyCode();
+};
+window.openDisconnectSheet=()=>{
+  openSheet(`
+    <div class="eyebrow">Disconnect</div><h3>Unplug this phone?</h3>
+    <div class="sheetnote">The vault and everything in it stays safe in the cloud — this phone just stops syncing. Rejoin anytime with the code.</div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Stay connected</button>
+    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="disconnectVault()">Disconnect</button></div>`);
+};
+window.disconnectVault=()=>{
+  closeSheet(); stopSync();
+  sync=null; store.set('sync',null);
+  toast('Disconnected — the vault is untouched');
+  renderAll();
+};
+window.fbReady=()=>{ if(sync) startSync(); };
 
 /* ---------- sheet & render ---------- */
 function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.add('show'); }
@@ -1014,6 +1161,15 @@ setInterval(()=>{
 /* ---------- boot ---------- */
 renderAll();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+<script type="module">
+/* Firebase SDK loads here and hands its tools to the main script above */
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js';
+import { initializeFirestore, getFirestore, persistentLocalCache, doc, collection, setDoc, getDoc, deleteDoc, onSnapshot, writeBatch }
+  from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js';
+window.fb={ initializeApp, getApps, getApp, initializeFirestore, getFirestore, persistentLocalCache,
+  doc, collection, setDoc, getDoc, deleteDoc, onSnapshot, writeBatch };
+if(window.fbReady) window.fbReady();
 </script>
 </body>
 </html>
