@@ -247,6 +247,7 @@ let timer      = store.get('timer', null);   // {startedAt, elapsed, running, da
 let goal       = store.get('goal', null);    // monthly hours goal (number) — the low-balance baseline
 let profile    = store.get('profile', {me:'', partner:'', anniv:''});   // first names + anniversary
 const nameMe=()=>profile.me||'Me', namePa=()=>profile.partner||'My partner';
+const kidsOn=()=>profile.kids!==false;   // sitter tracking on unless switched off in Settings
 
 /* ---------- joint-account sync (Firebase Firestore, couple-code pairing) ---------- */
 const FIREBASE_CONFIG={apiKey:"AIzaSyBHfJKxOrHlfM65zVSOwbUXblPcuHvm94Q",authDomain:"bookd-78e02.firebaseapp.com",
@@ -547,6 +548,7 @@ function planPage(){
       </div></div>
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
     </div>
+    ${sitterCardHTML()}
     <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
     <p class="secsub">Different from booking one date: this is the weekly slot your balance holds you to. Skip a week and the ledger withdraws ${MISS_HRS.toFixed(1)} hrs.</p>
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
@@ -619,11 +621,29 @@ window.bookIdea=()=>{
 };
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
-  planned={ title:currentIdea.n, date }; store.set('planned',planned); pushMeta();
+  planned={ title:currentIdea.n, date, sitter:kidsOn()?'needed':null }; store.set('planned',planned); pushMeta();
   toast('Booked · '+fmtDate(date));
   renderAll();
   window.scrollTo({top:0, behavior:'smooth'});
 };
+
+/* sitter tracking — a booked date isn't booked until the kids are covered */
+function sitterCardHTML(){
+  if(!planned || !kidsOn() || !planned.sitter) return '';
+  const locked=planned.sitter==='locked';
+  return `<div class="sechead"><h2>Who's got the kids?</h2><span class="lead"></span><span class="tag">${locked?'Covered':'Open item'}</span></div>
+    <div class="cardbox">
+      <div class="eyebrow" style="margin-bottom:8px">${esc(planned.title)} · ${fmtDate(planned.date)}</div>
+      <div class="pills">
+        <button class="pill ${!locked?'on':''}" onclick="setSitter('needed')">Sitter needed</button>
+        <button class="pill gold ${locked?'on':''}" onclick="setSitter('locked')">🍼 Sitter locked in</button>
+      </div>
+      ${!locked?`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ↗</a>`:''}
+    </div>`;
+}
+window.setSitter=v=>{ if(!planned) return; planned.sitter=v; store.set('planned',planned); pushMeta();
+  toast(v==='locked'?'Sitter locked in — date fully booked 🍼♥':'Marked as still needing a sitter'); renderAll(); };
+window.toggleSitter=()=>setSitter(planned&&planned.sitter==='locked'?'needed':'locked');
 
 /* reservation (old style, with countdown + calendar) */
 function reservationHTML(){
@@ -889,6 +909,11 @@ function settingsPage(){
       </div>
       <div class="fgroup"><label class="f" for="p-anniv">Anniversary (optional)</label>
         <input type="date" id="p-anniv" value="${esc(profile.anniv)}"></div>
+      <div class="fgroup"><label class="f">Kids to cover on date nights?</label>
+        <div class="pills">
+          <button class="pill ${kidsOn()?'on':''}" onclick="setKids(true)">Yes — track the sitter</button>
+          <button class="pill ${!kidsOn()?'on':''}" onclick="setKids(false)">No kids to cover</button>
+        </div></div>
       <button class="cta gold" style="margin-top:0" onclick="saveProfile()">Save the account holders</button>
     </div>
     <div class="sechead"><h2>Goals</h2><span class="lead"></span><span class="tag">The baseline</span></div>
@@ -910,8 +935,11 @@ function settingsPage(){
       <input type="file" id="restore-file" accept="application/json,.json" hidden>
     </div>`;
 }
+window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
+  if(planned){ planned.sitter = v ? (planned.sitter||'needed') : null; store.set('planned',planned); pushMeta(); }
+  toast(v?'Sitter tracking on 🍼':'Sitter tracking off'); renderAll(); };
 window.saveProfile=()=>{
-  profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'' };
+  profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:profile.kids!==false };
   store.set('profile',profile); pushMeta();
   toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+' — on the books ♥':'Saved');
   renderAll();
@@ -986,10 +1014,12 @@ function renderBanners(){
   const now=new Date(); now.setHours(0,0,0,0);
   if(planned){
     const days=Math.round((parseISO(planned.date)-now)/DAY);
+    const sitterChip = (kidsOn()&&planned.sitter)
+      ? ` · <a href="#" onclick="event.preventDefault();toggleSitter()" style="text-decoration:underline">🍼 ${planned.sitter==='locked'?'sitter ✓':'no sitter yet'}</a>` : '';
     if(days>0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go · <a href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆</a></span><button onclick="clearPlanned()">✕</button></div>`);
+      `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go · <a href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆</a>${sitterChip}</span><button onclick="clearPlanned()">✕</button></div>`);
     else if(days===0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}. It's on the books.</span><button onclick="goHome()">Clock in</button></div>`);
+      `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}.${(kidsOn()&&planned.sitter==='needed')?' 🍼 Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
     else el.insertAdjacentHTML('beforeend',
       `<div class="banner memory"><span>Did "${esc(planned.title)}" happen?</span><button onclick="logPlanned()">Log it</button></div>`);
   }
