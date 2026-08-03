@@ -271,15 +271,30 @@ const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=
 const fmtMS=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
 
+const CADENCE={ weekly:{step:7, label:'every week', interval:1},
+  biweekly:{step:14, label:'every other week', interval:2},
+  monthly:{step:28, label:'once a month', interval:4} };
+const resvCad=()=>CADENCE[(reservation&&reservation.cadence)||'weekly'];
+function firstOccurrence(){
+  const first=parseISO(reservation.since);
+  first.setDate(first.getDate()+((reservation.weekday-first.getDay()+7)%7));
+  return first;
+}
 function missedOccurrences(){
   if(!reservation) return [];
-  const out=[], since=parseISO(reservation.since), now=new Date(); now.setHours(0,0,0,0);
-  const first=new Date(since); first.setDate(first.getDate()+((reservation.weekday-first.getDay()+7)%7));
-  const weeksWith=new Set(entries.filter(isDate).map(e=>monday(parseISO(e.date)).getTime()));
-  for(let d=new Date(first); d<now; d.setDate(d.getDate()+7)){
-    if(!weeksWith.has(monday(d).getTime())) out.push(new Date(d));
+  const step=resvCad().step, out=[], now=new Date(); now.setHours(0,0,0,0);
+  const dates=entries.filter(isDate).map(e=>parseISO(e.date).getTime());
+  for(let d=firstOccurrence(); d.getTime()+step*DAY<=now.getTime(); d.setDate(d.getDate()+step)){
+    const a=d.getTime(), b=a+step*DAY;   // "between this date night and the next, did you date at all?"
+    if(!dates.some(t=>t>=a&&t<b)) out.push(new Date(d));
   }
   return out;
+}
+function resvTonight(){
+  if(!reservation) return false;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const diff=Math.round((today-firstOccurrence())/DAY);
+  return diff>=0 && diff%resvCad().step===0;
 }
 
 const IDEAS=[
@@ -550,7 +565,7 @@ function planPage(){
     </div>
     ${sitterCardHTML()}
     <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
-    <p class="secsub">Different from booking one date: this is the weekly slot your balance holds you to. Skip a week and the ledger withdraws ${MISS_HRS.toFixed(1)} hrs.</p>
+    <p class="secsub">Different from booking one date: this is the recurring slot your balance holds you to — weekly, every other week, or monthly, your call. Let a whole cycle pass with no date at all and the ledger withdraws ${MISS_HRS.toFixed(1)} hrs.</p>
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
 }
 window.setMode=m=>{ ui.planMode=m; renderPage(); if(m==='places') mountMap(); };
@@ -648,26 +663,32 @@ window.toggleSitter=()=>setSitter(planned&&planned.sitter==='locked'?'needed':'l
 /* reservation (old style, with countdown + calendar) */
 function reservationHTML(){
   if(!reservation) return `<div class="grid2">
-      <div><label class="f" for="r-day">Every</label>
+      <div><label class="f" for="r-day">On</label>
         <select id="r-day">${WD.map((d,i)=>`<option value="${i}" ${i===5?'selected':''}>${d}</option>`).join('')}</select></div>
       <div><label class="f" for="r-time">At</label><input type="time" id="r-time" value="19:00"></div>
     </div>
-    <button class="cta gold" onclick="setResv()">Book it weekly</button>`;
-  return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s · ${fmtTime(reservation.time)}</div>
+    <div class="fgroup" style="margin-top:14px"><label class="f" for="r-cad">How often — be honest</label>
+      <select id="r-cad">
+        <option value="weekly">Every week</option>
+        <option value="biweekly" selected>Every other week</option>
+        <option value="monthly">Once a month (every 4 weeks)</option>
+      </select></div>
+    <button class="cta gold" style="margin-top:0" onclick="setResv()">Book the standing date</button>`;
+  return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s · ${fmtTime(reservation.time)} · ${resvCad().label}</div>
     <div class="countdown" id="countdown"></div>
     <a class="cta gold" style="display:block; text-align:center; text-decoration:none" href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 Add to my calendar</a>
     <button class="cta ghost" onclick="clearResv()">Cancel reservation</button>`;
 }
 window.setResv=()=>{
-  reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO() };
-  store.set('reservation',reservation); pushMeta(); toast('Reservation booked'); renderAll();
+  reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO(), cadence:$('#r-cad').value };
+  store.set('reservation',reservation); pushMeta(); toast('Standing date booked · '+resvCad().label); renderAll();
 };
 window.clearResv=()=>{ reservation=null; store.set('reservation',null); pushMeta(); renderAll(); };
 function nextOccurrence(){
   const [h,m]=reservation.time.split(':').map(Number);
-  const n=new Date(); const d=new Date(); d.setHours(h,m,0,0);
-  d.setDate(d.getDate()+((reservation.weekday-d.getDay()+7)%7));
-  if(d<=n) d.setDate(d.getDate()+7);
+  const step=resvCad().step, n=new Date();
+  const d=firstOccurrence(); d.setHours(h,m,0,0);
+  while(d<=n) d.setDate(d.getDate()+step);
   return d;
 }
 function tickCountdown(){
@@ -1023,7 +1044,7 @@ function renderBanners(){
     else el.insertAdjacentHTML('beforeend',
       `<div class="banner memory"><span>Did "${esc(planned.title)}" happen?</span><button onclick="logPlanned()">Log it</button></div>`);
   }
-  if(reservation && new Date().getDay()===reservation.weekday && !(planned && Math.round((parseISO(planned.date)-now)/DAY)===0)){
+  if(resvTonight() && !(planned && Math.round((parseISO(planned.date)-now)/DAY)===0)){
     el.insertAdjacentHTML('beforeend',
       `<div class="banner tonight"><span>Tonight's the night. ${fmtTime(reservation.time)}, be there.</span></div>`);
   }
@@ -1051,7 +1072,7 @@ const gcalStamp=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String
 function gcalWeeklyURL(){
   const s=nextOccurrence(), e=new Date(s.getTime()+2*3600000);
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Date night ♥')
-    +'&dates='+gcalStamp(s)+'/'+gcalStamp(e)+'&recur='+encodeURIComponent('RRULE:FREQ=WEEKLY')
+    +'&dates='+gcalStamp(s)+'/'+gcalStamp(e)+'&recur='+encodeURIComponent('RRULE:FREQ=WEEKLY;INTERVAL='+resvCad().interval)
     +'&details='+encodeURIComponent("Standing reservation — booked in Book'd");
 }
 function gcalOneOffURL(p){
