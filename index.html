@@ -638,18 +638,27 @@ window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
   planned={ title:currentIdea.n, date, sitter:kidsOn()?'needed':null }; store.set('planned',planned); pushMeta();
   renderAll();
-  if(kidsOn()) openSitterSheet();
-  else { toast('Booked · '+fmtDate(date)); window.scrollTo({top:0, behavior:'smooth'}); }
+  openSitterSheet();
 };
 window.openSitterSheet=()=>{
+  const cal=`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆 Add to Google Calendar</a>`;
+  if(!(kidsOn()&&planned.sitter)){
+    openSheet(`
+      <div class="eyebrow">Booked ♥ · ${esc(planned.title)} · ${fmtDate(planned.date)}</div>
+      <h3>On the books.</h3>
+      ${cal}
+      <button class="cta gold" onclick="closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Done</button>`);
+    return;
+  }
   openSheet(`
     <div class="eyebrow">Booked ♥ · ${esc(planned.title)} · ${fmtDate(planned.date)}</div>
     <h3>Who's got the kids that night?</h3>
-    <div class="sheetnote">A booked date isn't booked until they're covered. You can always change this later from the banner up top.</div>
+    <div class="sheetnote">A booked date isn't booked until they're covered. You can change this later on the Plan tab.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="setSitter('needed');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Still need one</button>
       <button class="cta gold" style="flex:1" onclick="setSitter('locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">🍼 Sitter locked in</button>
     </div>
+    ${cal}
     <a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ↗</a>`);
 };
 
@@ -1046,10 +1055,10 @@ function renderBanners(){
   const now=new Date(); now.setHours(0,0,0,0);
   if(planned){
     const days=Math.round((parseISO(planned.date)-now)/DAY);
-    const sitterChip = (kidsOn()&&planned.sitter)
-      ? ` · <a href="#" onclick="event.preventDefault();toggleSitter()" style="text-decoration:underline">🍼 ${planned.sitter==='locked'?'sitter ✓':'no sitter yet'}</a>` : '';
+    const sitterChip = (kidsOn()&&planned.sitter==='needed')
+      ? ` · <a href="#" onclick="event.preventDefault();toggleSitter()" style="text-decoration:underline">🍼 no sitter yet</a>` : '';
     if(days>0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go · <a href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆</a>${sitterChip}</span><button onclick="clearPlanned()">✕</button></div>`);
+      `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go${sitterChip}</span><button onclick="clearPlanned()">✕</button></div>`);
     else if(days===0) el.insertAdjacentHTML('beforeend',
       `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}.${(kidsOn()&&planned.sitter==='needed')?' 🍼 Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
     else el.insertAdjacentHTML('beforeend',
