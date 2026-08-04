@@ -637,9 +637,20 @@ window.bookIdea=()=>{
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
   planned={ title:currentIdea.n, date, sitter:kidsOn()?'needed':null }; store.set('planned',planned); pushMeta();
-  toast('Booked · '+fmtDate(date));
   renderAll();
-  window.scrollTo({top:0, behavior:'smooth'});
+  if(kidsOn()) openSitterSheet();
+  else { toast('Booked · '+fmtDate(date)); window.scrollTo({top:0, behavior:'smooth'}); }
+};
+window.openSitterSheet=()=>{
+  openSheet(`
+    <div class="eyebrow">Booked ♥ · ${esc(planned.title)} · ${fmtDate(planned.date)}</div>
+    <h3>Who's got the kids that night?</h3>
+    <div class="sheetnote">A booked date isn't booked until they're covered. You can always change this later from the banner up top.</div>
+    <div class="row2">
+      <button class="cta ghostd" style="flex:1" onclick="setSitter('needed');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Still need one</button>
+      <button class="cta gold" style="flex:1" onclick="setSitter('locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">🍼 Sitter locked in</button>
+    </div>
+    <a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ↗</a>`);
 };
 
 /* sitter tracking — a booked date isn't booked until the kids are covered */
