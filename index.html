@@ -176,6 +176,23 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .datanote{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--dimmer); text-align:center; margin-top:10px}
 .danger-zone{margin-top:18px; padding-top:16px; border-top:1px solid rgba(246,239,227,.1)}
 
+/* ---------- month calendar ---------- */
+.cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px}
+.cal-title{font-family:'Fraunces',serif; font-weight:700; font-size:17px}
+.cal-nav{width:32px; height:32px; border-radius:50%; border:1px solid rgba(246,239,227,.2); background:transparent; color:var(--cream); font-size:16px; cursor:pointer}
+.cal-nav:hover{border-color:var(--rose); color:var(--rose)}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center}
+.cal-dow{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.1em; color:var(--dimmer); padding:4px 0}
+.cal-cell{min-height:44px; border-radius:8px; padding:3px 0; position:relative}
+.cal-cell.today{outline:1.5px solid var(--rose); outline-offset:-1.5px}
+.cal-cell.empty{visibility:hidden}
+.cal-cell .cn2{font-family:'Spline Sans Mono',monospace; font-size:12px; color:var(--dim)}
+.cd{display:inline-block; font-size:10px; line-height:1}
+.cd.past{color:var(--rose)}
+.cd.fut{color:var(--champagne)}
+.cal-cell .cd{display:block; margin-top:1px}
+.cal-legend{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.08em; color:var(--dimmer); text-align:center; margin-top:10px}
+
 /* ---------- confirm sheet ---------- */
 .sheetwrap{position:fixed; inset:0; background:rgba(20,12,22,.75); backdrop-filter:blur(2px); z-index:60; display:none; align-items:flex-end; padding:14px; padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 .sheetwrap.show{display:flex}
@@ -222,7 +239,7 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
 <nav class="tabbar"><div class="inner">
   <button data-t="0" class="on"><span class="ico">⌂</span><span class="lbl">Home</span></button>
   <button data-t="1"><span class="ico">✦</span><span class="lbl">Plan</span></button>
-  <button data-t="2"><span class="ico">≡</span><span class="lbl">History</span></button>
+  <button data-t="2"><span class="ico">▦</span><span class="lbl">Calendar</span></button>
   <button data-t="3"><span class="ico">⚙</span><span class="lbl">Settings</span></button>
 </div></nav>
 
@@ -240,7 +257,8 @@ const store = {
 };
 let entries    = store.get('entries', []);
 let reservation= store.get('reservation', null);
-let planned    = store.get('planned', null);
+let plans      = store.get('plans', null);   // future bookings — a LIST now; two spouses, many dates
+if(!Array.isArray(plans)){ const old=store.get('planned',null); plans=old?[{id:Date.now(), ...old}]:[]; store.set('plans',plans); }
 let favorites  = store.get('favorites', []);
 let lastSpin   = store.get('lastSpin', null);
 let timer      = store.get('timer', null);   // {startedAt, elapsed, running, date, title}
@@ -248,6 +266,12 @@ let goal       = store.get('goal', null);    // monthly hours goal (number) — 
 let profile    = store.get('profile', {me:'', partner:'', anniv:''});   // first names + anniversary
 const nameMe=()=>profile.me||'Me', namePa=()=>profile.partner||'My partner';
 const kidsOn=()=>profile.kids!==false;   // sitter tracking on unless switched off in Settings
+const plansSorted=()=>[...plans].sort((a,b)=>a.date.localeCompare(b.date));
+const todayPlan=()=>plans.find(p=>p.date===todayISO());
+const nextPlan=()=>plansSorted().find(p=>p.date>todayISO());
+const overduePlan=()=>plansSorted().find(p=>p.date<todayISO());
+const planById=id=>plans.find(p=>p.id===id);
+function savePlans(){ store.set('plans',plans); pushMeta(); }
 
 /* ---------- joint-account sync (Firebase Firestore, couple-code pairing) ---------- */
 const FIREBASE_CONFIG={apiKey:"AIzaSyBHfJKxOrHlfM65zVSOwbUXblPcuHvm94Q",authDomain:"bookd-78e02.firebaseapp.com",
@@ -440,7 +464,7 @@ function homePage(){
 }
 window.clockIn=()=>{
   timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(),
-    title:(planned&&planned.date===todayISO())?planned.title:null};
+    title:todayPlan()?todayPlan().title:null};
   store.set('timer',timer); toast('Clocked in — enjoy each other ♥'); renderAll();
 };
 window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); renderAll(); };
@@ -544,7 +568,8 @@ window.commitDeposit=()=>{
   else { entries.unshift(record); toast(small?'Deposited +'+Math.round(raw)+' min':'Deposited +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
   pushEntry(record);
-  if(planned && planned.title===record.title){ planned=null; store.set('planned',null); pushMeta(); }
+  const pix=plans.findIndex(p=>p.title===record.title);
+  if(pix>-1){ plans.splice(pix,1); savePlans(); }
   if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); }
   dep={etype:'date',rating:0,planner:null,editingId:null};
   ui.justSaved=true; ui.tab=0;
@@ -563,7 +588,6 @@ function planPage(){
       </div></div>
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
     </div>
-    ${sitterCardHTML()}
     <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
     <p class="secsub">Different from booking one date: this is the recurring slot your balance holds you to — weekly, every other week, or monthly, your call. Let a whole cycle pass with no date at all and the ledger withdraws ${MISS_HRS.toFixed(1)} hrs.</p>
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
@@ -582,8 +606,9 @@ function ideasBlock(){
       favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
 }
 function otURL(i){
-  const date = (planned&&planned.title===i.n)?planned.date:toISO(new Date(Date.now()+DAY));
-  const time = (planned&&planned.title===i.n&&planned.time)||(reservation&&reservation.time)||'19:00';
+  const booked = plans.find(x=>x.title===i.n);
+  const date = booked?booked.date:toISO(new Date(Date.now()+DAY));
+  const time = (booked&&booked.time)||(reservation&&reservation.time)||'19:00';
   return 'https://www.opentable.com/s?covers=2&dateTime='+encodeURIComponent(date+'T'+time)
     +'&term='+encodeURIComponent(i.n)
     +(i.lat?('&latitude='+i.lat+'&longitude='+i.lon):'');
@@ -636,49 +661,37 @@ window.bookIdea=()=>{
 };
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
-  planned={ title:currentIdea.n, date, sitter:kidsOn()?'needed':null }; store.set('planned',planned); pushMeta();
+  const plan={ id:Date.now(), title:currentIdea.n, date, sitter:kidsOn()?'needed':null };
+  plans.push(plan); savePlans();
   renderAll();
-  openSitterSheet();
+  openSitterSheet(plan.id);
 };
-window.openSitterSheet=()=>{
-  const cal=`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="${gcalOneOffURL(planned)}" target="_blank" rel="noopener">📆 Add to Google Calendar</a>`;
-  if(!(kidsOn()&&planned.sitter)){
+window.openSitterSheet=id=>{
+  const p=planById(id); if(!p) return;
+  const cal=`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">📆 Add to Google Calendar</a>`;
+  if(!(kidsOn()&&p.sitter)){
     openSheet(`
-      <div class="eyebrow">Booked ♥ · ${esc(planned.title)} · ${fmtDate(planned.date)}</div>
+      <div class="eyebrow">Booked ♥ · ${esc(p.title)} · ${fmtDate(p.date)}</div>
       <h3>On the books.</h3>
       ${cal}
       <button class="cta gold" onclick="closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Done</button>`);
     return;
   }
   openSheet(`
-    <div class="eyebrow">Booked ♥ · ${esc(planned.title)} · ${fmtDate(planned.date)}</div>
+    <div class="eyebrow">Booked ♥ · ${esc(p.title)} · ${fmtDate(p.date)}</div>
     <h3>Who's got the kids that night?</h3>
-    <div class="sheetnote">A booked date isn't booked until they're covered. You can change this later on the Plan tab.</div>
+    <div class="sheetnote">A booked date isn't booked until they're covered. You can change this later on the Calendar tab.</div>
     <div class="row2">
-      <button class="cta ghostd" style="flex:1" onclick="setSitter('needed');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Still need one</button>
-      <button class="cta gold" style="flex:1" onclick="setSitter('locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">🍼 Sitter locked in</button>
+      <button class="cta ghostd" style="flex:1" onclick="setSitter(${id},'needed');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Still need one</button>
+      <button class="cta gold" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">🍼 Sitter locked in</button>
     </div>
     ${cal}
     <a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ↗</a>`);
 };
 
-/* sitter tracking — a booked date isn't booked until the kids are covered */
-function sitterCardHTML(){
-  if(!planned || !kidsOn() || !planned.sitter) return '';
-  const locked=planned.sitter==='locked';
-  return `<div class="sechead"><h2>Who's got the kids?</h2><span class="lead"></span><span class="tag">${locked?'Covered':'Open item'}</span></div>
-    <div class="cardbox">
-      <div class="eyebrow" style="margin-bottom:8px">${esc(planned.title)} · ${fmtDate(planned.date)}</div>
-      <div class="pills">
-        <button class="pill ${!locked?'on':''}" onclick="setSitter('needed')">Sitter needed</button>
-        <button class="pill gold ${locked?'on':''}" onclick="setSitter('locked')">🍼 Sitter locked in</button>
-      </div>
-      ${!locked?`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ↗</a>`:''}
-    </div>`;
-}
-window.setSitter=v=>{ if(!planned) return; planned.sitter=v; store.set('planned',planned); pushMeta();
+window.setSitter=(id,v)=>{ const p=planById(id); if(!p) return; p.sitter=v; savePlans();
   toast(v==='locked'?'Sitter locked in — date fully booked 🍼♥':'Marked as still needing a sitter'); renderAll(); };
-window.toggleSitter=()=>setSitter(planned&&planned.sitter==='locked'?'needed':'locked');
+window.toggleSitter=id=>{ const p=planById(id); if(p) setSitter(id, p.sitter==='locked'?'needed':'locked'); };
 
 /* reservation (old style, with countdown + calendar) */
 function reservationHTML(){
@@ -882,7 +895,51 @@ function bestCat(){
   const rows=Object.entries(by).map(([c,v])=>({c,avg:v.s/v.n,n:v.n})).filter(r=>r.n>=2).sort((a,b)=>b.avg-a.avg);
   return rows[0]||null;
 }
-function historyPage(){
+function calGridHTML(){
+  if(!ui.calMonth) ui.calMonth=new Date();
+  const y=ui.calMonth.getFullYear(), mo=ui.calMonth.getMonth();
+  const monthName=ui.calMonth.toLocaleDateString(undefined,{month:'long', year:'numeric'});
+  const firstDow=new Date(y,mo,1).getDay(), dim=new Date(y,mo+1,0).getDate();
+  const past={}, fut={};
+  entries.forEach(e=>{ past[e.date]=true; });
+  plans.forEach(p=>{ fut[p.date]=(kidsOn()&&p.sitter==='needed')?'need':'ok'; });
+  const tISO=todayISO();
+  let cells='';
+  for(let i=0;i<firstDow;i++) cells+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=dim;d++){
+    const iso=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const marks=(past[iso]?'<span class="cd past">♥</span>':'')+(fut[iso]?`<span class="cd fut">${fut[iso]==='need'?'◌':'●'}</span>`:'');
+    cells+=`<div class="cal-cell ${iso===tISO?'today':''}"><span class="cn2">${d}</span>${marks}</div>`;
+  }
+  return `<div class="sechead"><h2>Calendar</h2><span class="lead"></span><span class="tag">Us, by the month</span></div>
+    <div class="cardbox">
+      <div class="cal-head"><button class="cal-nav" onclick="calNav(-1)">‹</button><span class="cal-title">${monthName}</span><button class="cal-nav" onclick="calNav(1)">›</button></div>
+      <div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
+      <div class="cal-legend"><span class="cd past">♥</span> date logged · <span class="cd fut">●</span> booked ahead${kidsOn()?' · <span class="cd fut">◌</span> booked, no sitter yet':''}</div>
+    </div>`;
+}
+window.calNav=d=>{ ui.calMonth=new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth()+d, 1); renderPage(); };
+function comingUpHTML(){
+  const t=todayISO();
+  const all=plansSorted();
+  const row=p=>{
+    const days=Math.round((parseISO(p.date)-parseISO(t))/DAY);
+    const when = days<0?'overdue — log or clear it':(days===0?'tonight!':days+' day'+(days===1?'':'s')+' out');
+    const sit=(kidsOn()&&p.sitter)?`<button onclick="toggleSitter(${p.id})">🍼 ${p.sitter==='locked'?'covered':'no sitter yet'}</button> · `:'';
+    return `<div class="entry"><div style="flex:1">
+      <div class="t">${esc(p.title)}</div>
+      <div class="m">${fmtDate(p.date)} · ${when}</div>
+      <div class="links" style="text-align:left; margin-top:3px">${sit}<a href="${gcalOneOffURL(p)}" target="_blank" rel="noopener" style="color:inherit">📆 calendar</a>${days<=0?` · <button onclick="logPlan(${p.id})">log it</button>`:''} · <button onclick="removePlan(${p.id})">clear</button></div>
+    </div></div>`;
+  };
+  return `<div class="sechead"><h2>Coming up</h2><span class="lead"></span><span class="tag">Booked ahead</span></div>
+    ${all.length?`<div class="cardbox">${all.map(row).join('')}</div>`
+      :`<div class="cardbox"><div class="empty">Nothing booked ahead. Spin something on the Plan tab. <span class="hrt">♥</span></div></div>`}`;
+}
+function calendarPage(){
+  return calGridHTML()+comingUpHTML()+statementHTML();
+}
+function statementHTML(){
   const rows=[
     ...entries.map(e=>({sort:e.date, html:`
       <div class="entry"><div style="flex:1">
@@ -900,7 +957,7 @@ function historyPage(){
         <div class="m">${fmtDate(iso)} · no date logged</div></div>
       <div class="amt wd">−${MISS_HRS.toFixed(1)} hrs</div></div>`};})
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
-  return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span><span class="tag">History</span></div>
+  return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span><span class="tag">On the books</span></div>
     <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
       :'<div class="empty">No transactions yet. Log your first date to open the account. <span class="hrt">♥</span></div>'}</div>`;
 }
@@ -977,7 +1034,7 @@ function settingsPage(){
     </div>`;
 }
 window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
-  if(planned){ planned.sitter = v ? (planned.sitter||'needed') : null; store.set('planned',planned); pushMeta(); }
+  if(plans.length){ plans.forEach(p=>{ p.sitter = v ? (p.sitter||'needed') : null; }); savePlans(); }
   toast(v?'Sitter tracking on 🍼':'Sitter tracking off'); renderAll(); };
 window.saveProfile=()=>{
   profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:profile.kids!==false };
@@ -1015,14 +1072,14 @@ window.wipeAll=()=>{
   if(hadSync) stopSync();
   sync=null;
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
-  entries=[]; reservation=null; planned=null; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
+  entries=[]; reservation=null; plans=[]; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
   renderAll(); toast(hadSync?'This phone wiped — the vault is untouched':'Account closed — fresh books');
 };
 function wireSettings(){
   const b=$('#backup-btn'); if(!b) return;
   b.onclick=()=>{
-    const data={app:'bookd', exported:todayISO(), entries, reservation, planned, favorites, goal, profile};
+    const data={app:'bookd', exported:todayISO(), entries, reservation, plans, favorites, goal, profile};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bookd-backup-'+todayISO()+'.json';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -1040,8 +1097,8 @@ function wireSettings(){
         <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
         <button class="cta pink" style="flex:1" id="do-restore">Restore it</button></div>`);
       $('#do-restore').onclick=()=>{ closeSheet();
-        entries=d.entries; reservation=d.reservation||null; planned=d.planned||null; favorites=d.favorites||[]; goal=d.goal||null; profile=d.profile||{me:'',partner:'',anniv:''};
-        store.set('entries',entries); store.set('reservation',reservation); store.set('planned',planned); store.set('favorites',favorites); store.set('goal',goal); store.set('profile',profile);
+        entries=d.entries; reservation=d.reservation||null; plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:[]); favorites=d.favorites||[]; goal=d.goal||null; profile=d.profile||{me:'',partner:'',anniv:''};
+        store.set('entries',entries); store.set('reservation',reservation); store.set('plans',plans); store.set('favorites',favorites); store.set('goal',goal); store.set('profile',profile);
         if(sync&&db){ pushMeta(); const b=window.fb.writeBatch(db); entries.forEach(r=>b.set(entryRef(r.id), r)); b.commit().catch(()=>{}); }
         renderAll(); toast('Ledger restored'); };
     }catch(e){ toast("That file isn't a Book'd backup"); } };
@@ -1053,18 +1110,19 @@ function wireSettings(){
 function renderBanners(){
   const el=$('#banners'); el.innerHTML='';
   const now=new Date(); now.setHours(0,0,0,0);
-  if(planned){
-    const days=Math.round((parseISO(planned.date)-now)/DAY);
-    const sitterChip = (kidsOn()&&planned.sitter==='needed')
-      ? ` · <a href="#" onclick="event.preventDefault();toggleSitter()" style="text-decoration:underline">🍼 no sitter yet</a>` : '';
-    if(days>0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>Booked: ${esc(planned.title)} · ${fmtDate(planned.date)} — ${days} day${days===1?'':'s'} to go${sitterChip}</span><button onclick="clearPlanned()">✕</button></div>`);
-    else if(days===0) el.insertAdjacentHTML('beforeend',
-      `<div class="banner tonight"><span>Tonight: ${esc(planned.title)}.${(kidsOn()&&planned.sitter==='needed')?' 🍼 Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
-    else el.insertAdjacentHTML('beforeend',
-      `<div class="banner memory"><span>Did "${esc(planned.title)}" happen?</span><button onclick="logPlanned()">Log it</button></div>`);
+  const over=overduePlan(), tonight=todayPlan(), next=nextPlan();
+  if(over) el.insertAdjacentHTML('beforeend',
+    `<div class="banner memory"><span>Did "${esc(over.title)}" happen?</span><button onclick="logPlan(${over.id})">Log it</button></div>`);
+  if(tonight) el.insertAdjacentHTML('beforeend',
+    `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}.${(kidsOn()&&tonight.sitter==='needed')?' 🍼 Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
+  else if(next){
+    const days=Math.round((parseISO(next.date)-now)/DAY);
+    const sitterChip=(kidsOn()&&next.sitter==='needed')
+      ? ` · <a href="#" onclick="event.preventDefault();toggleSitter(${next.id})" style="text-decoration:underline">🍼 no sitter yet</a>` : '';
+    el.insertAdjacentHTML('beforeend',
+      `<div class="banner booked"><span>Next up: ${esc(next.title)} · ${fmtDate(next.date)} — ${days} day${days===1?'':'s'} to go${sitterChip} · <a href="#" onclick="event.preventDefault();ui.tab=2;renderAll()" style="text-decoration:underline">all dates ▦</a></span></div>`);
   }
-  if(resvTonight() && !(planned && Math.round((parseISO(planned.date)-now)/DAY)===0)){
+  if(resvTonight() && !tonight){
     el.insertAdjacentHTML('beforeend',
       `<div class="banner tonight"><span>Tonight's the night. ${fmtTime(reservation.time)}, be there.</span></div>`);
   }
@@ -1079,10 +1137,10 @@ function renderBanners(){
     `<div class="banner memory"><span>On this day, ${mem.date.slice(0,4)}: ${esc(mem.title)}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
 }
 window.goHome=()=>{ ui.tab=0; renderAll(); };
-window.clearPlanned=()=>{ planned=null; store.set('planned',null); pushMeta(); toast('Booking cleared'); renderAll(); };
-window.logPlanned=()=>{
-  if(!planned) return;
-  const p=planned; planned=null; store.set('planned',null); pushMeta();
+window.removePlan=id=>{ plans=plans.filter(p=>p.id!==id); savePlans(); toast('Booking cleared'); renderAll(); };
+window.logPlan=id=>{
+  const p=planById(id); if(!p) return;
+  plans=plans.filter(x=>x.id!==id); savePlans();
   dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true};
   ui.tab=0; ui.justSaved=false; renderAll();
 };
@@ -1115,7 +1173,7 @@ function ensureDb(){
 }
 const metaRef=()=>window.fb.doc(db,'couples',sync.cid);
 const entryRef=id=>window.fb.doc(db,'couples',sync.cid,'entries',String(id));
-const metaPayload=()=>({profile, reservation, planned, goal, favorites, updatedAt:Date.now()});
+const metaPayload=()=>({profile, reservation, plans, goal, favorites, updatedAt:Date.now()});
 function startSync(){
   if(!sync||!ensureDb()) return;
   syncStatus='connecting';
@@ -1123,9 +1181,10 @@ function startSync(){
     syncStatus='live';
     const d=snap.data();
     if(d && !snap.metadata.hasPendingWrites){
-      profile=d.profile||profile; reservation=d.reservation??null; planned=d.planned??null;
+      profile=d.profile||profile; reservation=d.reservation??null;
+      plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans);
       goal=d.goal??null; favorites=d.favorites||[];
-      store.set('profile',profile); store.set('reservation',reservation); store.set('planned',planned);
+      store.set('profile',profile); store.set('reservation',reservation); store.set('plans',plans);
       store.set('goal',goal); store.set('favorites',favorites);
       renderAll();
     }
@@ -1210,7 +1269,7 @@ function renderPage(){
   if(map && !inPlaces){ map.remove(); map=null; mapMarkers=[]; mapRing=null; }
   if(ui.tab!==1) clearInterval(cdTimer);
   const liveMap = (inPlaces && map) ? $('#mapbox') : null;
-  $('#page').innerHTML=[homePage,planPage,historyPage,settingsPage][ui.tab]();
+  $('#page').innerHTML=[homePage,planPage,calendarPage,settingsPage][ui.tab]();
   if(liveMap && $('#mapbox')) $('#mapbox').replaceWith(liveMap);
   if(ui.tab===1){ tickCountdown(); if(inPlaces && near.coords && !map) mountMap(); }
   if(ui.tab===3) wireSettings();
