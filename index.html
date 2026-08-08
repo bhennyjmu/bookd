@@ -183,7 +183,8 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .cal-nav:hover{border-color:var(--rose); color:var(--rose)}
 .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center}
 .cal-dow{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.1em; color:var(--dimmer); padding:4px 0}
-.cal-cell{min-height:44px; border-radius:8px; padding:3px 0; position:relative}
+.cal-cell{min-height:44px; border-radius:8px; padding:3px 0; position:relative; cursor:pointer}
+.cal-cell:hover{background:rgba(246,239,227,.06)}
 .cal-cell.today{outline:1.5px solid var(--rose); outline-offset:-1.5px}
 .cal-cell.empty{visibility:hidden}
 .cal-cell .cn2{font-family:'Spline Sans Mono',monospace; font-size:12px; color:var(--dim)}
@@ -654,7 +655,7 @@ window.logIdea=()=>{
 };
 window.bookIdea=()=>{
   if(!currentIdea || $('#book-date')) return;
-  const def = reservation?toISO(nextOccurrence()):toISO(new Date(Date.now()+DAY));
+  const def = ui.bookDate || (reservation?toISO(nextOccurrence()):toISO(new Date(Date.now()+DAY)));
   $('#bookrow').innerHTML=`<div style="display:flex; gap:8px; width:100%; margin-top:10px">
     <input type="date" id="book-date" value="${def}" min="${todayISO()}">
     <button class="cta gold" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button></div>`;
@@ -662,7 +663,7 @@ window.bookIdea=()=>{
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
   const plan={ id:Date.now(), title:currentIdea.n, date, sitter:kidsOn()?'needed':null };
-  plans.push(plan); savePlans();
+  plans.push(plan); savePlans(); ui.bookDate=null;
   renderAll();
   openSitterSheet(plan.id);
 };
@@ -909,7 +910,7 @@ function calGridHTML(){
   for(let d=1;d<=dim;d++){
     const iso=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const marks=(past[iso]?'<span class="cd past">♥</span>':'')+(fut[iso]?`<span class="cd fut">${fut[iso]==='need'?'◌':'●'}</span>`:'');
-    cells+=`<div class="cal-cell ${iso===tISO?'today':''}"><span class="cn2">${d}</span>${marks}</div>`;
+    cells+=`<div class="cal-cell ${iso===tISO?'today':''}" onclick="openDay('${iso}')" role="button" tabindex="0"><span class="cn2">${d}</span>${marks}</div>`;
   }
   return `<div class="sechead"><h2>Calendar</h2><span class="lead"></span><span class="tag">Us, by the month</span></div>
     <div class="cardbox">
@@ -919,6 +920,48 @@ function calGridHTML(){
     </div>`;
 }
 window.calNav=d=>{ ui.calMonth=new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth()+d, 1); renderPage(); };
+function resvOccursOn(iso){
+  if(!reservation) return false;
+  const diff=Math.round((parseISO(iso)-firstOccurrence())/DAY);
+  return diff>=0 && diff%resvCad().step===0;
+}
+window.openDay=iso=>{
+  const t=todayISO();
+  const dayEntries=entries.filter(e=>e.date===iso);
+  const dayPlans=plans.filter(p=>p.date===iso);
+  const wd=parseISO(iso).toLocaleDateString(undefined,{weekday:'long'});
+  const when=iso===t?'Today':parseISO(iso).toLocaleDateString(undefined,{month:'long', day:'numeric', year:'numeric'});
+  let body='';
+  dayEntries.forEach(e=>{
+    body+=`<div class="recap" style="text-align:left"><div class="rt">${esc(e.title)}</div>
+      <div class="rm">${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${e.rating?` · <span style="color:var(--rose)">${'♥'.repeat(e.rating)}</span>`:''}${e.planner?` · booked by ${esc(e.planner==='me'?nameMe():namePa())}`:''}</div>
+      ${e.moment?`<div class="rm" style="font-style:italic">“${esc(e.moment)}”</div>`:''}
+      <div class="rm"><button class="cta ghostd" style="width:auto; margin-top:6px; padding:6px 12px; font-size:12px" onclick="closeSheet();editEntry(${e.id})">edit this entry</button></div></div>`;
+  });
+  dayPlans.forEach(p=>{
+    const sit=(kidsOn()&&p.sitter)?` · 🍼 ${p.sitter==='locked'?'covered':'no sitter yet'}`:'';
+    body+=`<div class="recap" style="text-align:left"><div class="rt">${esc(p.title)}</div>
+      <div class="rm">Booked ahead${sit}</div>
+      <div class="row2" style="margin-top:8px">
+        ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">🍼 ${p.sitter==='locked'?'sitter: covered':'mark covered'}</button>`:''}
+        ${iso<=t?`<button class="cta gold" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
+        <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="removePlan(${p.id});openDay('${iso}')">Clear</button>
+      </div>
+      <a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">📆 Google Calendar</a></div>`;
+  });
+  if(resvOccursOn(iso)) body+=`<div class="sheetnote">♥ Standing reservation night — ${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}.</div>`;
+  if(!body) body=`<div class="sheetnote">Nothing on the books this day.</div>`;
+  const act = iso<=t
+    ? `<button class="cta pink" onclick="closeSheet();logDay('${iso}')">Deposit a date for this day</button>`
+    : `<button class="cta pink" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;renderAll();window.scrollTo({top:0,behavior:'smooth'})">✦ Plan something for this day</button>`;
+  openSheet(`<div class="eyebrow">${wd}</div><h3>${when}</h3>${body}${act}
+    <button class="cta ghostd" style="width:100%" onclick="closeSheet()">Close</button>`);
+};
+window.logDay=iso=>{
+  dep={etype:'date', rating:0, planner:null, editingId:null, date:iso, _auto:true};
+  ui.tab=0; ui.justSaved=false; renderAll();
+  setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
+};
 function comingUpHTML(){
   const t=todayISO();
   const all=plansSorted();
