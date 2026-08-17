@@ -280,6 +280,9 @@ const FIREBASE_CONFIG={apiKey:"AIzaSyBHfJKxOrHlfM65zVSOwbUXblPcuHvm94Q",authDoma
   appId:"1:956683695194:web:08718c5597ecbc8e831463"};   // public identifiers — security lives in the Firestore rules
 let sync=store.get('sync', null);   // {cid, role:'me'|'partner'}
 let db=null, unsubMeta=null, unsubEntries=null, syncStatus='off', pairRole='me';
+let seenAt=store.get('seenAt', null);
+if(!seenAt){ seenAt=Date.now(); store.set('seenAt', seenAt); }
+const partnerName=()=>sync&&sync.role==='partner'?nameMe():namePa();
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
 const DAY=86400000, MISS_HRS=3;
@@ -377,7 +380,7 @@ const IDEAS=[
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv',cat:'Music & culture'}
 ];
 
-const ui={ tab:0, planMode:'ideas', justSaved:false };
+const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null };
 const filters={cost:'any', where:'any', vibe:'any'};
 const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], view:[], sel:null, busy:false, err:null };
 let dep={ etype:'date', rating:0, planner:null, editingId:null };
@@ -564,7 +567,7 @@ window.commitDeposit=()=>{
   const small=dep.etype==='small', raw=parseFloat(dep.hours);
   const record={ id:dep.editingId??Date.now(), title:dep.title.trim(), date:dep.date,
     hours: small?raw/60:raw, cat:dep.cat||'Food & drink', rating:dep.rating||(small?0:4),
-    type:small?'small':'date', planner:dep.planner||null, moment:(dep.moment||'').trim()||null };
+    type:small?'small':'date', planner:dep.planner||null, moment:(dep.moment||'').trim()||null, by:sync?sync.role:null };
   if(dep.editingId){ entries=entries.map(e=>e.id===dep.editingId?record:e); toast('Entry updated'); }
   else { entries.unshift(record); toast(small?'Deposited +'+Math.round(raw)+' min':'Deposited +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
@@ -662,7 +665,7 @@ window.bookIdea=()=>{
 };
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
-  const plan={ id:Date.now(), title:currentIdea.n, date, sitter:kidsOn()?'needed':null };
+  const plan={ id:Date.now(), title:currentIdea.n, date, sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
   plans.push(plan); savePlans(); ui.bookDate=null;
   renderAll();
   openSitterSheet(plan.id);
@@ -1153,6 +1156,8 @@ function wireSettings(){
 function renderBanners(){
   const el=$('#banners'); el.innerHTML='';
   const now=new Date(); now.setHours(0,0,0,0);
+  if(ui.awayNote) el.insertAdjacentHTML('beforeend',
+    `<div class="banner memory"><span>${ui.awayNote}</span><button onclick="dismissAway()">✕</button></div>`);
   const over=overduePlan(), tonight=todayPlan(), next=nextPlan();
   if(over) el.insertAdjacentHTML('beforeend',
     `<div class="banner memory"><span>Did "${esc(over.title)}" happen?</span><button onclick="logPlan(${over.id})">Log it</button></div>`);
@@ -1180,6 +1185,7 @@ function renderBanners(){
     `<div class="banner memory"><span>On this day, ${mem.date.slice(0,4)}: ${esc(mem.title)}${mem.rating?' · '+'♥'.repeat(mem.rating):''}</span></div>`);
 }
 window.goHome=()=>{ ui.tab=0; renderAll(); };
+window.dismissAway=()=>{ ui.awayNote=null; renderAll(); };
 window.removePlan=id=>{ plans=plans.filter(p=>p.id!==id); savePlans(); toast('Booking cleared'); renderAll(); };
 window.logPlan=id=>{
   const p=planById(id); if(!p) return;
@@ -1216,24 +1222,55 @@ function ensureDb(){
 }
 const metaRef=()=>window.fb.doc(db,'couples',sync.cid);
 const entryRef=id=>window.fb.doc(db,'couples',sync.cid,'entries',String(id));
-const metaPayload=()=>({profile, reservation, plans, goal, favorites, updatedAt:Date.now()});
+const metaPayload=()=>({profile, reservation, plans, goal, favorites, lastBy:sync?sync.role:null, updatedAt:Date.now()});
 function startSync(){
   if(!sync||!ensureDb()) return;
   syncStatus='connecting';
+  const oldSeen=seenAt;
+  let firstMeta=true, firstEntries=true;
+  const away={dep:0, book:0};
+  const noteAway=()=>{
+    if(away.dep||away.book){
+      ui.awayNote=`While you were away — ${esc(partnerName())} `+
+        [away.dep?`deposited ${away.dep} date${away.dep===1?'':'s'}`:null,
+         away.book?`booked ${away.book} night${away.book===1?'':'s'}`:null].filter(Boolean).join(' · ')+' ♥';
+    }
+    seenAt=Date.now(); store.set('seenAt', seenAt);
+  };
   unsubMeta=window.fb.onSnapshot(metaRef(), snap=>{
     syncStatus='live';
     const d=snap.data();
     if(d && !snap.metadata.hasPendingWrites){
+      const prevIds=new Set(plans.map(p=>p.id));
       profile=d.profile||profile; reservation=d.reservation??null;
       plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans);
       goal=d.goal??null; favorites=d.favorites||[];
       store.set('profile',profile); store.set('reservation',reservation); store.set('plans',plans);
       store.set('goal',goal); store.set('favorites',favorites);
+      if(firstMeta){
+        away.book = plans.filter(p=>p.by && p.by!==sync.role && (p.id||0)>oldSeen).length;
+        noteAway(); firstMeta=false;
+      } else {
+        plans.filter(p=>!prevIds.has(p.id) && p.by && p.by!==sync.role).forEach(p=>
+          toast(partnerName()+' booked '+p.title+' · '+fmtDate(p.date)+' ♥'));
+      }
       renderAll();
-    }
+    } else if(firstMeta && d===undefined){ firstMeta=false; }
   }, ()=>{ syncStatus='error'; renderAll(); });
   unsubEntries=window.fb.onSnapshot(window.fb.collection(db,'couples',sync.cid,'entries'), snap=>{
     syncStatus='live';
+    if(firstEntries){
+      away.dep = snap.docs.map(x=>x.data()).filter(e=>e.by && e.by!==sync.role && (e.id||0)>oldSeen).length;
+      noteAway(); firstEntries=false;
+    } else {
+      snap.docChanges().forEach(ch=>{
+        if(ch.type==='added' && !ch.doc.metadata.hasPendingWrites){
+          const e=ch.doc.data();
+          if(e.by && e.by!==sync.role)
+            toast(partnerName()+' just deposited '+(e.type==='small'?Math.round(e.hours*60)+' min':e.hours.toFixed(1)+' hrs')+' ♥');
+        }
+      });
+    }
     entries=snap.docs.map(d=>d.data())
       .sort((a,b)=>String(b.date).localeCompare(String(a.date))||((b.id||0)-(a.id||0)));
     store.set('entries',entries);
