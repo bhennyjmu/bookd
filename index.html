@@ -527,10 +527,10 @@ function depositFormHTML(){
     </div>
     <div class="fgroup"><label class="f" for="d-moment">Best moment (optional)</label>
       <input type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
-    <div class="fgroup"><label class="f">Who booked it?</label>
+    <div class="fgroup"><label class="f">Who booked it?${sync?' (whoever planned it — you\'re pre-credited)':''}</label>
       <div class="pills">
-        <button class="pill gold ${dep.planner==='me'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='me'?null:'me';renderPage()">${esc(nameMe())}</button>
-        <button class="pill gold ${dep.planner==='partner'?'on':''}" onclick="grabDep();dep.planner=dep.planner==='partner'?null:'partner';renderPage()">${esc(namePa())}</button>
+        <button class="pill gold ${(dep.planner==='me'||(!dep.planner&&sync&&sync.role==='me'))?'on':''}" onclick="grabDep();dep.planner='me';renderPage()">${esc(nameMe())}</button>
+        <button class="pill gold ${(dep.planner==='partner'||(!dep.planner&&sync&&sync.role==='partner'))?'on':''}" onclick="grabDep();dep.planner='partner';renderPage()">${esc(namePa())}</button>
       </div></div>
     <button class="cta pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Deposit this date'}</button>
     ${dep.editingId?`<button class="cta ghost" onclick="cancelEdit()">Cancel edit</button>`:''}
