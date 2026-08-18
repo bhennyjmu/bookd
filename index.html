@@ -295,6 +295,7 @@ const parseISO=s=>{const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1
 const fmtDate=s=>parseISO(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
 const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x;};
 const isDate=e=>(e.type||'date')==='date';
+const attr=e=>e.planner||e.by||null;   // credit: the who-booked-it pills win; else whoever logged it
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
 const fmtMS=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
@@ -401,12 +402,12 @@ function stats(){
   while(weeks.has(w)){ streak++; w-=7*DAY; }
   return {
     balance:hrs-missed*MISS_HRS,
-    dates:recent.filter(isDate).length,
+    dates:recent.length,
     avg: rated.length?rated.reduce((s,e)=>s+e.rating,0)/rated.length:null,
     streak,
     hrsWk: entries.filter(e=>parseISO(e.date)>=new Date(now.getTime()-28*DAY)).reduce((s,e)=>s+e.hours,0)/4,
-    me: entries.filter(e=>isDate(e)&&e.planner==='me').length,
-    pa: entries.filter(e=>isDate(e)&&e.planner==='partner').length
+    me: entries.filter(e=>attr(e)==='me').length,
+    pa: entries.filter(e=>attr(e)==='partner').length
   };
 }
 
@@ -416,7 +417,7 @@ function passbookHTML(){
   const running=timer&&timer.running;
   const liveCell = running
     ? `<div class="stat live"><div class="v" id="livev">${fmtMS(elapsedSecs())}</div><div class="k">Banking now</div></div>`
-    : `<div class="stat"><div class="v">${s.dates}</div><div class="k">Dates / Mo</div></div>`;
+    : `<div class="stat"><div class="v">${s.dates}</div><div class="k">Deposits / Mo</div></div>`;
   return `<div class="passbook">
     <div class="pb-head"><span class="pb-title">${(profile.me&&profile.partner)?'The Joint Account of '+esc(profile.me)+' & '+esc(profile.partner):'The Joint Account'}</span><span class="acct">ACCT № US-4EVR${profile.anniv?' · est. '+profile.anniv.slice(0,4):''}</span></div>
     <div class="balance-label"><span>30-Day Balance</span><span class="dot ${running?'show':''}"></span></div>
@@ -937,7 +938,7 @@ window.openDay=iso=>{
   let body='';
   dayEntries.forEach(e=>{
     body+=`<div class="recap" style="text-align:left"><div class="rt">${esc(e.title)}</div>
-      <div class="rm">${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${e.rating?` · <span style="color:var(--rose)">${'♥'.repeat(e.rating)}</span>`:''}${e.planner?` · booked by ${esc(e.planner==='me'?nameMe():namePa())}`:''}</div>
+      <div class="rm">${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${e.rating?` · <span style="color:var(--rose)">${'♥'.repeat(e.rating)}</span>`:''}${attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
       ${e.moment?`<div class="rm" style="font-style:italic">“${esc(e.moment)}”</div>`:''}
       <div class="rm"><button class="cta ghostd" style="width:auto; margin-top:6px; padding:6px 12px; font-size:12px" onclick="closeSheet();editEntry(${e.id})">edit this entry</button></div></div>`;
   });
@@ -990,7 +991,7 @@ function statementHTML(){
     ...entries.map(e=>({sort:e.date, html:`
       <div class="entry"><div style="flex:1">
         <div class="t">${esc(e.title)}</div>
-        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${e.planner?` · booked by ${esc(e.planner==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div>
+        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div>
         ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}
       </div>
       <div>
