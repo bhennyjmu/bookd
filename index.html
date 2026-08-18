@@ -1232,7 +1232,7 @@ function startSync(){
   const noteAway=()=>{
     if(away.dep||away.book){
       ui.awayNote=`While you were away — ${esc(partnerName())} `+
-        [away.dep?`deposited ${away.dep} date${away.dep===1?'':'s'}`:null,
+        [away.dep?`made ${away.dep} deposit${away.dep===1?'':'s'}`:null,
          away.book?`booked ${away.book} night${away.book===1?'':'s'}`:null].filter(Boolean).join(' · ')+' ♥';
     }
     seenAt=Date.now(); store.set('seenAt', seenAt);
