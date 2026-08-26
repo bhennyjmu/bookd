@@ -282,6 +282,8 @@ let sync=store.get('sync', null);   // {cid, role:'me'|'partner'}
 let db=null, unsubMeta=null, unsubEntries=null, syncStatus='off', pairRole='me';
 let seenAt=store.get('seenAt', null);
 if(!seenAt){ seenAt=Date.now(); store.set('seenAt', seenAt); }
+let deviceId=store.get('deviceId', null);   // this phone's anonymous seat ticket
+if(!deviceId){ const a=new Uint32Array(8); crypto.getRandomValues(a); deviceId=[...a].map(x=>x.toString(36)).join('').slice(0,16); store.set('deviceId',deviceId); }
 const partnerName=()=>sync&&sync.role==='partner'?nameMe():namePa();
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
@@ -1242,6 +1244,13 @@ function startSync(){
     syncStatus='live';
     const d=snap.data();
     if(d && !snap.metadata.hasPendingWrites){
+      const seat=d.devices&&d.devices[sync.role];
+      if(seat && seat!==deviceId){   // another phone took this seat — bow out loudly
+        stopSync(); sync=null; store.set('sync',null);
+        toast('This phone was replaced on the joint account — disconnected');
+        renderAll(); return;
+      }
+      if(!seat) window.fb.setDoc(metaRef(), {devices:{[sync.role]:deviceId}}, {merge:true}).catch(()=>{});
       const prevIds=new Set(plans.map(p=>p.id));
       profile=d.profile||profile; reservation=d.reservation??null;
       plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans);
@@ -1287,7 +1296,7 @@ window.openVault=async()=>{
   if(!ensureDb()) return toast('Sync engine still loading — try again in a moment');
   sync={cid:newCid(), role:pairRole}; store.set('sync',sync);
   try{
-    await window.fb.setDoc(metaRef(), metaPayload(), {merge:true});
+    await window.fb.setDoc(metaRef(), {...metaPayload(), devices:{[pairRole]:deviceId}}, {merge:true});
     const b=window.fb.writeBatch(db);
     entries.forEach(r=>b.set(entryRef(r.id), r));
     await b.commit();
@@ -1303,7 +1312,22 @@ window.joinVault=async()=>{
   let snap=null;
   try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
   if(!snap||!snap.exists()) return toast("Couldn't find that vault — double-check the code");
+  const d=snap.data()||{};
+  const seat=d.devices&&d.devices[pairRole];
+  if(seat && seat!==deviceId){
+    const who=pairRole==='me'?nameMe():namePa();
+    openSheet(`
+      <div class="eyebrow">Seat taken</div><h3>${esc(who)}'s seat is held by another phone</h3>
+      <div class="sheetnote">Each name on the joint account signs in on one phone at a time. Replacing disconnects that other phone — the vault and every entry stay safe. Do this only for your own old or replaced device.</div>
+      <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
+      <button class="cta pink" style="flex:1" onclick="closeSheet();finishJoin('${cid}')">Replace that phone</button></div>`);
+    return;
+  }
+  finishJoin(cid);
+};
+window.finishJoin=async cid=>{
   sync={cid, role:pairRole}; store.set('sync',sync);
+  try{ await window.fb.setDoc(window.fb.doc(db,'couples',cid), {devices:{[pairRole]:deviceId}}, {merge:true}); }catch(e){}
   try{
     const localOnly=[...entries];
     const b=window.fb.writeBatch(db);
