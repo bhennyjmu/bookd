@@ -1357,7 +1357,9 @@ window.openDisconnectSheet=()=>{
     <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="disconnectVault()">Disconnect</button></div>`);
 };
 window.disconnectVault=()=>{
-  closeSheet(); stopSync();
+  closeSheet();
+  if(db&&sync) window.fb.setDoc(metaRef(), {devices:{[sync.role]:null}}, {merge:true}).catch(()=>{});  // give the seat back on the way out
+  stopSync();
   sync=null; store.set('sync',null);
   toast('Disconnected — the vault is untouched');
   renderAll();
