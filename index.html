@@ -236,7 +236,7 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
   <div id="page"></div>
 </div>
 
-<footer><p>Book'd · Member FDIC (For Dates I've Clocked) · <span id="vstamp"></span></p></footer>
+<footer><p>Book'd · <span id="vstamp"></span></p></footer>
 
 <nav class="tabbar"><div class="inner">
   <button data-t="0" class="on"><span class="ico">⌂</span><span class="lbl">Home</span></button>
@@ -1473,7 +1473,7 @@ setInterval(()=>{
 },1000);
 
 /* ---------- boot ---------- */
-const APP_V=43;
+const APP_V=44;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
