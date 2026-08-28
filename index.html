@@ -1037,21 +1037,25 @@ function syncSectionHTML(){
   return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Connected</span></div>
     <div class="cardbox">
       <div class="statusline" style="margin-top:0">${statusLine}</div>
-      <button class="cta gold" style="margin-top:12px" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
-      <p class="datanote" style="margin-top:8px">The permanent vault key stays hidden on your phones. Invites are disposable — one use, then they burn.</p>
+      <p class="datanote" style="text-align:left; margin-top:6px">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
+
+      <label class="f" style="margin-top:18px">Partner invite</label>
+      <button class="cta gold" style="margin-top:0" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
+      <p class="datanote" style="margin-top:8px">Disposable — one use, then it burns. The permanent vault key never appears anywhere.</p>
+
+      <label class="f" style="margin-top:18px">Nudges</label>
       ${pushOn
-        ? `<p class="datanote" style="margin-top:12px">🔔 Nudges are on for this phone</p>
-           <button class="cta ghostd" style="width:100%" onclick="disableNudges()">Turn off nudges on this phone</button>`
-        : `<button class="cta pink" style="width:100%; margin-top:12px" onclick="enableNudges()">🔔 Turn on nudges (this phone)</button>
-           <p class="datanote" style="margin-top:8px">Your phone will ask permission once. Then: partner deposits, tomorrow's dates, low-ledger alerts — even with the app closed.</p>`}
-      <p class="datanote">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
-      <button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
+        ? `<button class="cta ghostd" style="width:100%; margin-top:0" onclick="disableNudges()">🔔 On — turn off for this phone</button>`
+        : `<button class="cta pink" style="width:100%; margin-top:0" onclick="enableNudges()">🔔 Turn on nudges (this phone)</button>
+           <p class="datanote" style="margin-top:8px">One permission pop-up, then: partner deposits, tomorrow's dates, low-ledger alerts — even with the app closed.</p>`}
+
+      <label class="f" style="margin-top:18px">Housekeeping</label>
+      <button class="cta ghostd" style="width:100%; margin-top:0" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
       <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>
     </div>`;
 }
 function settingsPage(){
-  return syncSectionHTML()
-    +`<div class="sechead"><h2>Account holders</h2><span class="lead"></span><span class="tag">You two</span></div>
+  return `<div class="sechead"><h2>Account holders</h2><span class="lead"></span><span class="tag">You two</span></div>
     <p class="secsub">First names only — they label "who booked it" and sign the passbook. Nothing leaves this phone.</p>
     <div class="cardbox">
       <div class="grid2 fgroup">
@@ -1067,6 +1071,7 @@ function settingsPage(){
         </div></div>
       <button class="cta gold" style="margin-top:0" onclick="saveProfile()">Save the account holders</button>
     </div>
+    ${syncSectionHTML()}
     <div class="sechead"><h2>Goals</h2><span class="lead"></span><span class="tag">The baseline</span></div>
     <p class="secsub">Set a monthly hours goal and the passbook tracks your rolling 30-day balance against it. Fall under half and it flags you in red.</p>
     <div class="cardbox">
@@ -1162,6 +1167,7 @@ function wireSettings(){
 /* ---------- banners ---------- */
 function renderBanners(){
   const el=$('#banners'); el.innerHTML='';
+  if(ui.tab===3) return;   // Settings is for configuring, not reminding
   const now=new Date(); now.setHours(0,0,0,0);
   if(ui.awayNote) el.insertAdjacentHTML('beforeend',
     `<div class="banner memory"><span>${ui.awayNote}</span><button onclick="dismissAway()">✕</button></div>`);
