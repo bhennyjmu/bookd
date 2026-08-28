@@ -1024,8 +1024,8 @@ function syncSectionHTML(){
       ${rolePills}
       <button class="cta gold" style="margin-top:0" onclick="openVault()">🔐 Open the vault (first phone)</button>
       <div class="divline">— or, if your partner already opened it —</div>
-      <div class="fgroup"><label class="f" for="sync-code">Couple code</label>
-        <input type="text" id="sync-code" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocapitalize="characters"></div>
+      <div class="fgroup"><label class="f" for="sync-code">Invite code</label>
+        <input type="text" id="sync-code" placeholder="XXXX-XXXX from your partner's invite" autocapitalize="characters"></div>
       <button class="cta pink" style="margin-top:0" onclick="joinVault()">🔑 Join the joint account</button>
     </div>`;
   const statusLine = syncStatus==='live' ? '<span style="color:var(--deposit)">● Live — two phones, one ledger</span>'
@@ -1035,12 +1035,8 @@ function syncSectionHTML(){
   return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Connected</span></div>
     <div class="cardbox">
       <div class="statusline" style="margin-top:0">${statusLine}</div>
-      <div class="fgroup" style="margin-top:12px"><label class="f">Couple code — share only with your co-signer</label>
-        <div class="mono" style="font-size:15px; letter-spacing:.06em; word-break:break-all">${fmtCode(sync.cid)}</div></div>
-      <div class="row2" style="margin-top:0">
-        <button class="cta ghost" style="flex:1; margin-top:0" onclick="copyCode()">Copy code</button>
-        <button class="cta ghost" style="flex:1; margin-top:0" onclick="shareCode()">Share it</button>
-      </div>
+      <button class="cta gold" style="margin-top:12px" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
+      <p class="datanote" style="margin-top:8px">The permanent vault key stays hidden on your phones. Invites are disposable — one use, then they burn.</p>
       <p class="datanote">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
       <button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
       <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>
@@ -1307,8 +1303,14 @@ window.openVault=async()=>{
 };
 window.joinVault=async()=>{
   if(!ensureDb()) return toast('Sync engine still loading — try again in a moment');
-  const cid=($('#sync-code')?$('#sync-code').value:'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(cid.length<16) return toast('That code looks short — check it and try again');
+  let cid=($('#sync-code')?$('#sync-code').value:'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(cid.length>=6 && cid.length<=12){
+    let t=null;   // short code = disposable invite ticket → resolve, then burn
+    try{ t=await window.fb.getDoc(window.fb.doc(db,'tickets',cid)); }catch(e){}
+    if(!t||!t.exists()||!t.data().cid) return toast('That invite is expired or wrong — ask your partner for a fresh one');
+    const ticketId=cid; cid=t.data().cid;
+    window.fb.deleteDoc(window.fb.doc(db,'tickets',ticketId)).catch(()=>{});
+  } else if(cid.length<16) return toast('That code looks short — check it and try again');
   let snap=null;
   try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
   if(!snap||!snap.exists()) return toast("Couldn't find that vault — double-check the code");
@@ -1336,17 +1338,28 @@ window.finishJoin=async cid=>{
   toast('Joined the joint account ♥');
   renderAll();
 };
-window.copyCode=()=>{
-  if(!sync) return;
-  (navigator.clipboard?navigator.clipboard.writeText(fmtCode(sync.cid)):Promise.reject())
-    .then(()=>toast('Code copied — text it to your co-signer'))
-    .catch(()=>toast(fmtCode(sync.cid)));
+function inviteCodeGen(){ const chars='ABCDEFGHJKMNPQRSTVWXYZ23456789'; const a=new Uint32Array(8);
+  crypto.getRandomValues(a); let s=''; for(let i=0;i<8;i++) s+=chars[a[i]%chars.length]; return s; }
+window.mintInvite=async()=>{
+  if(!sync||!ensureDb()) return toast('Not connected to a vault');
+  const code=inviteCodeGen();
+  try{
+    await window.fb.setDoc(window.fb.doc(db,'tickets',code),
+      {cid:sync.cid, expiresAt:new Date(Date.now()+86400000), createdAt:new Date()});
+  }catch(e){ return toast('Could not mint the invite — check your connection'); }
+  const disp=code.slice(0,4)+'-'+code.slice(4);
+  openSheet(`
+    <div class="eyebrow">Invite minted · valid 24 hours · one use</div><h3 class="mono" style="letter-spacing:.1em">${disp}</h3>
+    <div class="sheetnote">Send this to your partner. On their phone: Settings → tap their name pill → enter this code → Join. It burns the moment it's used.</div>
+    <div class="row2">
+      <button class="cta ghostd" style="flex:1" onclick="inviteCopy('${disp}')">Copy</button>
+      <button class="cta pink" style="flex:1" onclick="inviteShare('${disp}')">Share</button>
+    </div>
+    <button class="cta gold" onclick="closeSheet()">Done</button>`);
 };
-window.shareCode=()=>{
-  if(!sync) return;
-  if(navigator.share) navigator.share({title:"Book'd joint account", text:"Join our Book'd joint account — Settings → Join with a code: "+fmtCode(sync.cid)}).catch(()=>{});
-  else copyCode();
-};
+window.inviteCopy=d=>{ (navigator.clipboard?navigator.clipboard.writeText(d):Promise.reject())
+  .then(()=>toast('Invite copied')).catch(()=>toast(d)); };
+window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join our Book'd joint account — Settings → Join with code: "+d}).catch(()=>{}); else inviteCopy(d); };
 window.openFreeSeatSheet=()=>{
   const other=sync.role==='me'?'partner':'me';
   const name=other==='me'?nameMe():namePa();
