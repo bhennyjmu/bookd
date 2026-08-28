@@ -1117,8 +1117,11 @@ window.editEntry=id=>{
 };
 window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); pushDelete(id); renderAll(); toast('Removed'); };
 window.askDel=(id,btn)=>{   // destruction takes two taps: arm, then confirm within 3s
-  if(btn.dataset.armed){ delEntry(id); return; }
-  btn.dataset.armed='1'; btn.textContent='delete?';
+  if(btn.dataset.armed){
+    if(Date.now()-(+btn.dataset.armed)<400) return;   // ghost double-fire from one physical tap — ignore
+    delEntry(id); return;
+  }
+  btn.dataset.armed=String(Date.now()); btn.textContent='delete?';
   setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armed; btn.textContent='delete'; } }, 3000);
 };
 window.openWipeSheet=()=>{
