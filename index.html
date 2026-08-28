@@ -168,9 +168,10 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .entry .amt{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:16px; white-space:nowrap; text-align:right}
 .entry .amt.dep{color:var(--deposit)}
 .entry .amt.wd{color:var(--withdrawal)}
-.entry .links{font-size:12.5px; color:var(--dimmer); text-align:right; margin-top:3px}
-.entry .links button{background:none; border:0; color:var(--dimmer); cursor:pointer; font-size:12.5px; padding:0}
+.entry .links{display:flex; gap:20px; justify-content:flex-end; margin-top:6px}
+.entry .links button{background:none; border:0; color:var(--dimmer); cursor:pointer; font-size:12.5px; padding:6px 8px; min-height:32px}
 .entry .links button:hover{color:var(--rose)}
+.entry .links button[data-armed]{color:var(--withdrawal); font-weight:700}
 .empty{font-family:'Spline Sans Mono',monospace; color:var(--dim); text-align:center; padding:24px 10px; font-size:13.5px; line-height:1.7}
 .empty .hrt{color:var(--rose)}
 .datanote{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--dimmer); text-align:center; margin-top:10px}
@@ -1000,7 +1001,7 @@ function statementHTML(){
       </div>
       <div>
         <div class="amt dep">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</div>
-        <div class="links"><button onclick="editEntry(${e.id})">edit</button> · <button onclick="delEntry(${e.id})">delete</button></div>
+        <div class="links"><button onclick="editEntry(${e.id})">edit</button><button onclick="askDel(${e.id},this)">delete</button></div>
       </div></div>`})),
     ...missedOccurrences().map(d=>{const iso=toISO(d); return {sort:iso, html:`
       <div class="entry"><div style="flex:1">
@@ -1115,6 +1116,11 @@ window.editEntry=id=>{
   setTimeout(()=>{ const f=$('#d-title'); if(f) f.scrollIntoView({behavior:'smooth', block:'center'}); },80);
 };
 window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); pushDelete(id); renderAll(); toast('Removed'); };
+window.askDel=(id,btn)=>{   // destruction takes two taps: arm, then confirm within 3s
+  if(btn.dataset.armed){ delEntry(id); return; }
+  btn.dataset.armed='1'; btn.textContent='delete?';
+  setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armed; btn.textContent='delete'; } }, 3000);
+};
 window.openWipeSheet=()=>{
   openSheet(`
     <div class="eyebrow">Close the account</div><h3>Erase everything?</h3>
