@@ -1,5 +1,5 @@
 /* Book'd service worker — offline app shell */
-const CACHE = 'bookd-v37';
+const CACHE = 'bookd-v38';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -30,4 +30,21 @@ self.addEventListener('fetch', e => {
       }).catch(() => caches.match('./index.html'))
     )
   );
+});
+
+/* push notifications — display what the cloud sends, open the app on tap */
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data.json(); } catch (err) {}
+  const n = d.notification || (d.data || {});
+  e.waitUntil(self.registration.showNotification(n.title || "Book'd ♥", {
+    body: n.body || '',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    data: (d.fcmOptions && d.fcmOptions.link) || './'
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow(e.notification.data || './'));
 });

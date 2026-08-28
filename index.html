@@ -278,7 +278,9 @@ function savePlans(){ store.set('plans',plans); pushMeta(); }
 const FIREBASE_CONFIG={apiKey:"AIzaSyBHfJKxOrHlfM65zVSOwbUXblPcuHvm94Q",authDomain:"bookd-78e02.firebaseapp.com",
   projectId:"bookd-78e02",storageBucket:"bookd-78e02.firebasestorage.app",messagingSenderId:"956683695194",
   appId:"1:956683695194:web:08718c5597ecbc8e831463"};   // public identifiers — security lives in the Firestore rules
+const VAPID_KEY='BGN9vbwS03iEPDkMRqM7vzH3rI04eWQ9O6AGqG__u1YS9eb07Fg4PgmrkzJ0f9NL7BuN3o3lGKq5Y0mfGD66eR4';  // public web-push address plaque
 let sync=store.get('sync', null);   // {cid, role:'me'|'partner'}
+let pushOn=store.get('pushOn', false);
 let db=null, unsubMeta=null, unsubEntries=null, syncStatus='off', pairRole='me';
 let seenAt=store.get('seenAt', null);
 if(!seenAt){ seenAt=Date.now(); store.set('seenAt', seenAt); }
@@ -1037,6 +1039,11 @@ function syncSectionHTML(){
       <div class="statusline" style="margin-top:0">${statusLine}</div>
       <button class="cta gold" style="margin-top:12px" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
       <p class="datanote" style="margin-top:8px">The permanent vault key stays hidden on your phones. Invites are disposable — one use, then they burn.</p>
+      ${pushOn
+        ? `<p class="datanote" style="margin-top:12px">🔔 Nudges are on for this phone</p>
+           <button class="cta ghostd" style="width:100%" onclick="disableNudges()">Turn off nudges on this phone</button>`
+        : `<button class="cta pink" style="width:100%; margin-top:12px" onclick="enableNudges()">🔔 Turn on nudges (this phone)</button>
+           <p class="datanote" style="margin-top:8px">Your phone will ask permission once. Then: partner deposits, tomorrow's dates, low-ledger alerts — even with the app closed.</p>`}
       <p class="datanote">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
       <button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
       <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>
@@ -1360,6 +1367,30 @@ window.mintInvite=async()=>{
 window.inviteCopy=d=>{ (navigator.clipboard?navigator.clipboard.writeText(d):Promise.reject())
   .then(()=>toast('Invite copied')).catch(()=>toast(d)); };
 window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join our Book'd joint account — Settings → Join with code: "+d}).catch(()=>{}); else inviteCopy(d); };
+window.enableNudges=async()=>{
+  if(!sync||!ensureDb()) return toast('Connect the joint account first');
+  if(typeof Notification==='undefined') return toast('Add Book\'d to your Home Screen first — nudges need the installed app');
+  let perm='denied';
+  try{ perm=await Notification.requestPermission(); }catch(e){}
+  if(perm!=='granted') return toast('Notifications are blocked — allow Book\'d in your phone\'s notification settings');
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const app=window.fb.getApps().length?window.fb.getApp():window.fb.initializeApp(FIREBASE_CONFIG);
+    const messaging=window.fb.getMessaging(app);
+    const token=await window.fb.getToken(messaging,{vapidKey:VAPID_KEY, serviceWorkerRegistration:reg});
+    if(!token) return toast('Could not get a push address — try again in a moment');
+    await window.fb.setDoc(metaRef(), {pushTokens:{[sync.role]:token}}, {merge:true});
+    pushOn=true; store.set('pushOn',true);
+    toast('Nudges on — this phone gets the word 🔔');
+    renderPage();
+  }catch(e){ toast('Push setup hit a snag'+(e&&e.code?' ('+e.code+')':'')+' — try again'); }
+};
+window.disableNudges=()=>{
+  if(db&&sync) window.fb.setDoc(metaRef(), {pushTokens:{[sync.role]:null}}, {merge:true}).catch(()=>{});
+  pushOn=false; store.set('pushOn',false);
+  toast('Nudges off on this phone');
+  renderPage();
+};
 window.openFreeSeatSheet=()=>{
   const other=sync.role==='me'?'partner':'me';
   const name=other==='me'?nameMe():namePa();
@@ -1430,8 +1461,9 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js';
 import { initializeFirestore, getFirestore, persistentLocalCache, doc, collection, setDoc, getDoc, deleteDoc, onSnapshot, writeBatch }
   from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js';
+import { getMessaging, getToken } from 'https://www.gstatic.com/firebasejs/12.17.0/firebase-messaging.js';
 window.fb={ initializeApp, getApps, getApp, initializeFirestore, getFirestore, persistentLocalCache,
-  doc, collection, setDoc, getDoc, deleteDoc, onSnapshot, writeBatch };
+  doc, collection, setDoc, getDoc, deleteDoc, onSnapshot, writeBatch, getMessaging, getToken };
 if(window.fbReady) window.fbReady();
 </script>
 </body>
