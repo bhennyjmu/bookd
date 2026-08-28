@@ -236,7 +236,7 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
   <div id="page"></div>
 </div>
 
-<footer><p>Book'd · Member FDIC (For Dates I've Clocked)</p></footer>
+<footer><p>Book'd · Member FDIC (For Dates I've Clocked) · <span id="vstamp"></span></p></footer>
 
 <nav class="tabbar"><div class="inner">
   <button data-t="0" class="on"><span class="ico">⌂</span><span class="lbl">Home</span></button>
@@ -1473,8 +1473,25 @@ setInterval(()=>{
 },1000);
 
 /* ---------- boot ---------- */
+const APP_V=43;
+try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+/* self-updater: ask the server (never the cache) whether a newer build exists; if so, refresh once */
+fetch('./sw.js?u='+Date.now(), {cache:'no-store'}).then(r=>r.text()).then(t=>{
+  const m=t.match(/bookd-v(\d+)/);
+  if(m && +m[1]>APP_V){
+    if(!sessionStorage.getItem('bookd-updating')){
+      sessionStorage.setItem('bookd-updating','1');
+      toast('Updating Book’d to the newest version…');
+      if('serviceWorker' in navigator){
+        navigator.serviceWorker.getRegistration()
+          .then(reg=>reg&&reg.update())
+          .finally(()=>setTimeout(()=>location.reload(), 4000));
+      } else setTimeout(()=>location.reload(), 4000);
+    }
+  } else sessionStorage.removeItem('bookd-updating');
+}).catch(()=>{});
 </script>
 <script type="module">
 /* Firebase SDK loads here and hands its tools to the main script above */

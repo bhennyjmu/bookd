@@ -1,5 +1,5 @@
 /* Book'd service worker — offline app shell */
-const CACHE = 'bookd-v42';
+const CACHE = 'bookd-v43';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
