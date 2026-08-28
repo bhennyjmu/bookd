@@ -474,10 +474,10 @@ function homePage(){
 window.clockIn=()=>{
   timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(),
     title:todayPlan()?todayPlan().title:null};
-  store.set('timer',timer); toast('Clocked in — enjoy each other ♥'); renderAll();
+  store.set('timer',timer); pushClock(); toast('Clocked in — enjoy each other ♥'); renderAll();
 };
-window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); renderAll(); };
-window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); renderAll(); };
+window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); pushClock(); renderAll(); };
+window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); pushClock(); renderAll(); };
 window.clockOut=()=>{
   if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); }
   dep={etype:'date', rating:0, planner:null, editingId:null};   // fresh form; prefill logic reads the clock
@@ -494,7 +494,7 @@ window.openScrapSheet=()=>{
 };
 window.scrapClock=()=>{
   closeSheet();
-  timer=null; store.set('timer',null);
+  timer=null; store.set('timer',null); pushClock();
   dep={etype:'date', rating:0, planner:null, editingId:null};
   toast('Clock scrapped — hope everything’s okay ♥');
   renderAll();
@@ -579,7 +579,7 @@ window.commitDeposit=()=>{
   pushEntry(record);
   const pix=plans.findIndex(p=>p.title===record.title);
   if(pix>-1){ plans.splice(pix,1); savePlans(); }
-  if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); }
+  if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); pushClock(); }
   dep={etype:'date',rating:0,planner:null,editingId:null};
   ui.justSaved=true; ui.tab=0;
   renderAll();
@@ -1367,6 +1367,11 @@ window.mintInvite=async()=>{
 window.inviteCopy=d=>{ (navigator.clipboard?navigator.clipboard.writeText(d):Promise.reject())
   .then(()=>toast('Invite copied')).catch(()=>toast(d)); };
 window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join our Book'd joint account — Settings → Join with code: "+d}).catch(()=>{}); else inviteCopy(d); };
+function pushClock(){   // file the clock's flight plan with the vault so the night watchman can see it
+  if(!sync||!db) return;
+  const c = timer ? {running:!!timer.running, since: Date.now()-elapsedSecs()*1000, by:sync.role, nagged:false} : null;
+  window.fb.setDoc(metaRef(), {clock:c}, {merge:true}).catch(()=>{});
+}
 window.enableNudges=async()=>{
   if(!sync||!ensureDb()) return toast('Connect the joint account first');
   if(typeof Notification==='undefined') return toast('Add Book\'d to your Home Screen first — nudges need the installed app');
