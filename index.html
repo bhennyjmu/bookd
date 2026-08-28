@@ -1042,6 +1042,7 @@ function syncSectionHTML(){
         <button class="cta ghost" style="flex:1; margin-top:0" onclick="shareCode()">Share it</button>
       </div>
       <p class="datanote">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
+      <button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
       <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>
     </div>`;
 }
@@ -1250,7 +1251,6 @@ function startSync(){
         toast('This phone was replaced on the joint account — disconnected');
         renderAll(); return;
       }
-      if(!seat) window.fb.setDoc(metaRef(), {devices:{[sync.role]:deviceId}}, {merge:true}).catch(()=>{});
       const prevIds=new Set(plans.map(p=>p.id));
       profile=d.profile||profile; reservation=d.reservation??null;
       plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans);
@@ -1315,12 +1315,10 @@ window.joinVault=async()=>{
   const d=snap.data()||{};
   const seat=d.devices&&d.devices[pairRole];
   if(seat && seat!==deviceId){
-    const who=pairRole==='me'?nameMe():namePa();
     openSheet(`
-      <div class="eyebrow">Seat taken</div><h3>${esc(who)}'s seat is held by another phone</h3>
-      <div class="sheetnote">Each name on the joint account signs in on one phone at a time. Replacing disconnects that other phone — the vault and every entry stay safe. Do this only for your own old or replaced device.</div>
-      <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
-      <button class="cta pink" style="flex:1" onclick="closeSheet();finishJoin('${cid}')">Replace that phone</button></div>`);
+      <div class="eyebrow">Seat taken</div><h3>That seat is held by another phone</h3>
+      <div class="sheetnote">Each name on a joint account signs in on one phone at a time, and an occupied seat can't be taken from outside. Replacing your own phone? Disconnect from the old phone first — or have your partner free your seat from their phone's Settings.</div>
+      <button class="cta gold" onclick="closeSheet()">Understood</button>`);
     return;
   }
   finishJoin(cid);
@@ -1348,6 +1346,21 @@ window.shareCode=()=>{
   if(!sync) return;
   if(navigator.share) navigator.share({title:"Book'd joint account", text:"Join our Book'd joint account — Settings → Join with a code: "+fmtCode(sync.cid)}).catch(()=>{});
   else copyCode();
+};
+window.openFreeSeatSheet=()=>{
+  const other=sync.role==='me'?'partner':'me';
+  const name=other==='me'?nameMe():namePa();
+  openSheet(`
+    <div class="eyebrow">Free a seat</div><h3>Free ${esc(name)}'s seat?</h3>
+    <div class="sheetnote">Use this only when ${esc(name)} has a new phone (or lost the old one). Their old phone gets disconnected, and the seat opens for their next phone to join with the couple code. The vault and every entry stay safe.</div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
+    <button class="cta pink" style="flex:1" onclick="freeSeat('${other}')">Free the seat</button></div>`);
+};
+window.freeSeat=other=>{
+  closeSheet();
+  if(db&&sync) window.fb.setDoc(metaRef(), {devices:{[other]:null}}, {merge:true})
+    .then(()=>toast('Seat freed — their new phone can join with the code'))
+    .catch(()=>toast('Could not reach the vault — try again'));
 };
 window.openDisconnectSheet=()=>{
   openSheet(`
