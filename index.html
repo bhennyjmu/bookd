@@ -220,6 +220,20 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 footer{max-width:480px; margin:40px auto 0; padding:0 16px; text-align:center}
 footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--dimmer)}
 .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom)); background:var(--champagne); color:var(--plum); font-weight:700; font-size:14px; border-radius:10px; padding:10px 16px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:70}
+/* new-account orientation */
+.orient{position:fixed; inset:0; z-index:80; background:rgba(20,12,22,.93); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; padding:22px}
+.ocard{width:100%; max-width:400px; background:var(--card); border:1px solid rgba(246,239,227,.14); border-radius:18px; padding:28px 22px; text-align:center; box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.obig{font-size:42px; line-height:1; margin-bottom:12px}
+.onote{color:var(--dim); font-size:14.5px; line-height:1.65; margin:0 0 4px}
+.odots{display:flex; gap:7px; justify-content:center; margin:16px 0 4px}
+.odots span{width:7px; height:7px; border-radius:999px; background:rgba(246,239,227,.18)}
+.odots span.on{background:var(--rose)}
+.olink{background:none; border:0; color:var(--dimmer); font-family:'Karla'; font-size:12.5px; margin-top:12px; cursor:pointer; text-decoration:underline}
+/* one-time coach marks: darken the room, light up one button */
+.spotwrap{position:fixed; inset:0; z-index:75}
+.spot{position:absolute; border-radius:14px; box-shadow:0 0 0 9999px rgba(20,12,22,.82); outline:2px solid var(--champagne); pointer-events:none}
+.spottip{position:absolute; width:min(88vw,340px); background:var(--card); border:1px solid rgba(246,239,227,.14); border-radius:14px; padding:14px 16px; color:var(--cream); font-size:14px; line-height:1.55; box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.spotok{font-family:'Spline Sans Mono',monospace; font-size:11px; letter-spacing:.15em; text-transform:uppercase; color:var(--champagne); margin-top:8px}
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -611,7 +625,7 @@ function ideasBlock(){
     +grp('Setting','where',[['any','Any'],['in','Stay in'],['out','Go out']])
     +grp('Energy','vibe',[['any','Any'],['chill','Chill'],['adv','Adventurous']])
     +`<div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
-    <button class="cta gold" onclick="spin()">🎲 Spin the roulette</button>
+    <button class="cta gold" id="spin-btn" onclick="spin()">🎲 Spin the roulette</button>
     ${currentIdea&&!favorites.includes(currentIdea.n)?`<button class="cta ghost" onclick="saveFav()">♥ Save idea</button>`:''}
     <div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
       favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
@@ -1089,6 +1103,7 @@ function settingsPage(){
         <button class="cta ghost" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
       </div>
       <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
+      <button class="cta ghost" style="width:100%" onclick="showOrientation(0)">🎓 Replay the new-account orientation</button>
       <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
       <input type="file" id="restore-file" accept="application/json,.json" hidden>
     </div>`;
@@ -1143,6 +1158,7 @@ window.wipeAll=()=>{
   entries=[]; reservation=null; plans=[]; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
   renderAll(); toast(hadSync?'This phone wiped — the vault is untouched':'Account closed — fresh books');
+  setTimeout(()=>showOrientation(0), 1200);   // fresh books = fresh orientation
 };
 function wireSettings(){
   const b=$('#backup-btn'); if(!b) return;
@@ -1459,7 +1475,7 @@ function renderPage(){
   if(ui.tab===1){ tickCountdown(); if(inPlaces && near.coords && !map) mountMap(); }
   if(ui.tab===3) wireSettings();
 }
-function renderAll(){ renderBanners(); renderPage(); renderTabbar(); }
+function renderAll(){ renderBanners(); renderPage(); renderTabbar(); setTimeout(maybeSpot,350); }
 function renderTabbar(){
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on', +b.dataset.t===ui.tab));
 }
@@ -1473,10 +1489,60 @@ setInterval(()=>{
   }
 },1000);
 
+/* ---------- new-account orientation & coach marks ---------- */
+const ORIENT=[
+  {big:'<span style="color:var(--rose)">♥</span>', e:'Welcome to Book’d', h:'Every date is a deposit',
+   p:'This is your joint account. Time together goes in as deposits. Missed date nights come out as withdrawals. The balance is your last 30 days together, in hours — the one account you never want to overdraft.'},
+  {big:'⏱', e:'The Home tab', h:'Clock in like it’s payday',
+   p:'On a date right now? Clock in and let it run — clock out when you’re home and the ledger files itself. Under 45 minutes counts as an everyday moment. Date already happened? Deposit it after the fact, right below the clock.'},
+  {big:'✦', e:'The Plan tab', h:'Out of ideas? Spin.',
+   p:'Spin the roulette for your next date, browse real places near you, or book a standing reservation — your weekly table for two. Everything you book ahead lands on the Calendar.'},
+  {big:'🔐', e:'Two phones, one ledger', h:'Bring your partner in',
+   p:'In Settings, add your first names, then open the vault and text your partner a 24-hour invite code. From then on, every deposit shows up on both phones — even long-distance.'}
+];
+window.showOrientation=(i=0)=>{
+  let o=$('#orient'); if(!o){ o=document.createElement('div'); o.id='orient'; o.className='orient'; document.body.appendChild(o); }
+  const c=ORIENT[i], last=i===ORIENT.length-1;
+  o.innerHTML=`<div class="ocard">
+    <div class="obig">${c.big}</div>
+    <div class="eyebrow" style="color:var(--rose)">${c.e}</div>
+    <h3 style="margin:6px 0 10px">${c.h}</h3>
+    <p class="onote">${c.p}</p>
+    <div class="odots">${ORIENT.map((_,d)=>`<span class="${d===i?'on':''}"></span>`).join('')}</div>
+    ${last?`<button class="cta gold" onclick="endOrientation()">Open the books ♥</button>`
+          :`<button class="cta pink" onclick="showOrientation(${i+1})">Next</button>
+            <button class="olink" onclick="endOrientation()">Skip the tour</button>`}
+  </div>`;
+};
+window.endOrientation=()=>{ const o=$('#orient'); if(o) o.remove(); store.set('oriented',1); setTimeout(maybeSpot,300); };
+function maybeSpot(){
+  if(!store.get('oriented',false)) return;                    // orientation first, always
+  if($('#orient') || $('#spotwrap')) return;
+  if($('#sheetwrap').classList.contains('show')) return;
+  let target=null, msg='', key='';
+  if(ui.tab===0 && !store.get('spot_home',false) && $('#timer-btn')){
+    target=$('#timer-btn'); key='spot_home';
+    msg='Next date night, start here — one tap clocks you in, one tap clocks you out. The ledger does the rest.';
+  } else if(ui.tab===1 && !store.get('spot_plan',false) && $('#spin-btn')){
+    target=$('#spin-btn'); key='spot_plan';
+    msg='No ideas? One tap spins up your next date. Save the good ones, book the great ones.';
+  }
+  if(!target) return;
+  const r=target.getBoundingClientRect();
+  if(r.width===0) return;
+  const w=document.createElement('div'); w.className='spotwrap'; w.id='spotwrap';
+  const below = r.bottom+140 < innerHeight;
+  w.innerHTML=`<div class="spot" style="left:${r.left-6}px; top:${r.top-6}px; width:${r.width+12}px; height:${r.height+12}px"></div>
+    <div class="spottip" style="left:50%; transform:translateX(-50%); ${below?`top:${r.bottom+16}px`:`bottom:${innerHeight-r.top+16}px`}">${msg}<div class="spotok">Got it — tap anywhere</div></div>`;
+  w.onclick=()=>{ w.remove(); store.set(key,1); };
+  document.body.appendChild(w);
+}
+
 /* ---------- boot ---------- */
-const APP_V=45;
+const APP_V=46;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
+if(!store.get('oriented',false)) showOrientation(0);
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 /* self-updater: ask the server (never the cache) whether a newer build exists; if so, refresh once */
 fetch('./sw.js?u='+Date.now(), {cache:'no-store'}).then(r=>r.text()).then(t=>{
