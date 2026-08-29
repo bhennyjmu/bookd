@@ -302,7 +302,8 @@ const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()
 const isDate=e=>(e.type||'date')==='date';
 const attr=e=>e.planner||e.by||null;   // credit: the who-booked-it pills win; else whoever logged it
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
-const fmtMS=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+const fmtMS=s=>{ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
+  return h>0 ? h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0') : m+':'+String(sec).padStart(2,'0'); };
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
 
 const CADENCE={ weekly:{step:7, label:'every week', interval:1},
@@ -1473,7 +1474,7 @@ setInterval(()=>{
 },1000);
 
 /* ---------- boot ---------- */
-const APP_V=44;
+const APP_V=45;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
