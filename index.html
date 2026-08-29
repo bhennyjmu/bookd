@@ -1102,7 +1102,7 @@ function settingsPage(){
         <button class="cta ghost" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
       </div>
       <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
-      <button class="cta ghost" style="width:100%" onclick="showOrientation(0)">🎓 Replay the new-account orientation</button>
+      <button class="cta ghost" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
       <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
       <input type="file" id="restore-file" accept="application/json,.json" hidden>
     </div>`;
@@ -1514,6 +1514,10 @@ window.showOrientation=(i=0)=>{
   </div>`;
 };
 window.endOrientation=()=>{ const o=$('#orient'); if(o) o.remove(); store.set('oriented',1); setTimeout(maybeSpot,300); };
+window.replayTour=()=>{   // a replay replays everything: cards now, spotlights again as each tab is visited
+  ['spot_home','spot_plan','spot_cal','spot_set'].forEach(k=>localStorage.removeItem('bookd.'+k));
+  showOrientation(0);
+};
 function maybeSpot(){
   if(!store.get('oriented',false)) return;                    // orientation first, always
   if($('#orient') || $('#spotwrap')) return;
@@ -1544,7 +1548,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=47;
+const APP_V=48;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 if(!store.get('oriented',false)) showOrientation(0);
