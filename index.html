@@ -304,7 +304,7 @@ if(!deviceId){ const a=new Uint32Array(8); crypto.getRandomValues(a); deviceId=[
 const partnerName=()=>sync&&sync.role==='partner'?nameMe():namePa();
 if(timer && timer.start && timer.startedAt===undefined){ timer={startedAt:timer.start, elapsed:0, running:true, date:timer.date}; store.set('timer',timer); }
 
-const DAY=86400000, MISS_HRS=3;
+const DAY=86400000;
 const WD=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -414,14 +414,13 @@ function stats(){
   const cutoff=new Date(now.getTime()-30*DAY);
   const recent=entries.filter(e=>parseISO(e.date)>=cutoff);
   const hrs=recent.reduce((s,e)=>s+e.hours,0);
-  const missed=missedOccurrences().filter(d=>d>=cutoff).length;
   const rated=recent.filter(e=>isDate(e)&&e.rating>0);
   const weeks=new Set(entries.filter(isDate).map(e=>monday(parseISO(e.date)).getTime()));
   let streak=0, w=monday(new Date()).getTime();
   if(!weeks.has(w)) w-=7*DAY;
   while(weeks.has(w)){ streak++; w-=7*DAY; }
   return {
-    balance:hrs-missed*MISS_HRS,
+    balance:hrs,
     dates:recent.length,
     avg: rated.length?rated.reduce((s,e)=>s+e.rating,0)/rated.length:null,
     streak,
@@ -442,7 +441,7 @@ function passbookHTML(){
     <div class="pb-head"><span class="pb-title">${(profile.me&&profile.partner)?'The Joint Account of '+esc(profile.me)+' & '+esc(profile.partner):'The Joint Account'}</span><span class="acct">ACCT № US-4EVR${profile.anniv?' · est. '+profile.anniv.slice(0,4):''}</span></div>
     <div class="balance-label"><span>30-Day Balance</span><span class="dot ${running?'show':''}"></span></div>
     <div class="balance ${s.balance<0?'neg':''}">${s.balance.toFixed(1)}<small> hrs</small></div>
-    <div class="balance-sub">Quality time deposited, minus missed date nights</div>
+    <div class="balance-sub">Quality time on deposit, from the last 30 days</div>
     <hr class="pb-rule">
     <div class="pb-stats">
       ${liveCell}
@@ -614,7 +613,7 @@ function planPage(){
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
     </div>
     <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
-    <p class="secsub">Different from booking one date: this is the recurring slot your balance holds you to — weekly, every other week, or monthly, your call. Let a whole cycle pass with no date at all and the ledger withdraws ${MISS_HRS.toFixed(1)} hrs.</p>
+    <p class="secsub">Different from booking one date: this is the recurring slot you two hold for each other — weekly, every other week, or monthly, your call. Let a whole cycle pass with no date and it simply shows on the statement as a missed night. No penalty — just honesty.</p>
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
 }
 window.setMode=m=>{ ui.planMode=m; renderPage(); if(m==='places') mountMap(); };
@@ -937,7 +936,7 @@ function calGridHTML(){
     cells+=`<div class="cal-cell ${iso===tISO?'today':''}" onclick="openDay('${iso}')" role="button" tabindex="0"><span class="cn2">${d}</span>${marks}</div>`;
   }
   return `<div class="sechead"><h2>Calendar</h2><span class="lead"></span><span class="tag">Us, by the month</span></div>
-    <div class="cardbox">
+    <div class="cardbox" id="cal-card">
       <div class="cal-head"><button class="cal-nav" onclick="calNav(-1)">‹</button><span class="cal-title">${monthName}</span><button class="cal-nav" onclick="calNav(1)">›</button></div>
       <div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
       <div class="cal-legend"><span class="cd past">♥</span> date logged · <span class="cd fut">●</span> booked ahead${kidsOn()?' · <span class="cd fut">◌</span> booked, no sitter yet':''}</div>
@@ -1022,7 +1021,7 @@ function statementHTML(){
       <div class="entry"><div style="flex:1">
         <div class="t">Missed date night</div>
         <div class="m">${fmtDate(iso)} · no date logged</div></div>
-      <div class="amt wd">−${MISS_HRS.toFixed(1)} hrs</div></div>`};})
+      <div class="amt" style="color:var(--dimmer)">—</div></div>`};})
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
   return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span><span class="tag">On the books</span></div>
     <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
@@ -1038,7 +1037,7 @@ function syncSectionHTML(){
     </div></div>`;
   if(!sync) return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Two phones, one ledger</span></div>
     <p class="secsub">One of you opens the vault and gets a code; the other joins with it. From then on, both phones share one ledger — deposits appear on both, even long-distance.</p>
-    <div class="cardbox">
+    <div class="cardbox" id="sync-card">
       ${rolePills}
       <button class="cta gold" style="margin-top:0" onclick="openVault()">🔐 Open the vault (first phone)</button>
       <div class="divline">— or, if your partner already opened it —</div>
@@ -1051,7 +1050,7 @@ function syncSectionHTML(){
     : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Trouble reaching the vault — will retry</span>'
     : '<span style="color:var(--dimmer)">● Waiting for the sync engine…</span>';
   return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Connected</span></div>
-    <div class="cardbox">
+    <div class="cardbox" id="sync-card">
       <div class="statusline" style="margin-top:0">${statusLine}</div>
       <p class="datanote" style="text-align:left; margin-top:6px">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
 
@@ -1492,7 +1491,7 @@ setInterval(()=>{
 /* ---------- new-account orientation & coach marks ---------- */
 const ORIENT=[
   {big:'<span style="color:var(--rose)">♥</span>', e:'Welcome to Book’d', h:'Every date is a deposit',
-   p:'This is your joint account. Time together goes in as deposits. Missed date nights come out as withdrawals. The balance is your last 30 days together, in hours — the one account you never want to overdraft.'},
+   p:'This is your joint account. Time together goes in as deposits — date nights, everyday moments, all of it. The balance is your last 30 days together, in hours. No penalties, no overdraft fees — just the two of you, on the books.'},
   {big:'⏱', e:'The Home tab', h:'Clock in like it’s payday',
    p:'On a date right now? Clock in and let it run — clock out when you’re home and the ledger files itself. Under 45 minutes counts as an everyday moment. Date already happened? Deposit it after the fact, right below the clock.'},
   {big:'✦', e:'The Plan tab', h:'Out of ideas? Spin.',
@@ -1526,6 +1525,12 @@ function maybeSpot(){
   } else if(ui.tab===1 && !store.get('spot_plan',false) && $('#spin-btn')){
     target=$('#spin-btn'); key='spot_plan';
     msg='No ideas? One tap spins up your next date. Save the good ones, book the great ones.';
+  } else if(ui.tab===2 && !store.get('spot_cal',false) && $('#cal-card')){
+    target=$('#cal-card'); key='spot_cal';
+    msg='Your month at a glance — ♥ is a date you logged, a gold dot is one booked ahead. Tap any day for the full story.';
+  } else if(ui.tab===3 && !store.get('spot_set',false) && $('#sync-card')){
+    target=$('#sync-card'); key='spot_set';
+    msg='The big one: add your names above, then bring your partner in here — two phones, one shared ledger.';
   }
   if(!target) return;
   const r=target.getBoundingClientRect();
@@ -1539,7 +1544,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=46;
+const APP_V=47;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 if(!store.get('oriented',false)) showOrientation(0);
