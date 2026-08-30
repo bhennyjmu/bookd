@@ -1562,6 +1562,20 @@ const OB_ART={
    <g transform="translate(62,42) scale(1.2)"><path d="${OB_H}" fill="#E9C580"/></g>
    <circle cx="147" cy="56" r="7" fill="none" stroke="#E9C580" stroke-width="1.8"/>
  </svg>`,
+ name:`<svg viewBox="0 0 200 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+   <g transform="translate(76,4) scale(2)"><path d="${OB_H}" fill="#F27D98"/></g>
+   <path d="M40 66 q20 -12 40 0 t40 0 t40 0" fill="none" stroke="#E9C580" stroke-width="2" stroke-linecap="round"/>
+ </svg>`,
+ partner:`<svg viewBox="0 0 200 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+   <g transform="translate(46,8) scale(2.2)"><path d="${OB_H}" fill="#F27D98"/></g>
+   <g transform="translate(104,8) scale(2.2)"><path d="${OB_H}" fill="none" stroke="#E9C580" stroke-width="1.5"/></g>
+ </svg>`,
+ jwho:`<svg viewBox="0 0 200 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+   <rect x="28" y="14" width="64" height="52" rx="9" fill="none" stroke="#F27D98" stroke-width="2"/>
+   <rect x="108" y="14" width="64" height="52" rx="9" fill="none" stroke="#E9C580" stroke-width="2"/>
+   <g transform="translate(50,26) scale(1.1)"><path d="${OB_H}" fill="#F27D98"/></g>
+   <g transform="translate(130,26) scale(1.1)"><path d="${OB_H}" fill="none" stroke="#E9C580" stroke-width="1.6"/></g>
+ </svg>`,
  pair:`<svg viewBox="0 0 200 104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
    <rect x="40" y="14" width="34" height="76" rx="9" fill="#2A1B2E" stroke="rgba(246,239,227,.4)" stroke-width="1.6"/>
    <rect x="126" y="14" width="34" height="76" rx="9" fill="#2A1B2E" stroke="rgba(246,239,227,.4)" stroke-width="1.6"/>
@@ -1655,6 +1669,7 @@ function obRender(){
   }
   if(s==='name'){
     body=`<div class="grow"></div>
+      <div class="oart">${OB_ART.name}</div>
       <h1>Who’s opening this account?</h1>
       <p class="sub">First names only — nothing leaves your two phones.</p>
       <label class="f" for="ob-name">Your first name</label>
@@ -1664,6 +1679,7 @@ function obRender(){
   }
   if(s==='partner'){
     body=`<div class="grow"></div>
+      <div class="oart">${OB_ART.partner}</div>
       <h1>Nice to meet you, ${me}. Who’s the other account holder?</h1>
       <label class="f" for="ob-partner">Their first name</label>
       <input type="text" id="ob-partner" maxlength="20" value="${esc(profile.partner||'')}" placeholder="First name">
@@ -1744,6 +1760,7 @@ function obRender(){
   if(s==='jwho'){
     const jm=esc((ob.join&&ob.join.profile.me)||'Account holder 1'), jp=esc((ob.join&&ob.join.profile.partner)||'Account holder 2');
     body=`<div class="grow"></div>
+      <div class="oart">${OB_ART.jwho}</div>
       <h1>Found it. Which one is you?</h1>
       <p class="sub">Everything you log will be signed with this name.</p>
       <button class="ocardbtn" onclick="obPick('me')">${jm}</button>
@@ -1823,7 +1840,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=51;
+const APP_V=52;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
