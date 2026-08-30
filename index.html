@@ -242,9 +242,9 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
 .obar span{flex:1; height:3px; border-radius:99px; background:rgba(246,239,227,.15)}
 .obar span.on{background:var(--rose)}
 .olater{background:none; border:0; color:var(--dimmer); font-family:'Karla'; font-size:15px; cursor:pointer; text-decoration:underline; padding:6px}
-.oart{display:flex; justify-content:center; margin:0 0 16px}
-.oart svg{width:190px; height:auto}
-.onb h1{font-family:'Fraunces',serif; font-weight:600; font-size:31px; line-height:1.18; margin:0 0 12px; color:var(--cream)}
+.oart{display:flex; justify-content:center; margin:0 0 18px}
+.oart svg{width:min(72vw,280px); height:auto}
+.onb h1{font-family:'Fraunces',serif; font-weight:600; font-size:33px; line-height:1.18; margin:0 0 12px; color:var(--cream)}
 .onb .sub{color:var(--dim); font-size:17.5px; line-height:1.55; margin:0 0 22px}
 .onb .f{display:block; margin-bottom:6px}
 .onb input{width:100%; background:var(--card); border:1px solid rgba(246,239,227,.16); border-radius:12px; padding:15px; color:var(--cream); font-family:'Karla'; font-size:18px; margin-bottom:16px}
@@ -1654,7 +1654,8 @@ function obRender(){
       <button class="olink" style="align-self:center" onclick="ob.mode='joiner';obGo('jcode')">I have an invite code</button>`;
   }
   if(s==='name'){
-    body=`<h1>Who’s opening this account?</h1>
+    body=`<div class="grow"></div>
+      <h1>Who’s opening this account?</h1>
       <p class="sub">First names only — nothing leaves your two phones.</p>
       <label class="f" for="ob-name">Your first name</label>
       <input type="text" id="ob-name" maxlength="20" value="${me}" placeholder="First name" autocomplete="given-name">
@@ -1662,14 +1663,16 @@ function obRender(){
       <button class="cta pink" onclick="obSaveName()">Next</button>`;
   }
   if(s==='partner'){
-    body=`<h1>Nice to meet you, ${me}. Who’s the other account holder?</h1>
+    body=`<div class="grow"></div>
+      <h1>Nice to meet you, ${me}. Who’s the other account holder?</h1>
       <label class="f" for="ob-partner">Their first name</label>
       <input type="text" id="ob-partner" maxlength="20" value="${esc(profile.partner||'')}" placeholder="First name">
       <div class="grow"></div>
       <button class="cta pink" onclick="obSavePartner()">Next</button>`;
   }
   if(s==='anniv'){
-    body=`<div class="oart">${OB_ART.anniv}</div>
+    body=`<div class="grow"></div>
+      <div class="oart">${OB_ART.anniv}</div>
       <h1>When did you two become you two?</h1>
       <p class="sub">It gets stamped on your passbook. Skip it if you like.</p>
       <label class="f" for="ob-anniv">Together since (optional)</label>
@@ -1679,14 +1682,17 @@ function obRender(){
       <button class="cta pink" onclick="obGo('kids')">Next</button>`;
   }
   if(s==='kids'){
-    body=`<div class="oart">${OB_ART.kids}</div>
+    body=`<div class="grow"></div>
+      <div class="oart">${OB_ART.kids}</div>
       <h1>Kids to cover on date nights?</h1>
       <p class="sub">If a sitter’s part of the equation, Book’d tracks who’s got the kids.</p>
       <button class="ocardbtn" onclick="obKids(true)">🍼 Yes — track the sitter for us</button>
-      <button class="ocardbtn" onclick="obKids(false)">No kids to cover</button>`;
+      <button class="ocardbtn" onclick="obKids(false)">No kids to cover</button>
+      <div class="grow"></div>`;
   }
   if(s==='value'){
-    body=`<h1>Why keep books on a relationship?</h1>
+    body=`<div class="grow"></div>
+      <h1>Why keep books on a relationship?</h1>
       <div class="vs-card wo"><div class="vs-t">Without Book’d</div><ul>
         <li>“We should go out more” — never booked</li>
         <li>Date nights slip by, nobody notices</li>
@@ -1725,7 +1731,8 @@ function obRender(){
       <button class="olink" style="align-self:center" onclick="obGo('notif')">Later — I’ll do this from Settings</button>`;
   }
   if(s==='jcode'){
-    body=`<div class="oart">${OB_ART.jcode}</div>
+    body=`<div class="grow"></div>
+      <div class="oart">${OB_ART.jcode}</div>
       <h1>Got the invite code?</h1>
       <p class="sub">The 8-character code your partner minted — good for 24 hours.</p>
       <label class="f" for="ob-code">Invite code</label>
@@ -1736,14 +1743,17 @@ function obRender(){
   }
   if(s==='jwho'){
     const jm=esc((ob.join&&ob.join.profile.me)||'Account holder 1'), jp=esc((ob.join&&ob.join.profile.partner)||'Account holder 2');
-    body=`<h1>Found it. Which one is you?</h1>
+    body=`<div class="grow"></div>
+      <h1>Found it. Which one is you?</h1>
       <p class="sub">Everything you log will be signed with this name.</p>
       <button class="ocardbtn" onclick="obPick('me')">${jm}</button>
-      <button class="ocardbtn" onclick="obPick('partner')">${jp}</button>`;
+      <button class="ocardbtn" onclick="obPick('partner')">${jp}</button>
+      <div class="grow"></div>`;
   }
   if(s==='notif'){
     const who = sync&&sync.role==='partner' ? esc(profile.me||'your partner') : esc(profile.partner||'your partner');
-    body=`<div class="mocknotif"><div class="mi">📖</div><div><div class="mt">Book’d</div><div class="mb">${who} just deposited 2.5 hrs ♥</div></div><div class="mw">now</div></div>
+    body=`<div class="grow"></div>
+      <div class="mocknotif"><div class="mi">📖</div><div><div class="mt">Book’d</div><div class="mb">${who} just deposited 2.5 hrs ♥</div></div><div class="mw">now</div></div>
       <h1>Get notified when ${who} makes a deposit</h1>
       <p class="sub">Deposits, bookings, gentle nudges — even with the app closed.</p>
       <div class="grow"></div>
@@ -1813,7 +1823,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=50;
+const APP_V=51;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
