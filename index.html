@@ -196,7 +196,7 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .cal-legend{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.08em; color:var(--dimmer); text-align:center; margin-top:10px}
 
 /* ---------- confirm sheet ---------- */
-.sheetwrap{position:fixed; inset:0; background:rgba(20,12,22,.75); backdrop-filter:blur(2px); z-index:60; display:none; align-items:flex-end; padding:14px; padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+.sheetwrap{position:fixed; inset:0; background:rgba(20,12,22,.75); backdrop-filter:blur(2px); z-index:90; display:none; align-items:flex-end; padding:14px; padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 .sheetwrap.show{display:flex}
 .sheet{width:100%; max-width:452px; margin:0 auto; border-radius:18px; padding:18px; background:var(--card); border:1px solid rgba(246,239,227,.12); box-shadow:0 18px 40px rgba(0,0,0,.5)}
 .sheet .eyebrow{color:var(--rose)}
@@ -219,7 +219,7 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 
 footer{max-width:480px; margin:40px auto 0; padding:0 16px; text-align:center}
 footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--dimmer)}
-.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom)); background:var(--champagne); color:var(--plum); font-weight:700; font-size:14px; border-radius:10px; padding:10px 16px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:70}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom)); background:var(--champagne); color:var(--plum); font-weight:700; font-size:14px; border-radius:10px; padding:10px 16px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:95}
 /* new-account orientation */
 .orient{position:fixed; inset:0; z-index:80; background:rgba(20,12,22,.93); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; padding:22px}
 .ocard{width:100%; max-width:400px; background:var(--card); border:1px solid rgba(246,239,227,.14); border-radius:18px; padding:28px 22px; text-align:center; box-shadow:0 18px 40px rgba(0,0,0,.5)}
@@ -234,6 +234,49 @@ footer p{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing
 .spot{position:absolute; border-radius:14px; box-shadow:0 0 0 9999px rgba(20,12,22,.82); outline:2px solid var(--champagne); pointer-events:none}
 .spottip{position:absolute; width:min(88vw,340px); background:var(--card); border:1px solid rgba(246,239,227,.14); border-radius:14px; padding:14px 16px; color:var(--cream); font-size:14px; line-height:1.55; box-shadow:0 12px 30px rgba(0,0,0,.5)}
 .spotok{font-family:'Spline Sans Mono',monospace; font-size:11px; letter-spacing:.15em; text-transform:uppercase; color:var(--champagne); margin-top:8px}
+/* opening sequence — "opening your joint account" */
+.onb{position:fixed; inset:0; z-index:85; background:var(--plum); overflow-y:auto}
+.onb-in{min-height:100%; max-width:452px; margin:0 auto; padding:24px 22px calc(30px + env(safe-area-inset-bottom)); display:flex; flex-direction:column}
+.otop{display:flex; align-items:center; gap:14px; margin-bottom:26px; min-height:20px}
+.obar{display:flex; gap:6px; flex:1}
+.obar span{flex:1; height:3px; border-radius:99px; background:rgba(246,239,227,.15)}
+.obar span.on{background:var(--rose)}
+.olater{background:none; border:0; color:var(--dimmer); font-family:'Karla'; font-size:13.5px; cursor:pointer; text-decoration:underline; padding:4px}
+.onb h1{font-family:'Fraunces',serif; font-weight:600; font-size:29px; line-height:1.18; margin:0 0 10px; color:var(--cream)}
+.onb .sub{color:var(--dim); font-size:15px; line-height:1.55; margin:0 0 22px}
+.onb .f{display:block; margin-bottom:6px}
+.onb input{width:100%; background:var(--card); border:1px solid rgba(246,239,227,.16); border-radius:12px; padding:14px; color:var(--cream); font-family:'Karla'; font-size:17px; margin-bottom:16px}
+.onb input:focus{outline:2px solid var(--rose); outline-offset:1px}
+.ocardbtn{display:block; width:100%; text-align:left; background:var(--card); border:1px solid rgba(246,239,227,.14); border-radius:14px; padding:17px 16px; color:var(--cream); font-family:'Karla'; font-size:16.5px; cursor:pointer; margin-bottom:12px}
+.ocardbtn:active{border-color:var(--rose)}
+.oreact{background:rgba(233,197,128,.12); border:1px dashed var(--champagne); color:var(--champagne); border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.5; margin:0 0 16px}
+.onb .grow{flex:1}
+.obrand{font-family:'Fraunces',serif; font-size:44px; font-weight:600; color:var(--cream); text-align:center; margin-top:34px}
+.obrand .hrt{color:var(--rose); font-size:38px; vertical-align:6%}
+.otag{font-family:'Spline Sans Mono',monospace; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--rose); text-align:center; margin:8px 0 30px}
+.vs-card{border-radius:14px; padding:16px; margin-bottom:14px}
+.vs-card.wo{background:rgba(246,239,227,.05); border:1px solid rgba(246,239,227,.1); color:var(--dimmer)}
+.vs-card.wi{background:var(--card); border:1px solid var(--champagne); box-shadow:0 10px 26px rgba(0,0,0,.35)}
+.vs-t{font-family:'Spline Sans Mono',monospace; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; margin-bottom:10px}
+.vs-card.wo .vs-t{color:var(--dimmer)} .vs-card.wi .vs-t{color:var(--champagne)}
+.vs-card ul{list-style:none; margin:0; padding:0; font-size:14.5px; line-height:1.5}
+.vs-card li{padding:5px 0 5px 22px; position:relative}
+.vs-card.wo li::before{content:'—'; position:absolute; left:0; color:var(--dimmer)}
+.vs-card.wi li{color:var(--cream)}
+.vs-card.wi li::before{content:'♥'; position:absolute; left:0; color:var(--rose); font-size:12px; top:8px}
+.opanel{border-radius:14px; padding:16px; margin-bottom:14px}
+.opanel.mine{background:var(--card); border:1px solid rgba(233,197,128,.4)}
+.opanel.theirs{background:rgba(242,125,152,.1); border:1px solid rgba(242,125,152,.35)}
+.opanel .pt{font-weight:700; font-size:16px; margin-bottom:10px; color:var(--cream)}
+.codetiles{display:flex; gap:6px; justify-content:center; margin:6px 0 12px; flex-wrap:wrap}
+.codetiles b{background:var(--plum); border:1px solid rgba(246,239,227,.22); border-radius:8px; padding:9px 0; width:34px; text-align:center; font-family:'Spline Sans Mono',monospace; font-size:18px; font-weight:600; color:var(--cream)}
+.codetiles b.dash{border:0; background:none; width:14px; color:var(--dimmer)}
+.odiv{text-align:center; font-family:'Spline Sans Mono',monospace; font-size:11px; color:var(--dimmer); margin:4px 0 14px}
+.mocknotif{display:flex; gap:10px; align-items:flex-start; background:var(--cream); color:var(--plum); border-radius:14px; padding:12px 14px; margin:0 0 20px; box-shadow:0 10px 26px rgba(0,0,0,.4); text-align:left}
+.mocknotif .mi{font-size:22px; line-height:1}
+.mocknotif .mt{font-weight:700; font-size:13.5px}
+.mocknotif .mb{font-size:13px; line-height:1.4}
+.mocknotif .mw{font-family:'Spline Sans Mono',monospace; font-size:10px; color:#8a7f74; margin-left:auto}
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -1103,6 +1146,7 @@ function settingsPage(){
       </div>
       <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
       <button class="cta ghost" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
+      <button class="cta ghost" style="width:100%" onclick="showOnboard()">👀 Preview the couple opening</button>
       <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
       <input type="file" id="restore-file" accept="application/json,.json" hidden>
     </div>`;
@@ -1157,7 +1201,7 @@ window.wipeAll=()=>{
   entries=[]; reservation=null; plans=[]; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
   renderAll(); toast(hadSync?'This phone wiped — the vault is untouched':'Account closed — fresh books');
-  setTimeout(()=>showOrientation(0), 1200);   // fresh books = fresh orientation
+  setTimeout(()=>showOnboard(), 1200);   // fresh books = the full opening sequence
 };
 function wireSettings(){
   const b=$('#backup-btn'); if(!b) return;
@@ -1488,6 +1532,186 @@ setInterval(()=>{
   }
 },1000);
 
+/* ---------- opening sequence: the new-couple flow ---------- */
+const OB_PATH={ founder:['welcome','name','partner','anniv','kids','value','pair','notif'],
+                joiner:['welcome','jcode','jwho','notif'] };
+let ob={ mode:'founder', step:'welcome', invite:null, minting:false, join:null };
+window.showOnboard=()=>{ ob={mode:'founder', step:'welcome', invite:null, minting:false, join:null}; obRender(); };
+window.obGo=step=>{
+  if(step==='notif' && !sync) return obDone();   // nudges need a vault; nothing to promise without one
+  ob.step=step; obRender();
+  const el=$('#onboard'); if(el) el.scrollTop=0;
+};
+window.obDone=()=>{
+  store.set('onboarded',1); store.set('oriented',1);   // flow replaces the card tour; spotlights still teach in-app
+  const o=$('#onboard'); if(o) o.remove();
+  renderAll();
+  toast((profile.me&&profile.partner)?'The Joint Account of '+profile.me+' & '+profile.partner+' is open ♥':'Welcome to Book’d ♥');
+};
+function annivReact(iso){
+  if(!iso) return '';
+  const yrs=Math.floor((Date.now()-parseISO(iso).getTime())/(365.25*DAY));
+  if(yrs<0) return 'A date in the future? Planning ahead — we respect it.';
+  if(yrs<1) return 'Fresh books! The opening-deposit era — enjoy every minute of it.';
+  if(yrs<5) return yrs+' year'+(yrs>1?'s':'')+' on deposit and compounding nicely.';
+  if(yrs<10) return yrs+' years together — that’s a serious portfolio. Let’s keep it growing.';
+  return yrs+' years on the books — a blue-chip account. Let’s protect the principal.';
+}
+window.obAnnivPick=v=>{ profile.anniv=v||''; store.set('profile',profile);
+  const r=$('#ob-react'); if(r) r.innerHTML=v?`<div class="oreact">${annivReact(v)}</div>`:''; };
+window.obSaveName=()=>{ const v=$('#ob-name').value.trim(); if(!v) return toast('First name, please — it signs the passbook');
+  profile.me=v; store.set('profile',profile); obGo('partner'); };
+window.obSavePartner=()=>{ const v=$('#ob-partner').value.trim(); if(!v) return toast('Their first name goes on the account too');
+  profile.partner=v; store.set('profile',profile); obGo('anniv'); };
+window.obKids=v=>{ profile.kids=v; store.set('profile',profile); obGo('value'); };
+window.obMint=async()=>{
+  if(ob.minting) return; ob.minting=true;
+  try{
+    if(!window.fb||!ensureDb()){ ob.minting=false; const a=$('#ob-mint'); if(a) a.innerHTML=`<p class="sub" style="margin-bottom:12px">The sync engine is still waking up.</p><button class="cta gold" style="margin-top:0" onclick="obMint()">Try again</button>`; return; }
+    if(!sync){ pairRole='me'; await openVault(); }
+    if(!sync){ ob.minting=false; return; }   // openVault already explained what went wrong
+    const code=inviteCodeGen();
+    await window.fb.setDoc(window.fb.doc(db,'tickets',code), {cid:sync.cid, expiresAt:new Date(Date.now()+86400000), createdAt:new Date()});
+    ob.invite=code.slice(0,4)+'-'+code.slice(4);
+  }catch(e){ toast('Could not mint the invite — check your connection'); }
+  ob.minting=false; obRender();
+};
+window.obJoinCode=async()=>{
+  if(!window.fb||!ensureDb()) return toast('Sync engine still loading — try again in a moment');
+  let code=($('#ob-code').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''), cid=code;
+  if(code.length>=6 && code.length<=12){
+    let t=null; try{ t=await window.fb.getDoc(window.fb.doc(db,'tickets',code)); }catch(e){}
+    if(!t||!t.exists()||!t.data().cid) return toast('That invite is expired or wrong — ask your partner for a fresh one');
+    cid=t.data().cid; window.fb.deleteDoc(window.fb.doc(db,'tickets',code)).catch(()=>{});
+  } else if(code.length<16) return toast('That code looks short — check it and try again');
+  let snap=null; try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
+  if(!snap||!snap.exists()) return toast("Couldn't find that vault — double-check the code");
+  const d=snap.data()||{};
+  ob.join={cid, profile:d.profile||{}, devices:d.devices||{}};
+  obGo('jwho');
+};
+window.obPick=async role=>{
+  const seat=ob.join.devices&&ob.join.devices[role];
+  if(seat && seat!==deviceId) return toast('That seat is already held by another phone — sure that one’s you?');
+  pairRole=role;
+  profile={...profile, ...ob.join.profile}; store.set('profile',profile);
+  await finishJoin(ob.join.cid);
+  if(sync) obGo('notif');
+};
+window.obNudges=async()=>{ await enableNudges(); obDone(); };
+function obBarHTML(){
+  const path=OB_PATH[ob.mode], i=path.indexOf(ob.step);
+  return `<div class="obar">${path.map((_,d)=>`<span class="${d<=i?'on':''}"></span>`).join('')}</div>`;
+}
+function obRender(){
+  let o=$('#onboard'); if(!o){ o=document.createElement('div'); o.id='onboard'; o.className='onb'; document.body.appendChild(o); }
+  const s=ob.step, me=esc(profile.me||''), pa=esc(profile.partner||'your partner');
+  let top=obBarHTML(), body='';
+  if(s==='welcome'){ top='';
+    body=`<div class="obrand">Book<span class="hrt">♥</span>d</div>
+      <div class="otag">Your relationship, on the books</div>
+      <h1 style="text-align:center">Every date is a deposit</h1>
+      <p class="sub" style="text-align:center">The joint account for you two — time together goes in, and you watch the balance grow.</p>
+      <div class="grow"></div>
+      <button class="cta pink" onclick="ob.mode='founder';obGo('name')">Open your joint account</button>
+      <button class="olink" style="align-self:center" onclick="ob.mode='joiner';obGo('jcode')">I have an invite code</button>`;
+  }
+  if(s==='name'){
+    body=`<h1>Who’s opening this account?</h1>
+      <p class="sub">First names only — yours signs the passbook. Nothing here ever leaves your two phones.</p>
+      <label class="f" for="ob-name">Your first name</label>
+      <input type="text" id="ob-name" maxlength="20" value="${me}" placeholder="First name" autocomplete="given-name">
+      <div class="grow"></div>
+      <button class="cta pink" onclick="obSaveName()">Next</button>`;
+  }
+  if(s==='partner'){
+    body=`<h1>Nice to meet you, ${me}. Who’s the other account holder?</h1>
+      <label class="f" for="ob-partner">Their first name</label>
+      <input type="text" id="ob-partner" maxlength="20" value="${esc(profile.partner||'')}" placeholder="First name">
+      <div class="grow"></div>
+      <button class="cta pink" onclick="obSavePartner()">Next</button>`;
+  }
+  if(s==='anniv'){
+    body=`<h1>When did you two become you two?</h1>
+      <p class="sub">Your anniversary gets stamped on the passbook — and the app celebrates it with you. Skip it if you’d rather not say.</p>
+      <label class="f" for="ob-anniv">Together since (optional)</label>
+      <input type="date" id="ob-anniv" value="${esc(profile.anniv||'')}" onchange="obAnnivPick(this.value)">
+      <div id="ob-react">${profile.anniv?`<div class="oreact">${annivReact(profile.anniv)}</div>`:''}</div>
+      <div class="grow"></div>
+      <button class="cta pink" onclick="obGo('kids')">Next</button>`;
+  }
+  if(s==='kids'){
+    body=`<h1>Kids to cover on date nights?</h1>
+      <p class="sub">Yours, theirs, or together — if a sitter is part of the equation, Book’d will keep track of who’s got the kids for every date you book.</p>
+      <button class="ocardbtn" onclick="obKids(true)">🍼 Yes — track the sitter for us</button>
+      <button class="ocardbtn" onclick="obKids(false)">No kids to cover</button>`;
+  }
+  if(s==='value'){
+    body=`<h1>Why keep books on a marriage?</h1>
+      <div class="vs-card wo"><div class="vs-t">Without Book’d</div><ul>
+        <li>“We should go out more” — never booked</li>
+        <li>Date nights slip by, nobody notices</li>
+        <li>Quality time: untracked</li>
+        <li>Great moments, forgotten by spring</li></ul></div>
+      <div class="vs-card wi"><div class="vs-t">With Book’d</div><ul>
+        <li>Every date on the books</li>
+        <li>A balance you watch grow</li>
+        <li>A roulette full of date-night ideas</li>
+        <li>Two phones, one ledger</li></ul></div>
+      <div class="grow"></div>
+      <button class="cta pink" onclick="obGo('pair')">Continue</button>`;
+  }
+  if(s==='pair'){
+    let mine='';
+    if(ob.invite){
+      const tiles=ob.invite.split('').map(ch=>ch==='-'?'<b class="dash">–</b>':`<b>${ch}</b>`).join('');
+      mine=`<div class="codetiles">${tiles}</div>
+        <div class="row2" style="margin-top:0">
+          <button class="cta ghostd" style="flex:1; margin-top:0" onclick="inviteCopy('${ob.invite}')">Copy</button>
+          <button class="cta pink" style="flex:1; margin-top:0" onclick="inviteShare('${ob.invite}')">Share</button>
+        </div>
+        <p class="datanote" style="margin-top:10px">Good for 24 hours, one use, then it burns.</p>`;
+    } else {
+      mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Minting the invite…</p>':`<button class="cta gold" style="margin-top:0" onclick="obMint()">🎟 Mint the invite</button>`}</div>`;
+    }
+    body=`<h1>Bring ${pa} in</h1>
+      <p class="sub">Two phones, one ledger — every deposit shows up on both, even long-distance.</p>
+      <div class="opanel mine"><div class="pt">Invite ${pa}</div>${mine}</div>
+      <div class="odiv">— or —</div>
+      <div class="opanel theirs"><div class="pt">${pa} sent me a code</div>
+        <input type="text" id="sync-code" placeholder="XXXX-XXXX" autocapitalize="characters" style="margin-bottom:10px">
+        <button class="cta pink" style="margin-top:0" onclick="joinVault().then(()=>{ if(sync) obGo('notif'); })">Pair now</button></div>
+      <div class="grow"></div>
+      <button class="olink" style="align-self:center" onclick="obGo('notif')">Later — I’ll do this from Settings</button>`;
+  }
+  if(s==='jcode'){
+    body=`<h1>Got the invite code?</h1>
+      <p class="sub">Your partner mints it in Book’d — an 8-character code, good for 24 hours. Type it in and the joint account opens on this phone too.</p>
+      <label class="f" for="ob-code">Invite code</label>
+      <input type="text" id="ob-code" placeholder="XXXX-XXXX" autocapitalize="characters">
+      <div class="grow"></div>
+      <button class="cta pink" onclick="obJoinCode()">Open the vault</button>
+      <button class="olink" style="align-self:center" onclick="ob.mode='founder';obGo('name')">No code? Open a new account instead</button>`;
+  }
+  if(s==='jwho'){
+    const jm=esc((ob.join&&ob.join.profile.me)||'Account holder 1'), jp=esc((ob.join&&ob.join.profile.partner)||'Account holder 2');
+    body=`<h1>Found it. Which one is you?</h1>
+      <p class="sub">Everything you log will be signed with this name.</p>
+      <button class="ocardbtn" onclick="obPick('me')">${jm}</button>
+      <button class="ocardbtn" onclick="obPick('partner')">${jp}</button>`;
+  }
+  if(s==='notif'){
+    const who = sync&&sync.role==='partner' ? esc(profile.me||'your partner') : esc(profile.partner||'your partner');
+    body=`<div class="mocknotif"><div class="mi">📖</div><div><div class="mt">Book’d</div><div class="mb">${who} just deposited 2.5 hrs ♥</div></div><div class="mw">now</div></div>
+      <h1>Get notified when ${who} makes a deposit</h1>
+      <p class="sub">Deposits, tomorrow’s bookings, the occasional gentle nudge — even with the app closed. One permission pop-up, then you’re set.</p>
+      <div class="grow"></div>
+      <button class="cta pink" onclick="obNudges()">Yes please</button>
+      <button class="olink" style="align-self:center" onclick="obDone()">Skip for now</button>`;
+  }
+  o.innerHTML=`<div class="onb-in"><div class="otop">${top}</div>${body}</div>`;
+}
+
 /* ---------- new-account orientation & coach marks ---------- */
 const ORIENT=[
   {big:'<span style="color:var(--rose)">♥</span>', e:'Welcome to Book’d', h:'Every date is a deposit',
@@ -1520,7 +1744,7 @@ window.replayTour=()=>{   // a replay replays everything: cards now, spotlights 
 };
 function maybeSpot(){
   if(!store.get('oriented',false)) return;                    // orientation first, always
-  if($('#orient') || $('#spotwrap')) return;
+  if($('#orient') || $('#spotwrap') || $('#onboard')) return;
   if($('#sheetwrap').classList.contains('show')) return;
   let target=null, msg='', key='';
   if(ui.tab===0 && !store.get('spot_home',false) && $('#timer-btn')){
@@ -1548,10 +1772,14 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=48;
+const APP_V=49;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
-if(!store.get('oriented',false)) showOrientation(0);
+/* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
+if(!store.get('onboarded',false)){
+  if((profile.me&&profile.partner)||sync){ store.set('onboarded',1); if(!store.get('oriented',false)) showOrientation(0); }
+  else showOnboard();
+} else if(!store.get('oriented',false)) showOrientation(0);
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 /* self-updater: ask the server (never the cache) whether a newer build exists; if so, refresh once */
 fetch('./sw.js?u='+Date.now(), {cache:'no-store'}).then(r=>r.text()).then(t=>{
