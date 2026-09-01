@@ -648,7 +648,16 @@ window.commitDeposit=()=>{
 /* ---------- PLAN ---------- */
 function planPage(){
   const best=bestCat();
-  return `<div class="sechead"><h2>Need a plan?</h2><span class="lead"></span><span class="tag">Idea roulette</span></div>
+  const defBook = ui.bookDate || (reservation?toISO(nextOccurrence()):toISO(new Date(Date.now()+DAY)));
+  return `<div class="sechead"><h2>Already have a plan?</h2><span class="lead"></span><span class="tag">Straight to the books</span></div>
+    <div class="cardbox">
+      <div class="fgroup"><label class="f" for="own-title">What are you two doing?</label>
+        <input type="text" id="own-title" maxlength="60" placeholder="Dinner at that new ramen place"></div>
+      <div class="fgroup"><label class="f" for="own-date">Which day?</label>
+        <input type="date" id="own-date" value="${defBook}" min="${todayISO()}"></div>
+      <button class="cta pink" style="margin-top:0" onclick="bookOwn()">📅 Book it</button>
+    </div>
+    <div class="sechead"><h2>Need a plan?</h2><span class="lead"></span><span class="tag">Idea roulette</span></div>
     ${best?`<div class="callout">Best investment: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ average across ${best.n} dates. Book more of these.</div>`:''}
     <div class="cardbox">
       <div class="pillgroup"><div class="pills">
@@ -727,6 +736,14 @@ window.bookIdea=()=>{
   $('#bookrow').innerHTML=`<div style="display:flex; gap:8px; width:100%; margin-top:10px">
     <input type="date" id="book-date" value="${def}" min="${todayISO()}">
     <button class="cta gold" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button></div>`;
+};
+window.bookOwn=()=>{
+  const title=$('#own-title').value.trim(); if(!title) return toast('What’s the plan? Give it a name');
+  const date=$('#own-date').value; if(!date) return toast('Pick a day');
+  const plan={ id:Date.now(), title, date, sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
+  plans.push(plan); savePlans(); ui.bookDate=null;
+  renderAll();
+  openSitterSheet(plan.id);
 };
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return toast('Pick a day');
@@ -1840,7 +1857,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=52;
+const APP_V=53;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
