@@ -341,6 +341,7 @@ const FIREBASE_CONFIG={apiKey:"AIzaSyBHfJKxOrHlfM65zVSOwbUXblPcuHvm94Q",authDoma
 const VAPID_KEY='BGN9vbwS03iEPDkMRqM7vzH3rI04eWQ9O6AGqG__u1YS9eb07Fg4PgmrkzJ0f9NL7BuN3o3lGKq5Y0mfGD66eR4';  // public web-push address plaque
 let sync=store.get('sync', null);   // {cid, role:'me'|'partner'}
 let pushOn=store.get('pushOn', false);
+let nudgeEvery=store.get('nudgeEvery', 15);   // days between "running behind" reminder nags
 let db=null, unsubMeta=null, unsubEntries=null, syncStatus='off', pairRole='me';
 let seenAt=store.get('seenAt', null);
 if(!seenAt){ seenAt=Date.now(); store.set('seenAt', seenAt); }
@@ -1125,6 +1126,11 @@ function syncSectionHTML(){
         ? `<button class="cta ghostd" style="width:100%; margin-top:0" onclick="disableNudges()">🔔 On — turn off for this phone</button>`
         : `<button class="cta pink" style="width:100%; margin-top:0" onclick="enableNudges()">🔔 Turn on nudges (this phone)</button>
            <p class="datanote" style="margin-top:8px">One permission pop-up, then: partner deposits, tomorrow's dates, low-ledger alerts — even with the app closed.</p>`}
+      <div class="pillgroup" style="margin-top:12px"><label class="f">"Book something" reminder pace</label>
+        <div class="pills">
+          ${[7,15,30].map(n=>`<button class="pill ${nudgeEvery===n?'on':''}" onclick="setNudgeEvery(${n})">Every ${n} days</button>`).join('')}
+        </div></div>
+      <p class="datanote" style="margin-top:6px">Tomorrow's-date reminders always come. The "running behind" nags wait this long between rings — for both phones.</p>
 
       <label class="f" style="margin-top:18px">Housekeeping</label>
       <button class="cta ghostd" style="width:100%; margin-top:0" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
@@ -1323,7 +1329,7 @@ function ensureDb(){
 }
 const metaRef=()=>window.fb.doc(db,'couples',sync.cid);
 const entryRef=id=>window.fb.doc(db,'couples',sync.cid,'entries',String(id));
-const metaPayload=()=>({profile, reservation, plans, goal, favorites, lastBy:sync?sync.role:null, updatedAt:Date.now()});
+const metaPayload=()=>({profile, reservation, plans, goal, favorites, nudgeEvery, lastBy:sync?sync.role:null, updatedAt:Date.now()});
 function startSync(){
   if(!sync||!ensureDb()) return;
   syncStatus='connecting';
@@ -1352,6 +1358,7 @@ function startSync(){
       profile=d.profile||profile; reservation=d.reservation??null;
       plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans);
       goal=d.goal??null; favorites=d.favorites||[];
+      if(d.nudgeEvery>0){ nudgeEvery=d.nudgeEvery; store.set('nudgeEvery',nudgeEvery); }
       store.set('profile',profile); store.set('reservation',reservation); store.set('plans',plans);
       store.set('goal',goal); store.set('favorites',favorites);
       if(firstMeta){
@@ -1389,6 +1396,9 @@ function pushMeta(){ if(sync&&db) window.fb.setDoc(metaRef(), metaPayload(), {me
 function pushEntry(r){ if(sync&&db) window.fb.setDoc(entryRef(r.id), r).catch(()=>{}); }
 function pushDelete(id){ if(sync&&db) window.fb.deleteDoc(entryRef(id)).catch(()=>{}); }
 window.setPairRole=r=>{ pairRole=r; renderPage(); };
+window.setNudgeEvery=n=>{ nudgeEvery=n; store.set('nudgeEvery',n);
+  if(sync&&db) window.fb.setDoc(metaRef(), {nudgeEvery:n}, {merge:true}).catch(()=>{});
+  toast('Reminder nags now ring every '+n+' days'); renderPage(); };
 window.openVault=async()=>{
   if(!ensureDb()) return toast('Sync engine still loading — try again in a moment');
   sync={cid:newCid(), role:pairRole}; store.set('sync',sync);
@@ -1857,7 +1867,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=53;
+const APP_V=54;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
