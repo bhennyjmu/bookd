@@ -1130,7 +1130,7 @@ function syncSectionHTML(){
         <div class="pills">
           ${[7,15,30].map(n=>`<button class="pill ${nudgeEvery===n?'on':''}" onclick="setNudgeEvery(${n})">Every ${n} days</button>`).join('')}
         </div></div>
-      <p class="datanote" style="margin-top:6px">Tomorrow's-date reminders always come. The "running behind" nags wait this long between rings — for both phones.</p>
+      <p class="datanote" style="margin-top:6px">Tomorrow's-date reminders always come. The "running behind" nags wait this long between rings — on this phone. Your partner sets their own pace.</p>
 
       <label class="f" style="margin-top:18px">Housekeeping</label>
       <button class="cta ghostd" style="width:100%; margin-top:0" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
@@ -1329,7 +1329,7 @@ function ensureDb(){
 }
 const metaRef=()=>window.fb.doc(db,'couples',sync.cid);
 const entryRef=id=>window.fb.doc(db,'couples',sync.cid,'entries',String(id));
-const metaPayload=()=>({profile, reservation, plans, goal, favorites, nudgeEvery, lastBy:sync?sync.role:null, updatedAt:Date.now()});
+const metaPayload=()=>({profile, reservation, plans, goal, favorites, lastBy:sync?sync.role:null, updatedAt:Date.now()});
 function startSync(){
   if(!sync||!ensureDb()) return;
   syncStatus='connecting';
@@ -1358,7 +1358,8 @@ function startSync(){
       profile=d.profile||profile; reservation=d.reservation??null;
       plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans);
       goal=d.goal??null; favorites=d.favorites||[];
-      if(d.nudgeEvery>0){ nudgeEvery=d.nudgeEvery; store.set('nudgeEvery',nudgeEvery); }
+      const myPace=d.nudgePace&&d.nudgePace[sync.role];
+      if(myPace>0){ nudgeEvery=myPace; store.set('nudgeEvery',nudgeEvery); }
       store.set('profile',profile); store.set('reservation',reservation); store.set('plans',plans);
       store.set('goal',goal); store.set('favorites',favorites);
       if(firstMeta){
@@ -1397,8 +1398,8 @@ function pushEntry(r){ if(sync&&db) window.fb.setDoc(entryRef(r.id), r).catch(()
 function pushDelete(id){ if(sync&&db) window.fb.deleteDoc(entryRef(id)).catch(()=>{}); }
 window.setPairRole=r=>{ pairRole=r; renderPage(); };
 window.setNudgeEvery=n=>{ nudgeEvery=n; store.set('nudgeEvery',n);
-  if(sync&&db) window.fb.setDoc(metaRef(), {nudgeEvery:n}, {merge:true}).catch(()=>{});
-  toast('Reminder nags now ring every '+n+' days'); renderPage(); };
+  if(sync&&db) window.fb.setDoc(metaRef(), {nudgePace:{[sync.role]:n}}, {merge:true}).catch(()=>{});
+  toast('This phone gets reminder nags every '+n+' days'); renderPage(); };
 window.openVault=async()=>{
   if(!ensureDb()) return toast('Sync engine still loading — try again in a moment');
   sync={cid:newCid(), role:pairRole}; store.set('sync',sync);
@@ -1867,7 +1868,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=55;
+const APP_V=56;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
