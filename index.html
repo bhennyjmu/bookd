@@ -1457,10 +1457,10 @@ window.mintInvite=async()=>{
   try{
     await window.fb.setDoc(window.fb.doc(db,'tickets',code),
       {cid:sync.cid, expiresAt:new Date(Date.now()+86400000), createdAt:new Date()});
-  }catch(e){ return toast('Could not mint the invite — check your connection'); }
+  }catch(e){ return toast('Could not create the invite — check your connection'); }
   const disp=code.slice(0,4)+'-'+code.slice(4);
   openSheet(`
-    <div class="eyebrow">Invite minted · valid 24 hours · one use</div><h3 class="mono" style="letter-spacing:.1em">${disp}</h3>
+    <div class="eyebrow">Invite ready · valid 24 hours · one use</div><h3 class="mono" style="letter-spacing:.1em">${disp}</h3>
     <div class="sheetnote">Send this to your partner. On their phone: Settings → tap their name pill → enter this code → Join. It burns the moment it's used.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="inviteCopy('${disp}')">Copy</button>
@@ -1650,7 +1650,7 @@ window.obMint=async()=>{
     const code=inviteCodeGen();
     await window.fb.setDoc(window.fb.doc(db,'tickets',code), {cid:sync.cid, expiresAt:new Date(Date.now()+86400000), createdAt:new Date()});
     ob.invite=code.slice(0,4)+'-'+code.slice(4);
-  }catch(e){ toast('Could not mint the invite — check your connection'); }
+  }catch(e){ toast('Could not create the invite — check your connection'); }
   ob.minting=false; obRender();
 };
 window.obJoinCode=async()=>{
@@ -1717,7 +1717,7 @@ function obRender(){
     body=`<div class="grow"></div>
       <div class="oart">${OB_ART.anniv}</div>
       <h1>When did you two become you two?</h1>
-      <p class="sub">It gets stamped on your passbook. Skip it if you like.</p>
+      <p class="sub">Optional — skip it if you like.</p>
       <label class="f" for="ob-anniv">Together since (optional)</label>
       <input type="date" id="ob-anniv" value="${esc(profile.anniv||'')}" onchange="obAnnivPick(this.value)">
       <div id="ob-react">${profile.anniv?`<div class="oreact">${annivReact(profile.anniv)}</div>`:''}</div>
@@ -1760,7 +1760,7 @@ function obRender(){
         </div>
         <p class="datanote" style="margin-top:10px">Good for 24 hours, one use, then it burns.</p>`;
     } else {
-      mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Minting the invite…</p>':`<button class="cta gold" style="margin-top:0" onclick="obMint()">🎟 Mint the invite</button>`}</div>`;
+      mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Getting your code…</p>':`<button class="cta gold" style="margin-top:0" onclick="obMint()">🎟 Get the invite code</button>`}</div>`;
     }
     body=`<div class="oart" style="margin-bottom:10px">${OB_ART.pair}</div>
       <h1>Bring ${pa} in</h1>
@@ -1777,7 +1777,7 @@ function obRender(){
     body=`<div class="grow"></div>
       <div class="oart">${OB_ART.jcode}</div>
       <h1>Got the invite code?</h1>
-      <p class="sub">The 8-character code your partner minted — good for 24 hours.</p>
+      <p class="sub">The 8-character code from your partner — good for 24 hours.</p>
       <label class="f" for="ob-code">Invite code</label>
       <input type="text" id="ob-code" placeholder="XXXX-XXXX" autocapitalize="characters">
       <div class="grow"></div>
@@ -1867,7 +1867,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=54;
+const APP_V=55;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
