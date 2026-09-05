@@ -1017,14 +1017,15 @@ function calGridHTML(){
   for(let i=0;i<firstDow;i++) cells+='<div class="cal-cell empty"></div>';
   for(let d=1;d<=dim;d++){
     const iso=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const marks=(past[iso]?'<span class="cd past">♥</span>':'')+(fut[iso]?`<span class="cd fut">${fut[iso]==='need'?'◌':'●'}</span>`:'');
+    const resv=(!past[iso] && !fut[iso] && iso>=tISO && resvOccursOn(iso))?'<span class="cd fut">♡</span>':'';
+    const marks=(past[iso]?'<span class="cd past">♥</span>':'')+(fut[iso]?`<span class="cd fut">${fut[iso]==='need'?'◌':'●'}</span>`:'')+resv;
     cells+=`<div class="cal-cell ${iso===tISO?'today':''}" onclick="openDay('${iso}')" role="button" tabindex="0"><span class="cn2">${d}</span>${marks}</div>`;
   }
   return `<div class="sechead"><h2>Calendar</h2><span class="lead"></span><span class="tag">Us, by the month</span></div>
     <div class="cardbox" id="cal-card">
       <div class="cal-head"><button class="cal-nav" onclick="calNav(-1)">‹</button><span class="cal-title">${monthName}</span><button class="cal-nav" onclick="calNav(1)">›</button></div>
       <div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
-      <div class="cal-legend"><span class="cd past">♥</span> date logged · <span class="cd fut">●</span> booked ahead${kidsOn()?' · <span class="cd fut">◌</span> booked, no sitter yet':''}</div>
+      <div class="cal-legend"><span class="cd past">♥</span> date logged · <span class="cd fut">●</span> booked ahead${kidsOn()?' · <span class="cd fut">◌</span> booked, no sitter yet':''}${reservation?' · <span class="cd fut">♡</span> standing date night':''}</div>
     </div>`;
 }
 window.calNav=d=>{ ui.calMonth=new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth()+d, 1); renderPage(); };
@@ -1903,7 +1904,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=62;
+const APP_V=63;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
