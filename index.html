@@ -516,10 +516,10 @@ function goalRowHTML(s){
 function clockButtonsHTML(){
   const secs=elapsedSecs();
   const state = timer&&timer.running?'running':(timer&&secs>0?'paused':'idle');
-  if(state==='idle') return `<button class="cta gold" id="timer-btn" onclick="clockIn()">⏱ Clock in — we're on a date</button>`;
+  if(state==='idle') return `<button class="cta pink" id="timer-btn" onclick="clockIn()">⏱ Start a date</button>`;
   const main = state==='running'
-    ? `<button class="cta gold" id="timer-btn" onclick="clockOut()">■ Clock out — <span class="mono" id="tbtn-t">${fmtMS(secs)}</span> so far</button>`
-    : `<button class="cta gold" id="timer-btn" onclick="clockResume()">▶ Resume — <span class="mono">${fmtMS(secs)}</span> banked</button>`;
+    ? `<button class="cta pink" id="timer-btn" onclick="clockOut()">■ Clock out — <span class="mono" id="tbtn-t">${fmtMS(secs)}</span> so far</button>`
+    : `<button class="cta pink" id="timer-btn" onclick="clockResume()">▶ Resume — <span class="mono">${fmtMS(secs)}</span> banked</button>`;
   return main+`<div class="row2">
     ${state==='running'?`<button class="cta ghostd" style="flex:1" onclick="clockPause()">⏸ Pause</button>`
                        :`<button class="cta ghostd" style="flex:1" onclick="clockOut()">■ Clock out</button>`}
@@ -532,8 +532,8 @@ function homePage(){
     <div class="cardbox">
       ${clockButtonsHTML()}
       ${ui.depOpen
-        ? `<button class="cta ghost" onclick="closeDepForm()">➖ Deposit a past date</button>${depositFormHTML()}`
-        : `<button class="cta ghost" onclick="openDepForm()">➕ Deposit a past date</button>
+        ? `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="closeDepForm()">➖ deposit a past date</button>${depositFormHTML()}`
+        : `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="openDepForm()">➕ deposit a past date</button>
            ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is on the Calendar.</div>`:''}`}
     </div>`;
 }
@@ -700,7 +700,7 @@ function ideasBlock(){
   return `<button class="linklike" onclick="ui.filtersOpen=!ui.filtersOpen;renderPage()">${ui.filtersOpen?'▾':'▸'} filters${active.length?' · '+active.join(' · '):''}</button>`
     +filterRows
     +`<div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
-    <button class="cta gold" id="spin-btn" onclick="spin()">🎲 Spin the roulette</button>
+    <button class="cta pink" id="spin-btn" onclick="spin()">🎲 Spin the roulette</button>
     ${currentIdea&&!favorites.includes(currentIdea.n)?`<button class="cta ghost" onclick="saveFav()">♥ Save idea</button>`:''}
     <div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
       favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
@@ -757,7 +757,7 @@ window.bookIdea=()=>{
   const def = ui.bookDate || (reservation?toISO(nextOccurrence()):toISO(new Date(Date.now()+DAY)));
   $('#bookrow').innerHTML=`<div style="display:flex; gap:8px; width:100%; margin-top:10px">
     <input type="date" id="book-date" value="${def}" min="${todayISO()}">
-    <button class="cta gold" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button></div>`;
+    <button class="cta pink" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button></div>`;
 };
 window.bookOwn=()=>{
   const title=$('#own-title').value.trim(); if(!title) return toast('What’s the plan? Give it a name');
@@ -782,7 +782,7 @@ window.openSitterSheet=id=>{
       <div class="eyebrow">Booked ♥ · ${esc(p.title)} · ${fmtDate(p.date)}</div>
       <h3>On the books.</h3>
       ${cal}
-      <button class="cta gold" onclick="closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Done</button>`);
+      <button class="cta pink" onclick="closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Done</button>`);
     return;
   }
   openSheet(`
@@ -791,7 +791,7 @@ window.openSitterSheet=id=>{
     <div class="sheetnote">A booked date isn't booked until they're covered. You can change this later on the Calendar tab.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="setSitter(${id},'needed');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Still need one</button>
-      <button class="cta gold" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">🍼 Sitter locked in</button>
+      <button class="cta pink" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">🍼 Sitter locked in</button>
     </div>
     ${cal}
     <a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ↗</a>`);
@@ -814,7 +814,7 @@ function reservationHTML(){
         <option value="biweekly" selected>Every other week</option>
         <option value="monthly">Once a month (every 4 weeks)</option>
       </select></div>
-    <button class="cta gold" style="margin-top:0" onclick="setResv()">Book the standing date</button>`;
+    <button class="cta pink" style="margin-top:0" onclick="setResv()">Book the standing date</button>`;
   return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s · ${fmtTime(reservation.time)} · ${resvCad().label}</div>
     <div class="countdown" id="countdown"></div>
     <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 add to my calendar</a><button onclick="clearResv()">cancel reservation</button></div>`;
@@ -848,7 +848,7 @@ function placesBlock(){
     <div class="fgroup"><label class="f" for="near-loc">Where (blank = use my location)</label>
       <div style="display:flex; gap:8px">
         <input type="text" id="near-loc" placeholder="Town or ZIP — or leave blank for GPS" value="${esc(near.locText)}">
-        <button class="cta gold" style="width:auto; margin-top:0; padding:11px 16px" onclick="setLoc()">Go</button>
+        <button class="cta pink" style="width:auto; margin-top:0; padding:11px 16px" onclick="setLoc()">Go</button>
       </div></div>
     <div class="radrow"><label class="f" style="margin:0">How far</label><span class="radval">${near.radiusMi} mi</span></div>
     <input type="range" min="1" max="10" step="1" value="${near.radiusMi}" onchange="setRadius(+this.value)">
@@ -1051,7 +1051,7 @@ window.openDay=iso=>{
       <div class="rm">Booked ahead${sit}</div>
       <div class="row2" style="margin-top:8px">
         ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">🍼 ${p.sitter==='locked'?'sitter: covered':'mark covered'}</button>`:''}
-        ${iso<=t?`<button class="cta gold" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
+        ${iso<=t?`<button class="cta pink" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
         <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="removePlan(${p.id});openDay('${iso}')">Clear</button>
       </div>
       <a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">📆 Google Calendar</a></div>`;
@@ -1123,7 +1123,7 @@ function syncSectionHTML(){
     <p class="secsub">One of you opens the vault and gets a code; the other joins with it. From then on, both phones share one ledger — deposits appear on both, even long-distance.</p>
     <div class="cardbox" id="sync-card">
       ${rolePills}
-      <button class="cta gold" style="margin-top:0" onclick="openVault()">🔐 Open the vault (first phone)</button>
+      <button class="cta pink" style="margin-top:0" onclick="openVault()">🔐 Open the vault (first phone)</button>
       <div class="divline">— or, if your partner already opened it —</div>
       <div class="fgroup"><label class="f" for="sync-code">Invite code</label>
         <input type="text" id="sync-code" placeholder="XXXX-XXXX from your partner's invite" autocapitalize="characters"></div>
@@ -1139,7 +1139,7 @@ function syncSectionHTML(){
       <p class="datanote" style="text-align:left; margin-top:6px">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
 
       <label class="f" style="margin-top:18px">Partner invite</label>
-      <button class="cta gold" style="margin-top:0" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
+      <button class="cta pink" style="margin-top:0" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
       <p class="datanote" style="margin-top:8px">Disposable — one use, then it burns. The permanent vault key never appears anywhere.</p>
 
       <label class="f" style="margin-top:18px">Nudges</label>
@@ -1189,7 +1189,7 @@ function settingsPage(){
           <button class="pill ${kidsOn()?'on':''}" onclick="setKids(true)">Yes — track the sitter</button>
           <button class="pill ${!kidsOn()?'on':''}" onclick="setKids(false)">No kids to cover</button>
         </div></div>
-      <button class="cta gold" style="margin-top:0" onclick="saveProfile()">Save the account holders</button>
+      <button class="cta pink" style="margin-top:0" onclick="saveProfile()">Save the account holders</button>
     </div>
     ${syncSectionHTML()}
     <div class="sechead"><h2>Goals</h2><span class="lead"></span><span class="tag">The baseline</span></div>
@@ -1197,7 +1197,7 @@ function settingsPage(){
     <div class="cardbox">
       <div class="fgroup"><label class="f" for="g-goal">Monthly hours goal</label>
         <input type="number" id="g-goal" min="1" max="200" step="0.5" value="${goal??''}" placeholder="15"></div>
-      <button class="cta gold" style="margin-top:0" onclick="saveGoal()">Set the goal</button>
+      <button class="cta pink" style="margin-top:0" onclick="saveGoal()">Set the goal</button>
       ${goal?`<button class="cta ghost" onclick="clearGoal()">Clear the goal (no more flags)</button>`:''}
     </div>
     ${housekeepingHTML()}`;
@@ -1466,7 +1466,7 @@ window.joinVault=async()=>{
     openSheet(`
       <div class="eyebrow">Seat taken</div><h3>That seat is held by another phone</h3>
       <div class="sheetnote">Each name on a joint account signs in on one phone at a time, and an occupied seat can't be taken from outside. Replacing your own phone? Disconnect from the old phone first — or have your partner free your seat from their phone's Settings.</div>
-      <button class="cta gold" onclick="closeSheet()">Understood</button>`);
+      <button class="cta pink" onclick="closeSheet()">Understood</button>`);
     return;
   }
   finishJoin(cid);
@@ -1501,7 +1501,7 @@ window.mintInvite=async()=>{
       <button class="cta ghostd" style="flex:1" onclick="inviteCopy('${disp}')">Copy</button>
       <button class="cta pink" style="flex:1" onclick="inviteShare('${disp}')">Share</button>
     </div>
-    <button class="cta gold" onclick="closeSheet()">Done</button>`);
+    <button class="cta ghostd" onclick="closeSheet()">Done</button>`);
 };
 window.inviteCopy=d=>{ (navigator.clipboard?navigator.clipboard.writeText(d):Promise.reject())
   .then(()=>toast('Invite copied')).catch(()=>toast(d)); };
@@ -1679,7 +1679,7 @@ window.obKids=v=>{ profile.kids=v; store.set('profile',profile); obGo('value'); 
 window.obMint=async()=>{
   if(ob.minting) return; ob.minting=true;
   try{
-    if(!window.fb||!ensureDb()){ ob.minting=false; const a=$('#ob-mint'); if(a) a.innerHTML=`<p class="sub" style="margin-bottom:12px">The sync engine is still waking up.</p><button class="cta gold" style="margin-top:0" onclick="obMint()">Try again</button>`; return; }
+    if(!window.fb||!ensureDb()){ ob.minting=false; const a=$('#ob-mint'); if(a) a.innerHTML=`<p class="sub" style="margin-bottom:12px">The sync engine is still waking up.</p><button class="cta pink" style="margin-top:0" onclick="obMint()">Try again</button>`; return; }
     if(!sync){ pairRole='me'; await openVault(); }
     if(!sync){ ob.minting=false; return; }   // openVault already explained what went wrong
     const code=inviteCodeGen();
@@ -1795,7 +1795,7 @@ function obRender(){
         </div>
         <p class="datanote" style="margin-top:10px">Good for 24 hours, one use, then it burns.</p>`;
     } else {
-      mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Getting your code…</p>':`<button class="cta gold" style="margin-top:0" onclick="obMint()">🎟 Get the invite code</button>`}</div>`;
+      mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Getting your code…</p>':`<button class="cta pink" style="margin-top:0" onclick="obMint()">🎟 Get the invite code</button>`}</div>`;
     }
     body=`<div class="oart" style="margin-bottom:10px">${OB_ART.pair}</div>
       <h1>Bring ${pa} in</h1>
@@ -1862,7 +1862,7 @@ window.showOrientation=(i=0)=>{
     <h3 style="margin:6px 0 10px">${c.h}</h3>
     <p class="onote">${c.p}</p>
     <div class="odots">${ORIENT.map((_,d)=>`<span class="${d===i?'on':''}"></span>`).join('')}</div>
-    ${last?`<button class="cta gold" onclick="endOrientation()">Open the books ♥</button>`
+    ${last?`<button class="cta pink" onclick="endOrientation()">Open the books ♥</button>`
           :`<button class="cta pink" onclick="showOrientation(${i+1})">Next</button>
             <button class="olink" onclick="endOrientation()">Skip the tour</button>`}
   </div>`;
@@ -1902,7 +1902,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=65;
+const APP_V=66;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
