@@ -452,7 +452,7 @@ const IDEAS=[
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv',cat:'Music & culture'}
 ];
 
-const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null, depOpen:false, filtersOpen:false };
+const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null, depOpen:false, filtersOpen:false, hkOpen:false };
 const filters={cost:'any', where:'any', vibe:'any'};
 const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], view:[], sel:null, busy:false, err:null };
 let dep={ etype:'date', rating:0, planner:null, editingId:null };
@@ -1154,9 +1154,25 @@ function syncSectionHTML(){
         </div></div>
       <p class="datanote" style="margin-top:6px">Tomorrow's-date reminders always come. The "running behind" nags wait this long between rings — on this phone. Your partner sets their own pace.</p>
 
-      <label class="f" style="margin-top:18px">Housekeeping</label>
-      <button class="cta ghostd" style="width:100%; margin-top:0" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
-      <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>
+    </div>`;
+}
+function housekeepingHTML(){
+  const inner = !ui.hkOpen ? '' : `
+      <div class="row2" style="margin-top:14px">
+        <button class="cta ghost" style="flex:1; margin-top:0" id="backup-btn">⬇ Back up</button>
+        <button class="cta ghost" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
+      </div>
+      <p class="datanote">Your ledger lives on this device${sync?' and in the shared vault':''}. Keep a copy somewhere safe.</p>
+      <button class="cta ghost" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
+      <button class="cta ghost" style="width:100%" onclick="showOnboard()">👀 Preview the couple opening</button>
+      ${sync?`<button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
+      <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>`:''}
+      <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
+      <input type="file" id="restore-file" accept="application/json,.json" hidden>`;
+  return `<div class="sechead"><h2>Housekeeping &amp; data</h2><span class="lead"></span><span class="tag">The back office</span></div>
+    <div class="cardbox">
+      <button class="linklike" style="margin-bottom:0" onclick="ui.hkOpen=!ui.hkOpen;renderPage()">${ui.hkOpen?'▾':'▸'} backups, tours &amp; rarely-needed switches</button>
+      ${inner}
     </div>`;
 }
 function settingsPage(){
@@ -1185,18 +1201,7 @@ function settingsPage(){
       <button class="cta gold" style="margin-top:0" onclick="saveGoal()">Set the goal</button>
       ${goal?`<button class="cta ghost" onclick="clearGoal()">Clear the goal (no more flags)</button>`:''}
     </div>
-    <div class="sechead"><h2>Your data</h2><span class="lead"></span><span class="tag">Keep it safe</span></div>
-    <div class="cardbox">
-      <div class="row2" style="margin-top:0">
-        <button class="cta ghost" style="flex:1; margin-top:0" id="backup-btn">⬇ Back up</button>
-        <button class="cta ghost" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
-      </div>
-      <p class="datanote">Your ledger lives only on this device. Keep a copy somewhere safe.</p>
-      <button class="cta ghost" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
-      <button class="cta ghost" style="width:100%" onclick="showOnboard()">👀 Preview the couple opening</button>
-      <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
-      <input type="file" id="restore-file" accept="application/json,.json" hidden>
-    </div>`;
+    ${housekeepingHTML()}`;
 }
 window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
   if(plans.length){ plans.forEach(p=>{ p.sitter = v ? (p.sitter||'needed') : null; }); savePlans(); }
@@ -1898,7 +1903,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=61;
+const APP_V=62;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
