@@ -698,9 +698,8 @@ function ideasBlock(){
       +grp('Setting','where',[['any','Any'],['in','Stay in'],['out','Go out']])
       +grp('Energy','vibe',[['any','Any'],['chill','Chill'],['adv','Adventurous']])
     : '';
-  return `<div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
-    <button class="cta pink" id="spin-btn" onclick="spin()">🎲 Spin the roulette</button>
-    ${currentIdea&&!favorites.includes(currentIdea.n)?`<button class="cta ghost" onclick="saveFav()">♥ Save idea</button>`:''}
+  return `<button class="cta pink" id="spin-btn" style="margin-top:4px" onclick="spin()">${currentIdea?'🎲 Spin again':'🎲 Spin the roulette'}</button>
+    <div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
     <button class="linklike" style="margin:12px 0 0" onclick="ui.filtersOpen=!ui.filtersOpen;renderPage()">${ui.filtersOpen?'▾':'▸'} filters${active.length?' · '+active.join(' · '):''}</button>`
     +filterRows
     +`<div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
@@ -719,14 +718,16 @@ function spinCardHTML(){
   const meta = i.place
     ? `${esc(i.kindLabel||'Real place')}${i.mi!=null?' · '+i.mi.toFixed(1)+' mi away':''}${i.lat?` · <a href="https://www.google.com/maps/search/?api=1&query=${i.lat}%2C${i.lon}" target="_blank" rel="noopener">map ↗</a>`:''}`
     : `${'$'.repeat(i.c||1)} · ${i.w==='in'?'Stay in':'Go out'} · ${i.v==='adv'?'Adventurous':'Chill'}`;
-  const otBtn = (i.place && ['Restaurant','Café','Bar'].includes(i.kindLabel))
-    ? `<a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px" href="${otURL(i)}" target="_blank" rel="noopener">🍽 Reserve on OpenTable ↗</a>` : '';
+  const links=[];
+  if(!favorites.includes(i.n)) links.push(`<button onclick="saveFav()">♥ save idea</button>`);
+  links.push(`<button onclick="logIdea()">we already did it — log it</button>`);
+  if(i.place && ['Restaurant','Café','Bar'].includes(i.kindLabel))
+    links.push(`<a href="${otURL(i)}" target="_blank" rel="noopener">🍽 OpenTable ↗</a>`);
   return `<div class="spin-idea">${esc(i.n)}</div>
     <div class="spin-meta">${meta}</div>
-    <button class="cta pink" style="margin-top:10px" onclick="logIdea()">We did it — log it</button>
-    <button class="cta ghost" style="margin-top:8px" onclick="bookIdea()">📅 Book it for later</button>
-    ${otBtn}
-    <div id="bookrow" style="width:100%"></div>`;
+    <button class="cta pink" style="margin-top:10px" onclick="bookIdea()">📅 Book it for later</button>
+    <div id="bookrow" style="width:100%"></div>
+    <div class="minilinks" style="justify-content:center; flex-wrap:wrap; gap:14px">${links.join('')}</div>`;
 }
 function ideaPool(){
   return IDEAS.filter(i=>(filters.cost==='any'||i.c===+filters.cost)&&(filters.where==='any'||i.w===filters.where)&&(filters.vibe==='any'||i.v===filters.vibe));
@@ -1908,7 +1909,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=68;
+const APP_V=69;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
