@@ -1274,7 +1274,7 @@ function renderBanners(){
     `<div class="banner memory"><span>${ui.awayNote}</span><button onclick="dismissAway()">✕</button></div>`);
   const over=overduePlan(), tonight=todayPlan(), next=nextPlan();
   if(over) el.insertAdjacentHTML('beforeend',
-    `<div class="banner memory"><span>Did "${esc(over.title)}" happen?</span><button onclick="logPlan(${over.id})">Log it</button></div>`);
+    `<div class="banner memory"><span>Did "${esc(over.title)}" happen?</span><button onclick="logPlan(${over.id})">Log it</button><button onclick="askClearPlan(${over.id})">It didn't</button></div>`);
   if(tonight) el.insertAdjacentHTML('beforeend',
     `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}.${(kidsOn()&&tonight.sitter==='needed')?' 🍼 Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
   else if(next){
@@ -1301,6 +1301,14 @@ function renderBanners(){
 window.goHome=()=>{ ui.tab=0; renderAll(); };
 window.dismissAway=()=>{ ui.awayNote=null; renderAll(); };
 window.removePlan=id=>{ plans=plans.filter(p=>p.id!==id); savePlans(); toast('Booking cleared'); renderAll(); };
+window.askClearPlan=id=>{
+  const p=planById(id); if(!p) return;
+  openSheet(`
+    <div class="eyebrow">Didn't happen</div><h3>Clear "${esc(p.title)}"?</h3>
+    <div class="sheetnote">It comes off the books — no withdrawal, no judgment. Life happens; book the next one.</div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep it</button>
+    <button class="cta pink" style="flex:1" onclick="closeSheet();removePlan(${id})">Clear it</button></div>`);
+};
 window.logPlan=id=>{
   const p=planById(id); if(!p) return;
   plans=plans.filter(x=>x.id!==id); savePlans();
@@ -1875,7 +1883,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=57;
+const APP_V=58;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
