@@ -529,7 +529,7 @@ function homePage(){
     <div class="cardbox">
       ${clockButtonsHTML()}
       ${ui.depOpen
-        ? `<div class="divline">— already happened &amp; never clocked? deposit it below —</div>${depositFormHTML()}`
+        ? `<button class="cta ghost" onclick="closeDepForm()">➖ Deposit a past date</button>${depositFormHTML()}`
         : `<button class="cta ghost" onclick="openDepForm()">➕ Deposit a past date</button>
            ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is on the Calendar.</div>`:''}`}
     </div>`;
@@ -537,6 +537,10 @@ function homePage(){
 window.openDepForm=()=>{
   ui.depOpen=true; ui.justSaved=false; renderPage();
   setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
+};
+window.closeDepForm=()=>{
+  if(dep.editingId) return cancelEdit();   // folding away mid-edit = walking away from the edit
+  ui.depOpen=false; renderPage();
 };
 window.clockIn=()=>{
   timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(),
@@ -1883,7 +1887,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=58;
+const APP_V=59;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
