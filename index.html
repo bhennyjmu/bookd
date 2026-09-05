@@ -44,19 +44,18 @@ header{text-align:center; padding:26px 16px 6px}
 .banner a{color:inherit}
 
 /* ---------- passbook: The Joint Account ---------- */
-.passbook{background:var(--cream); color:var(--ink); border-radius:14px 14px 0 0;
-  margin-top:20px; padding:18px 20px 30px; position:relative; text-align:center;
+.passbook{background:var(--cream); color:var(--ink); border-radius:16px;
+  margin-top:20px; padding:18px 20px 20px; position:relative; text-align:center;
   box-shadow:0 12px 40px rgba(0,0,0,.45)}
-.pb-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:9px; text-align:left}
+.pb-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid rgba(42,27,46,.15); padding-bottom:9px; text-align:left}
 .pb-title{font-family:'Karla',sans-serif; font-weight:700; font-size:16.5px; letter-spacing:.01em}
-.acct{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.12em; color:rgba(42,27,46,.55)}
 .balance-label{font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:18px;
   display:flex; justify-content:center; align-items:center; gap:7px}
 .balance{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:52px; letter-spacing:2px; line-height:1.05}
 .balance small{font-size:20px; font-weight:500; letter-spacing:0}
 .balance.neg{color:#B0402F}
 .balance-sub{font-size:12.5px; color:rgba(42,27,46,.65); margin-top:2px}
-.pb-rule{border:0; border-top:1.5px dashed rgba(42,27,46,.3); margin:16px 0 14px}
+.pb-rule{border:0; border-top:1px solid rgba(42,27,46,.12); margin:16px 0 14px}
 .pb-stats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
 .stat .v{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:22px}
 .stat .v.hearts{color:#d4527a}
@@ -74,8 +73,6 @@ header{text-align:center; padding:26px 16px 6px}
 .goaltext{font-family:'Spline Sans Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:6px}
 .goaltext.lo{color:#B0402F; font-weight:600}
 .goaltext.done{color:var(--greenv)}
-.tear{position:absolute; left:0; right:0; bottom:-7px; height:16px; overflow:hidden; text-align:center;
-  color:var(--plum); font-size:15px; letter-spacing:5px; line-height:14px; user-select:none; pointer-events:none}
 .dot{width:8px; height:8px; border-radius:50%; background:var(--green); display:none; animation:pulse 1.8s ease-out infinite}
 .dot.show{display:inline-block}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(58,196,124,.6)}100%{box-shadow:0 0 0 7px rgba(58,196,124,0)}}
@@ -486,17 +483,17 @@ function passbookHTML(){
   const s=stats();
   const running=timer&&timer.running;
   const lastD=entries.filter(isDate).map(e=>e.date).sort().pop();
-  let lastTxt='';
+  let lastTxt='No date nights on the books yet';
   if(lastD){ const dd=Math.floor((parseISO(todayISO())-parseISO(lastD))/DAY);
-    lastTxt=' · last date night '+(dd<=0?'today ♥':dd===1?'yesterday':dd+' days ago'); }
+    lastTxt='Last date night '+(dd<=0?'was today ♥':dd===1?'was yesterday':'was '+dd+' days ago'); }
   const liveCell = running
-    ? `<div class="stat live"><div class="v" id="livev">${fmtMS(elapsedSecs())}</div><div class="k">Banking now</div></div>`
+    ? `<div class="stat live"><div class="v" id="livev">${fmtMS(elapsedSecs())}</div><div class="k">On the clock</div></div>`
     : `<div class="stat"><div class="v">${s.dates}</div><div class="k">Deposits / Mo</div></div>`;
   return `<div class="passbook">
-    <div class="pb-head"><span class="pb-title">${(profile.me&&profile.partner)?'The Joint Account of '+esc(profile.me)+' & '+esc(profile.partner):'The Joint Account'}</span><span class="acct">ACCT № US-4EVR${profile.anniv?' · est. '+profile.anniv.slice(0,4):''}</span></div>
-    <div class="balance-label"><span>30-Day Balance</span><span class="dot ${running?'show':''}"></span></div>
+    <div class="pb-head"><span class="pb-title">${(profile.me&&profile.partner)?'The Joint Account of '+esc(profile.me)+' & '+esc(profile.partner):'The Joint Account'}</span></div>
+    <div class="balance-label"><span>Time together · last 30 days</span><span class="dot ${running?'show':''}"></span></div>
     <div class="balance ${s.balance<0?'neg':''}">${s.balance.toFixed(1)}<small> hrs</small></div>
-    <div class="balance-sub">Quality time on deposit, from the last 30 days${lastTxt}</div>
+    <div class="balance-sub">${lastTxt}</div>
     <hr class="pb-rule">
     <div class="pb-stats">
       ${liveCell}
@@ -504,7 +501,6 @@ function passbookHTML(){
     </div>
     ${(s.me+s.pa)?`<div class="pb-split">Booked by · ${esc(profile.me||'Me')} ${s.me} · ${esc(profile.partner||'Partner')} ${s.pa}</div>`:''}
     ${goalRowHTML(s)}
-    <div class="tear" aria-hidden="true">${'♥ '.repeat(30)}</div>
   </div>`;
 }
 function goalRowHTML(s){
@@ -1906,7 +1902,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=64;
+const APP_V=65;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
