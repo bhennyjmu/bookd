@@ -1,9 +1,13 @@
 /* Book'd service worker — offline app shell */
-const CACHE = 'bookd-v60';
+const CACHE = 'bookd-v61';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  /* fetch the shell with cache:'no-store' — the browser's HTTP cache may hold a stale index
+     for up to 10 minutes (GitHub Pages max-age), which could shelve an OLD page under a NEW version */
+  e.waitUntil(caches.open(CACHE)
+    .then(c => Promise.all(SHELL.map(u => fetch(u, {cache: 'no-store'}).then(r => { if (r.ok) return c.put(u, r); }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {

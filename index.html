@@ -1898,7 +1898,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=60;
+const APP_V=61;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
@@ -1907,20 +1907,26 @@ if(!store.get('onboarded',false)){
   else showOnboard();
 } else if(!store.get('oriented',false)) showOrientation(0);
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-/* self-updater: ask the server (never the cache) whether a newer build exists; if so, refresh once */
+/* self-updater: ask the server (never the cache) whether a newer build exists; if so, refresh.
+   Retries every boot (spaced 20s apart) instead of giving up after one attempt — iPhones keep a
+   backgrounded app's session alive, so a single guarded try could strand a phone on an old build. */
 fetch('./sw.js?u='+Date.now(), {cache:'no-store'}).then(r=>r.text()).then(t=>{
   const m=t.match(/bookd-v(\d+)/);
   if(m && +m[1]>APP_V){
-    if(!sessionStorage.getItem('bookd-updating')){
-      sessionStorage.setItem('bookd-updating','1');
+    const last=+sessionStorage.getItem('bookd-upd-at')||0;
+    if(Date.now()-last>20000){
+      sessionStorage.setItem('bookd-upd-at', String(Date.now()));
       toast('Updating Book’d to the newest version…');
+      let reloaded=false;
+      const go=()=>{ if(!reloaded){ reloaded=true; location.reload(); } };
       if('serviceWorker' in navigator){
+        navigator.serviceWorker.addEventListener('controllerchange', go);   // new build took over — reload now
         navigator.serviceWorker.getRegistration()
           .then(reg=>reg&&reg.update())
-          .finally(()=>setTimeout(()=>location.reload(), 4000));
-      } else setTimeout(()=>location.reload(), 4000);
+          .finally(()=>setTimeout(go, 6000));   // fallback if the takeover event never fires
+      } else setTimeout(go, 4000);
     }
-  } else sessionStorage.removeItem('bookd-updating');
+  } else sessionStorage.removeItem('bookd-upd-at');
 }).catch(()=>{});
 </script>
 <script type="module">
