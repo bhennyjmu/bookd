@@ -209,7 +209,8 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .tabbar .inner{max-width:480px; margin:0 auto; display:flex}
 .tabbar button{flex:1; background:none; border:0; cursor:pointer; padding:10px 4px 12px; color:var(--dimmer);
   display:flex; flex-direction:column; align-items:center; gap:3px}
-.tabbar .ico{font-size:20px; line-height:1}
+.tabbar .ico{display:block; height:22px}
+.tabbar .ico svg{width:22px; height:22px; display:block; margin:0 auto}
 .tabbar .lbl{font-family:'Karla',sans-serif; font-weight:700; font-size:11px; letter-spacing:.02em; text-transform:uppercase}
 .tabbar button.on{color:var(--rose)}
 .tabbar button.on .ico{transform:translateY(-1px)}
@@ -300,10 +301,10 @@ footer p{font-family:'Karla',sans-serif; font-size:10px; letter-spacing:.1em; te
 <footer><p>Book'd · <span id="vstamp"></span></p></footer>
 
 <nav class="tabbar"><div class="inner">
-  <button data-t="0" class="on"><span class="ico">⌂</span><span class="lbl">Home</span></button>
-  <button data-t="1"><span class="ico">✦</span><span class="lbl">Plan</span></button>
-  <button data-t="2"><span class="ico">▦</span><span class="lbl">Calendar</span></button>
-  <button data-t="3"><span class="ico">⚙</span><span class="lbl">Settings</span></button>
+  <button data-t="0" class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 L12 3.5 21 11"/><path d="M5.5 9.5 V20 H18.5 V9.5"/></svg></span><span class="lbl">Home</span></button>
+  <button data-t="1"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg></span><span class="lbl">Plan</span></button>
+  <button data-t="2"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10.5 H20 M8.5 3.5 V7 M15.5 3.5 V7"/></svg></span><span class="lbl">Calendar</span></button>
+  <button data-t="3"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7.5 H20 M4 12 H20 M4 16.5 H20"/><circle cx="9.5" cy="7.5" r="2.2" fill="#241629"/><circle cx="15" cy="12" r="2.2" fill="#241629"/><circle cx="8" cy="16.5" r="2.2" fill="#241629"/></svg></span><span class="lbl">Settings</span></button>
 </div></nav>
 
 <div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet"></div></div>
@@ -449,7 +450,7 @@ const IDEAS=[
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv',cat:'Music & culture'}
 ];
 
-const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null, depOpen:false, filtersOpen:false, hkOpen:false };
+const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null, depOpen:false, filtersOpen:false, hkOpen:false, placeCtl:false };
 const filters={cost:'any', where:'any', vibe:'any'};
 const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], view:[], sel:null, busy:false, err:null };
 let dep={ etype:'date', rating:0, planner:null, editingId:null };
@@ -697,12 +698,12 @@ function ideasBlock(){
       +grp('Setting','where',[['any','Any'],['in','Stay in'],['out','Go out']])
       +grp('Energy','vibe',[['any','Any'],['chill','Chill'],['adv','Adventurous']])
     : '';
-  return `<button class="linklike" onclick="ui.filtersOpen=!ui.filtersOpen;renderPage()">${ui.filtersOpen?'▾':'▸'} filters${active.length?' · '+active.join(' · '):''}</button>`
-    +filterRows
-    +`<div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
+  return `<div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
     <button class="cta pink" id="spin-btn" onclick="spin()">🎲 Spin the roulette</button>
     ${currentIdea&&!favorites.includes(currentIdea.n)?`<button class="cta ghost" onclick="saveFav()">♥ Save idea</button>`:''}
-    <div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
+    <button class="linklike" style="margin:12px 0 0" onclick="ui.filtersOpen=!ui.filtersOpen;renderPage()">${ui.filtersOpen?'▾':'▸'} filters${active.length?' · '+active.join(' · '):''}</button>`
+    +filterRows
+    +`<div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
       favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
 }
 function otURL(i){
@@ -844,7 +845,9 @@ function tickCountdown(){
 
 /* places */
 function placesBlock(){
-  return `<div id="mapbox"><div class="mapmsg" id="mapmsg">${near.coords?'':'Map loads once a location is set.'}</div><div class="mapbadge" id="mapbadge"></div></div>
+  const ctlOpen = ui.placeCtl || !near.coords;   // location is required — stay open until one is set
+  const ctlSummary = near.coords ? `${esc(near.coords.label||'location set')} · ${near.radiusMi} mi${near.query?' · filtered':''}` : 'not set';
+  const controls = !ctlOpen ? '' : `
     <div class="fgroup"><label class="f" for="near-loc">Where (blank = use my location)</label>
       <div style="display:flex; gap:8px">
         <input type="text" id="near-loc" placeholder="Town or ZIP — or leave blank for GPS" value="${esc(near.locText)}">
@@ -852,11 +855,14 @@ function placesBlock(){
       </div></div>
     <div class="radrow"><label class="f" style="margin:0">How far</label><span class="radval">${near.radiusMi} mi</span></div>
     <input type="range" min="1" max="10" step="1" value="${near.radiusMi}" onchange="setRadius(+this.value)">
-    <div class="pillgroup"><label class="f">Looking for</label><div class="pills">`+
+    <div class="fgroup" style="margin-top:2px"><input type="text" id="near-q" placeholder="Filter the list — type part of a name…" value="${esc(near.query)}" oninput="near.query=this.value; updatePlaceList()"></div>`;
+  return `<div id="mapbox"><div class="mapmsg" id="mapmsg">${near.coords?'':'Map loads once a location is set.'}</div><div class="mapbadge" id="mapbadge"></div></div>
+    <div class="pillgroup"><div class="pills">`+
     [['food','Restaurants'],['cafe','Cafés & sweets'],['bar','Bars'],['park','Parks & nature'],['fun','Activities'],['culture','Culture']]
       .map(([v,t])=>`<button class="pill ${near.ncat===v?'on':''}" onclick="setNcat('${v}')">${t}</button>`).join('')
     +`</div></div>
-    <div class="fgroup" style="margin-top:12px"><input type="text" id="near-q" placeholder="Filter the list — type part of a name…" value="${esc(near.query)}" oninput="near.query=this.value; updatePlaceList()"></div>
+    <button class="linklike" style="margin:10px 0 0" onclick="ui.placeCtl=!ui.placeCtl;renderPage()">${ctlOpen?'▾':'▸'} location &amp; search · ${ctlSummary}</button>
+    ${controls}
     <div id="placelist">${placeListHTML()}</div>
     <div class="spin-card ${currentIdea&&currentIdea.place?'show':''}" id="spin-card">${currentIdea&&currentIdea.place?spinCardHTML():''}</div>`;
 }
@@ -1902,7 +1908,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=67;
+const APP_V=68;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
