@@ -447,7 +447,7 @@ const IDEAS=[
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv',cat:'Music & culture'}
 ];
 
-const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null };
+const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null, depOpen:false };
 const filters={cost:'any', where:'any', vibe:'any'};
 const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], view:[], sel:null, busy:false, err:null };
 let dep={ etype:'date', rating:0, planner:null, editingId:null };
@@ -528,10 +528,16 @@ function homePage(){
     +`<div class="sechead"><h2>Make a deposit</h2><span class="lead"></span><span class="tag">Live or after the fact</span></div>
     <div class="cardbox">
       ${clockButtonsHTML()}
-      <div class="divline">— already happened &amp; never clocked? deposit it below —</div>
-      ${depositFormHTML()}
+      ${ui.depOpen
+        ? `<div class="divline">— already happened &amp; never clocked? deposit it below —</div>${depositFormHTML()}`
+        : `<button class="cta ghost" onclick="openDepForm()">➕ Deposit a past date</button>
+           ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is on the Calendar.</div>`:''}`}
     </div>`;
 }
+window.openDepForm=()=>{
+  ui.depOpen=true; ui.justSaved=false; renderPage();
+  setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
+};
 window.clockIn=()=>{
   timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(),
     title:todayPlan()?todayPlan().title:null};
@@ -542,7 +548,7 @@ window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.s
 window.clockOut=()=>{
   if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); }
   dep={etype:'date', rating:0, planner:null, editingId:null};   // fresh form; prefill logic reads the clock
-  ui.justSaved=false;
+  ui.justSaved=false; ui.depOpen=true;
   renderAll();
   setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
@@ -557,6 +563,7 @@ window.scrapClock=()=>{
   closeSheet();
   timer=null; store.set('timer',null); pushClock();
   dep={etype:'date', rating:0, planner:null, editingId:null};
+  ui.depOpen=false;
   toast('Clock scrapped — hope everything’s okay ♥');
   renderAll();
 };
@@ -609,7 +616,7 @@ function grabDep(){
   if($('#d-moment')) dep.moment=$('#d-moment').value;
 }
 window.grabDep=grabDep;
-window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; renderPage(); toast('Edit cancelled'); };
+window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; ui.depOpen=false; renderPage(); toast('Edit cancelled'); };
 window.openDepositSheet=()=>{
   grabDep();
   const title=(dep.title||'').trim(), raw=parseFloat(dep.hours);
@@ -642,7 +649,7 @@ window.commitDeposit=()=>{
   if(pix>-1){ plans.splice(pix,1); savePlans(); }
   if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); pushClock(); }
   dep={etype:'date',rating:0,planner:null,editingId:null};
-  ui.justSaved=true; ui.tab=0;
+  ui.justSaved=true; ui.tab=0; ui.depOpen=false;   // fold the counter back up after a deposit
   renderAll();
 };
 
@@ -728,7 +735,7 @@ window.loadFav=i=>{
 window.logIdea=()=>{
   if(!currentIdea) return;
   dep={etype:'date', rating:0, planner:null, editingId:null, title:currentIdea.n, cat:currentIdea.cat||(currentIdea.w==='in'?'At home':'Something new'), _auto:true};
-  ui.tab=0; ui.justSaved=false; renderAll();
+  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-hours'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
 window.bookIdea=()=>{
@@ -1045,7 +1052,7 @@ window.openDay=iso=>{
 };
 window.logDay=iso=>{
   dep={etype:'date', rating:0, planner:null, editingId:null, date:iso, _auto:true};
-  ui.tab=0; ui.justSaved=false; renderAll();
+  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
 function comingUpHTML(){
@@ -1196,7 +1203,7 @@ window.editEntry=id=>{
   dep={ etype:isDate(e)?'date':'small', rating:e.rating||0, planner:e.planner||null, editingId:id,
     title:e.title, date:e.date, cat:e.cat, moment:e.moment||'',
     hours: isDate(e)?e.hours:Math.round(e.hours*60), _auto:true };
-  ui.tab=0; ui.justSaved=false; renderAll();
+  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-title'); if(f) f.scrollIntoView({behavior:'smooth', block:'center'}); },80);
 };
 window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); pushDelete(id); renderAll(); toast('Removed'); };
@@ -1298,7 +1305,7 @@ window.logPlan=id=>{
   const p=planById(id); if(!p) return;
   plans=plans.filter(x=>x.id!==id); savePlans();
   dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true};
-  ui.tab=0; ui.justSaved=false; renderAll();
+  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
 };
 
 /* ---------- calendar ---------- */
@@ -1868,7 +1875,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=56;
+const APP_V=57;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
