@@ -18,7 +18,7 @@
 :root{
   --plum:#1D1320; --card:#2A1B2E; --rose:#F27D98; --champagne:#E9C580;
   --deposit:#8FD6A8; --withdrawal:#F08A7E; --cream:#F6EFE3; --ink:#2A1B2E;
-  --dim:rgba(246,239,227,.6); --dimmer:rgba(246,239,227,.38);
+  --dim:rgba(246,239,227,.6); --dimmer:rgba(246,239,227,.5);
   --green:#2f9e63; --greenv:#1f7a4a;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -489,7 +489,7 @@ function passbookHTML(){
     lastTxt='Last date night '+(dd<=0?'was today ♥':dd===1?'was yesterday':'was '+dd+' days ago'); }
   const liveCell = running
     ? `<div class="stat live"><div class="v" id="livev">${fmtMS(elapsedSecs())}</div><div class="k">On the clock</div></div>`
-    : `<div class="stat"><div class="v">${s.dates}</div><div class="k">Deposits / Mo</div></div>`;
+    : `<div class="stat"><div class="v">${s.dates}</div><div class="k">Logged / Mo</div></div>`;
   return `<div class="passbook">
     <div class="pb-head"><span class="pb-title">${(profile.me&&profile.partner)?'The Joint Account of '+esc(profile.me)+' & '+esc(profile.partner):'The Joint Account'}</span></div>
     <div class="balance-label"><span>Time together · last 30 days</span><span class="dot ${running?'show':''}"></span></div>
@@ -529,13 +529,12 @@ function clockButtonsHTML(){
 }
 function homePage(){
   return passbookHTML()
-    +`<div class="sechead"><h2>Make a deposit</h2><span class="lead"></span><span class="tag">Live or after the fact</span></div>
-    <div class="cardbox">
+    +`<div class="cardbox" style="margin-top:18px">
       ${clockButtonsHTML()}
       ${ui.depOpen
-        ? `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="closeDepForm()">➖ deposit a past date</button>${depositFormHTML()}`
-        : `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="openDepForm()">➕ deposit a past date</button>
-           ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is on the Calendar.</div>`:''}`}
+        ? `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="closeDepForm()">➖ log a past date</button>${depositFormHTML()}`
+        : `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="openDepForm()">➕ log a past date</button>
+           ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}`}
     </div>`;
 }
 window.openDepForm=()=>{
@@ -587,7 +586,7 @@ function depositFormHTML(){
   const defDate = dep.date || (timer&&timer.date) || todayISO();
   const cats=['Food & drink','Movies & shows','Outdoors','At home','Music & culture','Active','Something new'];
   const defCat = dep.cat || 'Food & drink';
-  return `<div class="fgroup"><label class="f">Deposit type</label>
+  return `<div class="fgroup"><label class="f">Type</label>
       <div class="pills">
         <button class="pill ${!small?'on':''}" onclick="grabDep();dep.etype='date';renderPage()">Date night</button>
         <button class="pill ${small?'on':''}" onclick="grabDep();dep.etype='small';renderPage()">Everyday moment</button>
@@ -612,9 +611,9 @@ function depositFormHTML(){
         <button class="pill gold ${(dep.planner==='me'||(!dep.planner&&sync&&sync.role==='me'))?'on':''}" onclick="grabDep();dep.planner='me';renderPage()">${esc(nameMe())}</button>
         <button class="pill gold ${(dep.planner==='partner'||(!dep.planner&&sync&&sync.role==='partner'))?'on':''}" onclick="grabDep();dep.planner='partner';renderPage()">${esc(namePa())}</button>
       </div></div>
-    <button class="cta pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Deposit this date'}</button>
+    <button class="cta pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Save this date'}</button>
     ${dep.editingId?`<button class="cta ghost" onclick="cancelEdit()">Cancel edit</button>`:''}
-    ${ui.justSaved?`<div class="savedline">Deposited ♥ — balance updated. The receipt is in History.</div>`:''}`;
+    ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}`;
 }
 function grabDep(){
   if($('#d-title')) dep.title=$('#d-title').value;
@@ -637,11 +636,11 @@ window.openDepositSheet=()=>{
   const note = (dep.moment||'').trim()?'“'+esc(dep.moment.trim())+'”'
     :'It lands in History and updates your balance.';
   openSheet(`
-    <div class="eyebrow">Confirm deposit</div><h3>Put this on the books?</h3>
+    <div class="eyebrow">One more look</div><h3>Put this on the books?</h3>
     <div class="recap"><div class="rt">${esc(title)}</div><div class="rm">${meta} · ${rate}</div></div>
     <div class="sheetnote">${note}</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep editing</button>
-    <button class="cta pink" style="flex:1" onclick="commitDeposit()">Yes, deposit it ♥</button></div>`);
+    <button class="cta pink" style="flex:1" onclick="commitDeposit()">Yes — on the books ♥</button></div>`);
 };
 window.commitDeposit=()=>{
   closeSheet();
@@ -650,7 +649,7 @@ window.commitDeposit=()=>{
     hours: small?raw/60:raw, cat:dep.cat||'Food & drink', rating:dep.rating||(small?0:4),
     type:small?'small':'date', planner:dep.planner||null, moment:(dep.moment||'').trim()||null, by:sync?sync.role:null };
   if(dep.editingId){ entries=entries.map(e=>e.id===dep.editingId?record:e); toast('Entry updated'); }
-  else { entries.unshift(record); toast(small?'Deposited +'+Math.round(raw)+' min':'Deposited +'+record.hours.toFixed(1)+' hrs'); }
+  else { entries.unshift(record); toast(small?'Saved +'+Math.round(raw)+' min':'Saved +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
   pushEntry(record);
   const pix=plans.findIndex(p=>p.title===record.title);
@@ -1066,7 +1065,7 @@ window.openDay=iso=>{
   if(resvOccursOn(iso)) body+=`<div class="sheetnote">♥ Standing reservation night — ${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}.</div>`;
   if(!body) body=`<div class="sheetnote">Nothing on the books this day.</div>`;
   const act = iso<=t
-    ? `<button class="cta pink" onclick="closeSheet();logDay('${iso}')">Deposit a date for this day</button>`
+    ? `<button class="cta pink" onclick="closeSheet();logDay('${iso}')">Log a date for this day</button>`
     : `<button class="cta pink" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;renderAll();window.scrollTo({top:0,behavior:'smooth'})">✦ Plan something for this day</button>`;
   openSheet(`<div class="eyebrow">${wd}</div><h3>${when}</h3>${body}${act}
     <button class="cta ghostd" style="width:100%" onclick="closeSheet()">Close</button>`);
@@ -1127,7 +1126,7 @@ function syncSectionHTML(){
       <button class="pill gold ${pairRole==='partner'?'on':''}" onclick="setPairRole('partner')">${esc(namePa())}</button>
     </div></div>`;
   if(!sync) return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Two phones, one ledger</span></div>
-    <p class="secsub">One of you opens the vault and gets a code; the other joins with it. From then on, both phones share one ledger — deposits appear on both, even long-distance.</p>
+    <p class="secsub">One of you opens the vault and gets a code; the other joins with it. From then on, both phones share the same books — dates appear on both, even long-distance.</p>
     <div class="cardbox" id="sync-card">
       ${rolePills}
       <button class="cta pink" style="margin-top:0" onclick="openVault()">🔐 Open the vault (first phone)</button>
@@ -1136,24 +1135,24 @@ function syncSectionHTML(){
         <input type="text" id="sync-code" placeholder="XXXX-XXXX from your partner's invite" autocapitalize="characters"></div>
       <button class="cta pink" style="margin-top:0" onclick="joinVault()">🔑 Join the joint account</button>
     </div>`;
-  const statusLine = syncStatus==='live' ? '<span style="color:var(--deposit)">● Live — two phones, one ledger</span>'
+  const statusLine = syncStatus==='live' ? '<span style="color:var(--deposit)">● Live — two phones, same books</span>'
     : syncStatus==='connecting' ? '<span style="color:var(--champagne)">● Connecting…</span>'
     : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Trouble reaching the vault — will retry</span>'
     : '<span style="color:var(--dimmer)">● Waiting for the sync engine…</span>';
   return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Connected</span></div>
     <div class="cardbox" id="sync-card">
       <div class="statusline" style="margin-top:0">${statusLine}</div>
-      <p class="datanote" style="text-align:left; margin-top:6px">This phone deposits as ${esc(sync.role==='me'?nameMe():namePa())}</p>
+      <p class="datanote" style="text-align:left; margin-top:6px">This phone signs as ${esc(sync.role==='me'?nameMe():namePa())}</p>
 
       <label class="f" style="margin-top:18px">Partner invite</label>
       <button class="cta pink" style="margin-top:0" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
-      <p class="datanote" style="margin-top:8px">Disposable — one use, then it burns. The permanent vault key never appears anywhere.</p>
+      <p class="datanote" style="margin-top:8px">Your invite code works once and expires in 24 hours.</p>
 
       <label class="f" style="margin-top:18px">Nudges</label>
       ${pushOn
         ? `<button class="cta ghostd" style="width:100%; margin-top:0" onclick="disableNudges()">🔔 On — turn off for this phone</button>`
         : `<button class="cta pink" style="width:100%; margin-top:0" onclick="enableNudges()">🔔 Turn on nudges (this phone)</button>
-           <p class="datanote" style="margin-top:8px">One permission pop-up, then: partner deposits, tomorrow's dates, low-ledger alerts — even with the app closed.</p>`}
+           <p class="datanote" style="margin-top:8px">One permission pop-up, then: when your partner logs a date, tomorrow's plans, goal check-ins — even with the app closed.</p>`}
       <div class="pillgroup" style="margin-top:12px"><label class="f">"Book something" reminder pace</label>
         <div class="pills">
           ${[7,15,30].map(n=>`<button class="pill ${nudgeEvery===n?'on':''}" onclick="setNudgeEvery(${n})">Every ${n} days</button>`).join('')}
@@ -1246,7 +1245,7 @@ window.openWipeSheet=()=>{
     <div class="eyebrow">Close the account</div><h3>Erase everything?</h3>
     <div class="sheetnote">${sync
       ?'This wipes <b>this phone only</b> and disconnects it. The shared vault in the cloud — and your partner\'s phone — stay intact. Rejoin with the code to get everything back.'
-      :'This erases every deposit, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.'}</div>
+      :'This erases every entry, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.'}</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Never mind</button>
     <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="wipeAll()">Yes — erase it all</button></div>`);
 };
@@ -1380,7 +1379,7 @@ function startSync(){
   const noteAway=()=>{
     if(away.dep||away.book){
       ui.awayNote=`While you were away — ${esc(partnerName())} `+
-        [away.dep?`made ${away.dep} deposit${away.dep===1?'':'s'}`:null,
+        [away.dep?`logged ${away.dep} entr${away.dep===1?'y':'ies'}`:null,
          away.book?`booked ${away.book} night${away.book===1?'':'s'}`:null].filter(Boolean).join(' · ')+' ♥';
     }
     seenAt=Date.now(); store.set('seenAt', seenAt);
@@ -1423,7 +1422,7 @@ function startSync(){
         if(ch.type==='added' && !ch.doc.metadata.hasPendingWrites){
           const e=ch.doc.data();
           if(e.by && e.by!==sync.role)
-            toast(partnerName()+' just deposited '+(e.type==='small'?Math.round(e.hours*60)+' min':e.hours.toFixed(1)+' hrs')+' ♥');
+            toast(partnerName()+' just logged '+(e.type==='small'?Math.round(e.hours*60)+' min':e.hours.toFixed(1)+' hrs')+' ♥');
         }
       });
     }
@@ -1503,7 +1502,7 @@ window.mintInvite=async()=>{
   const disp=code.slice(0,4)+'-'+code.slice(4);
   openSheet(`
     <div class="eyebrow">Invite ready · valid 24 hours · one use</div><h3 class="mono" style="letter-spacing:.1em">${disp}</h3>
-    <div class="sheetnote">Send this to your partner. On their phone: Settings → tap their name pill → enter this code → Join. It burns the moment it's used.</div>
+    <div class="sheetnote">Send this to your partner. On their phone: Settings → tap their name pill → enter this code → Join. It works once and expires in 24 hours.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="inviteCopy('${disp}')">Copy</button>
       <button class="cta pink" style="flex:1" onclick="inviteShare('${disp}')">Share</button>
@@ -1800,7 +1799,7 @@ function obRender(){
           <button class="cta ghostd" style="flex:1; margin-top:0" onclick="inviteCopy('${ob.invite}')">Copy</button>
           <button class="cta pink" style="flex:1; margin-top:0" onclick="inviteShare('${ob.invite}')">Share</button>
         </div>
-        <p class="datanote" style="margin-top:10px">Good for 24 hours, one use, then it burns.</p>`;
+        <p class="datanote" style="margin-top:10px">Works once · expires in 24 hours.</p>`;
     } else {
       mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Getting your code…</p>':`<button class="cta pink" style="margin-top:0" onclick="obMint()">🎟 Get the invite code</button>`}</div>`;
     }
@@ -1839,9 +1838,9 @@ function obRender(){
   if(s==='notif'){
     const who = sync&&sync.role==='partner' ? esc(profile.me||'your partner') : esc(profile.partner||'your partner');
     body=`<div class="grow"></div>
-      <div class="mocknotif"><div class="mi">📖</div><div><div class="mt">Book’d</div><div class="mb">${who} just deposited 2.5 hrs ♥</div></div><div class="mw">now</div></div>
-      <h1>Get notified when ${who} makes a deposit</h1>
-      <p class="sub">Deposits, bookings, gentle nudges — even with the app closed.</p>
+      <div class="mocknotif"><div class="mi">📖</div><div><div class="mt">Book’d</div><div class="mb">${who} just logged 2.5 hrs ♥</div></div><div class="mw">now</div></div>
+      <h1>Get notified when ${who} logs a date</h1>
+      <p class="sub">New entries, bookings, gentle nudges — even with the app closed.</p>
       <div class="grow"></div>
       <button class="cta pink" onclick="obNudges()">Yes please</button>
       <button class="olink" style="align-self:center" onclick="obDone()">Skip for now</button>`;
@@ -1854,11 +1853,11 @@ const ORIENT=[
   {big:'<span style="color:var(--rose)">♥</span>', e:'Welcome to Book’d', h:'Every date is a deposit',
    p:'This is your joint account. Time together goes in as deposits — date nights, everyday moments, all of it. The balance is your last 30 days together, in hours. No penalties, no overdraft fees — just the two of you, on the books.'},
   {big:'⏱', e:'The Home tab', h:'Clock in like it’s payday',
-   p:'On a date right now? Clock in and let it run — clock out when you’re home and the ledger files itself. Under 45 minutes counts as an everyday moment. Date already happened? Deposit it after the fact, right below the clock.'},
+   p:'On a date right now? Clock in and let it run — clock out when you’re home and the ledger files itself. Under 45 minutes counts as an everyday moment. Date already happened? Log it after the fact, right below the clock.'},
   {big:'✦', e:'The Plan tab', h:'Out of ideas? Spin.',
    p:'Spin the roulette for your next date, browse real places near you, or book a standing reservation — your weekly table for two. Everything you book ahead lands on the Calendar.'},
   {big:'🔐', e:'Two phones, one ledger', h:'Bring your partner in',
-   p:'In Settings, add your first names, then open the vault and text your partner a 24-hour invite code. From then on, every deposit shows up on both phones — even long-distance.'}
+   p:'In Settings, add your first names, then open the vault and text your partner a 24-hour invite code. From then on, every date shows up on both phones — even long-distance.'}
 ];
 window.showOrientation=(i=0)=>{
   let o=$('#orient'); if(!o){ o=document.createElement('div'); o.id='orient'; o.className='orient'; document.body.appendChild(o); }
@@ -1909,7 +1908,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=69;
+const APP_V=70;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
