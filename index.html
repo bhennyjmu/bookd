@@ -242,6 +242,14 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 .olater{background:none; border:0; color:var(--dimmer); font-family:'Karla'; font-size:15.5px; cursor:pointer; text-decoration:underline; padding:6px}
 .linklike{background:none; border:0; color:var(--dimmer); font-family:'Karla',sans-serif; font-weight:700; font-size:13px; letter-spacing:.04em; text-transform:uppercase; cursor:pointer; padding:4px 0; margin-bottom:10px; display:block}
 .linklike:hover{color:var(--rose)}
+.intent-tabs{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px}
+.intent{background:var(--card); border:1.5px solid rgba(246,239,227,.14); border-radius:16px; padding:18px 12px; color:var(--dim); font-family:'Karla',sans-serif; font-weight:700; font-size:15.5px; cursor:pointer; text-align:center; line-height:1.3}
+.intent .ii{display:block; height:24px; margin-bottom:8px}
+.intent .ii svg{width:22px; height:22px; display:inline-block}
+.intent.on{border-color:var(--rose); color:var(--cream); background:rgba(242,125,152,.08)}
+.intent.on .ii{color:var(--rose)}
+.bestline{border-top:1px solid rgba(246,239,227,.12); margin-top:16px; padding-top:12px; font-size:13.5px; color:var(--dim)}
+.bestline b{color:var(--champagne)}
 .resv-status{font-size:13.5px; line-height:1.5; color:var(--dim); margin-top:8px}
 .resv-status button{background:none; border:0; color:var(--rose); text-decoration:underline; cursor:pointer; font-size:13.5px; font-family:'Karla'; padding:0}
 .minilinks{display:flex; gap:20px; margin-top:12px}
@@ -452,7 +460,7 @@ const IDEAS=[
  {n:'Road trip to a big concert one town over',c:3,w:'out',v:'adv',cat:'Music & culture'}
 ];
 
-const ui={ tab:0, planMode:'ideas', justSaved:false, awayNote:null, depOpen:false, filtersOpen:false, hkOpen:false, placeCtl:false };
+const ui={ tab:0, planMode:'ideas', planIntent:'idea', justSaved:false, awayNote:null, depOpen:false, filtersOpen:false, hkOpen:false, placeCtl:false };
 const filters={cost:'any', where:'any', vibe:'any'};
 const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results:[], view:[], sel:null, busy:false, err:null };
 let dep={ etype:'date', rating:0, planner:null, editingId:null };
@@ -666,23 +674,27 @@ window.commitDeposit=()=>{
 function planPage(){
   const best=bestCat();
   const defBook = ui.bookDate || (reservation?toISO(nextOccurrence()):toISO(new Date(Date.now()+DAY)));
-  return `<div class="sechead"><h2>Already have a plan?</h2><span class="lead"></span><span class="tag">Straight to the books</span></div>
-    <div class="cardbox">
+  const knowCard=`<div class="cardbox">
       <div class="fgroup"><label class="f" for="own-title">What are you two doing?</label>
         <input type="text" id="own-title" maxlength="60" placeholder="Dinner at that new ramen place"></div>
       <div class="fgroup"><label class="f" for="own-date">Which day?</label>
         <input type="date" id="own-date" value="${defBook}" min="${todayISO()}"></div>
       <button class="cta pink" style="margin-top:0" onclick="bookOwn()">📅 Book it</button>
-    </div>
-    <div class="sechead"><h2>Need a plan?</h2><span class="lead"></span><span class="tag">Idea roulette</span></div>
-    ${best?`<div class="callout">Best investment: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ average across ${best.n} dates. Book more of these.</div>`:''}
-    <div class="cardbox">
+    </div>`;
+  const ideaCard=`<div class="cardbox">
       <div class="pillgroup"><div class="pills">
         <button class="pill ${ui.planMode==='ideas'?'on':''}" onclick="setMode('ideas')">Idea cards</button>
         <button class="pill ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Real places near me</button>
       </div></div>
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
+      ${best?`<div class="bestline">✦ Best so far: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ avg, based on ${best.n} dates logged</div>`:''}
+    </div>`;
+  return `<div class="sechead"><h2>Plan a date</h2><span class="lead"></span><span class="tag">Your next move</span></div>
+    <div class="intent-tabs">
+      <button class="intent ${ui.planIntent!=='know'?'on':''}" onclick="ui.planIntent='idea';renderPage();if(ui.planMode==='places')mountMap()"><span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg></span>Give me an idea</button>
+      <button class="intent ${ui.planIntent==='know'?'on':''}" onclick="ui.planIntent='know';renderPage()"><span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.5 L11 15 L15.5 9.5"/></svg></span>I know what we're doing</button>
     </div>
+    ${ui.planIntent==='know'?knowCard:ideaCard}
     <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
     ${reservation?'':`<p class="secsub">Different from booking one date: this is the recurring slot you two hold for each other — weekly, every other week, or monthly, your call. Let a whole cycle pass with no date and it simply shows on the statement as a missed night. No penalty — just honesty.</p>`}
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
@@ -1041,7 +1053,7 @@ function calGridHTML(){
     </div>`;
 }
 window.calNav=d=>{ ui.calMonth=new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth()+d, 1); renderPage(); };
-window.planResvNight=iso=>{ ui.bookDate=iso; ui.tab=1; renderAll(); window.scrollTo({top:0,behavior:'smooth'}); };
+window.planResvNight=iso=>{ ui.bookDate=iso; ui.tab=1; ui.planIntent='know'; renderAll(); window.scrollTo({top:0,behavior:'smooth'}); };
 function resvOccursOn(iso){
   if(!reservation) return false;
   const diff=Math.round((parseISO(iso)-firstOccurrence())/DAY);
@@ -1075,7 +1087,7 @@ window.openDay=iso=>{
   if(!body) body=`<div class="sheetnote">Nothing on the books this day.</div>`;
   const act = iso<=t
     ? `<button class="cta pink" onclick="closeSheet();logDay('${iso}')">Log a date for this day</button>`
-    : `<button class="cta pink" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;renderAll();window.scrollTo({top:0,behavior:'smooth'})">✦ Plan something for this day</button>`;
+    : `<button class="cta pink" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;ui.planIntent='know';renderAll();window.scrollTo({top:0,behavior:'smooth'})">✦ Plan something for this day</button>`;
   openSheet(`<div class="eyebrow">${wd}</div><h3>${when}</h3>${body}${act}
     <button class="cta ghostd" style="width:100%" onclick="closeSheet()">Close</button>`);
 };
@@ -1596,7 +1608,7 @@ window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); };
 $('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
 
 function renderPage(){
-  const inPlaces = ui.tab===1 && ui.planMode==='places';
+  const inPlaces = ui.tab===1 && ui.planIntent!=='know' && ui.planMode==='places';
   if(map && !inPlaces){ map.remove(); map=null; mapMarkers=[]; mapRing=null; }
   if(ui.tab!==1) clearInterval(cdTimer);
   const liveMap = (inPlaces && map) ? $('#mapbox') : null;
@@ -1925,7 +1937,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=75;
+const APP_V=76;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
