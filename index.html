@@ -1033,6 +1033,7 @@ function calGridHTML(){
     </div>`;
 }
 window.calNav=d=>{ ui.calMonth=new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth()+d, 1); renderPage(); };
+window.planResvNight=iso=>{ ui.bookDate=iso; ui.tab=1; renderAll(); window.scrollTo({top:0,behavior:'smooth'}); };
 function resvOccursOn(iso){
   if(!reservation) return false;
   const diff=Math.round((parseISO(iso)-firstOccurrence())/DAY);
@@ -1300,8 +1301,16 @@ function renderBanners(){
   const over=overduePlan(), tonight=todayPlan(), next=nextPlan();
   if(over) el.insertAdjacentHTML('beforeend',
     `<div class="banner memory"><span>Did "${esc(over.title)}" happen?</span><button onclick="logPlan(${over.id})">Log it</button><button onclick="askClearPlan(${over.id})">It didn't</button></div>`);
+  const resvISO = reservation ? toISO(nextOccurrence()) : null;
+  const resvOpen = resvISO && resvISO!==todayISO() && !plans.some(p=>p.date===resvISO);   // held slot, nothing booked into it
   if(tonight) el.insertAdjacentHTML('beforeend',
     `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}.${(kidsOn()&&tonight.sitter==='needed')?' 🍼 Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
+  else if(resvOpen && (!next || resvISO<next.date)){
+    const rd=Math.round((parseISO(resvISO)-now)/DAY);
+    const when=rd===1?'Tomorrow':WD[reservation.weekday];
+    el.insertAdjacentHTML('beforeend',
+      `<div class="banner booked"><span>♡ ${when} is your standing date night · ${fmtDate(resvISO)} — nothing planned for it yet</span><button onclick="planResvNight('${resvISO}')">Plan it</button></div>`);
+  }
   else if(next){
     const days=Math.round((parseISO(next.date)-now)/DAY);
     const sitterChip=(kidsOn()&&next.sitter==='needed')
@@ -1908,7 +1917,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=71;
+const APP_V=72;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
