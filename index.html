@@ -81,8 +81,8 @@ header{text-align:center; padding:26px 16px 6px}
 /* ---------- sections & cards ---------- */
 .sechead{display:flex; align-items:baseline; gap:12px; margin:34px 0 14px}
 .sechead h2{font-family:'Fraunces',serif; font-weight:700; font-size:22px; white-space:nowrap}
-.sechead .lead{flex:1; border-bottom:1.5px dotted rgba(246,239,227,.25); transform:translateY(-4px)}
-.sechead .tag{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--rose); white-space:nowrap}
+.sechead .lead{flex:1; min-width:14px; border-bottom:1.5px dotted rgba(246,239,227,.25); transform:translateY(-4px)}
+.sechead .tag{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--rose); text-align:right; line-height:1.35; max-width:45%}
 .cardbox{background:var(--card); border-radius:14px; padding:18px 16px}
 label.f{display:block; font-family:'Karla',sans-serif; font-weight:700; font-size:13px; letter-spacing:.05em; text-transform:uppercase; color:var(--dimmer); margin:0 0 6px}
 .fgroup{margin-bottom:14px}
@@ -1126,7 +1126,7 @@ function syncSectionHTML(){
       <button class="pill gold ${pairRole==='me'?'on':''}" onclick="setPairRole('me')">${esc(nameMe())}</button>
       <button class="pill gold ${pairRole==='partner'?'on':''}" onclick="setPairRole('partner')">${esc(namePa())}</button>
     </div></div>`;
-  if(!sync) return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Two phones, one ledger</span></div>
+  if(!sync) return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Two phones, same books</span></div>
     <p class="secsub">One of you opens the vault and gets a code; the other joins with it. From then on, both phones share the same books — dates appear on both, even long-distance.</p>
     <div class="cardbox" id="sync-card">
       ${rolePills}
@@ -1795,7 +1795,7 @@ function obRender(){
         <li>Every date on the books</li>
         <li>A balance you watch grow</li>
         <li>A roulette full of date-night ideas</li>
-        <li>Two phones, one ledger</li></ul></div>
+        <li>Two phones, same books</li></ul></div>
       <div class="grow"></div>
       <button class="cta pink" onclick="obGo('pair')">Continue</button>`;
   }
@@ -1814,7 +1814,7 @@ function obRender(){
     }
     body=`<div class="oart" style="margin-bottom:10px">${OB_ART.pair}</div>
       <h1>Bring ${pa} in</h1>
-      <p class="sub">Two phones, one ledger — even long-distance.</p>
+      <p class="sub">Two phones, same books — even long-distance.</p>
       <div class="opanel mine"><div class="pt">Invite ${pa}</div>${mine}</div>
       <div class="odiv">— or —</div>
       <div class="opanel theirs"><div class="pt">${pa} sent me a code</div>
@@ -1865,7 +1865,7 @@ const ORIENT=[
    p:'On a date right now? Clock in and let it run — clock out when you’re home and the ledger files itself. Under 45 minutes counts as an everyday moment. Date already happened? Log it after the fact, right below the clock.'},
   {big:'✦', e:'The Plan tab', h:'Out of ideas? Spin.',
    p:'Spin the roulette for your next date, browse real places near you, or book a standing reservation — your weekly table for two. Everything you book ahead lands on the Calendar.'},
-  {big:'🔐', e:'Two phones, one ledger', h:'Bring your partner in',
+  {big:'🔐', e:'Two phones, same books', h:'Bring your partner in',
    p:'In Settings, add your first names, then open the vault and text your partner a 24-hour invite code. From then on, every date shows up on both phones — even long-distance.'}
 ];
 window.showOrientation=(i=0)=>{
@@ -1917,7 +1917,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=72;
+const APP_V=73;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
