@@ -242,6 +242,8 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 .olater{background:none; border:0; color:var(--dimmer); font-family:'Karla'; font-size:15.5px; cursor:pointer; text-decoration:underline; padding:6px}
 .linklike{background:none; border:0; color:var(--dimmer); font-family:'Karla',sans-serif; font-weight:700; font-size:13px; letter-spacing:.04em; text-transform:uppercase; cursor:pointer; padding:4px 0; margin-bottom:10px; display:block}
 .linklike:hover{color:var(--rose)}
+.resv-status{font-size:13.5px; line-height:1.5; color:var(--dim); margin-top:8px}
+.resv-status button{background:none; border:0; color:var(--rose); text-decoration:underline; cursor:pointer; font-size:13.5px; font-family:'Karla'; padding:0}
 .minilinks{display:flex; gap:20px; margin-top:12px}
 .minilinks a,.minilinks button{background:none; border:0; color:var(--dimmer); font-size:13.5px; cursor:pointer; padding:4px 0; text-decoration:none; font-family:'Karla'}
 .minilinks a:hover,.minilinks button:hover{color:var(--rose)}
@@ -816,8 +818,14 @@ function reservationHTML(){
         <option value="monthly">Once a month (every 4 weeks)</option>
       </select></div>
     <button class="cta pink" style="margin-top:0" onclick="setResv()">Book the standing date</button>`;
+  const nextISO=toISO(nextOccurrence());
+  const planFor=plans.find(p=>p.date===nextISO);
+  const status=planFor
+    ? `<div class="resv-status">♥ This one's planned: <b>${esc(planFor.title)}</b> — it's on the books</div>`
+    : `<div class="resv-status">The slot is reserved, but there's no plan in it yet — <button onclick="planResvNight('${nextISO}')">plan this night</button></div>`;
   return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s · ${fmtTime(reservation.time)} · ${resvCad().label}</div>
     <div class="countdown" id="countdown"></div>
+    ${status}
     <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 add to my calendar</a><button onclick="clearResv()">cancel reservation</button></div>`;
 }
 window.setResv=()=>{
@@ -1309,7 +1317,7 @@ function renderBanners(){
     const rd=Math.round((parseISO(resvISO)-now)/DAY);
     const when=rd===1?'Tomorrow':WD[reservation.weekday];
     el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>♡ ${when} is your standing date night · ${fmtDate(resvISO)} — nothing planned for it yet</span><button onclick="planResvNight('${resvISO}')">Plan it</button></div>`);
+      `<div class="banner booked"><span>♡ ${when} ${fmtDate(resvISO)} is reserved for date night — no plan in it yet</span><button onclick="planResvNight('${resvISO}')">Plan it</button></div>`);
   }
   else if(next){
     const days=Math.round((parseISO(next.date)-now)/DAY);
@@ -1917,7 +1925,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=73;
+const APP_V=74;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
