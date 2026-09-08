@@ -101,7 +101,7 @@ select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.o
 .cta.gold{background:var(--champagne); color:var(--plum)}
 .cta.ghost{background:transparent; color:var(--rose); border:1px solid var(--rose)}
 .cta.ghostd{background:transparent; color:var(--dim); border:1px solid rgba(246,239,227,.2)}
-.cta.danger{background:transparent; color:var(--withdrawal); border:1px solid rgba(240,138,126,.45)}
+.cta.danger{background:rgba(240,138,126,.08); color:var(--withdrawal); border:1.5px solid rgba(240,138,126,.6); font-weight:700}
 .cta:active{transform:translateY(1px)}
 .divline{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--dimmer); text-align:center; margin:14px 0 16px}
 .row2{display:flex; gap:8px}
@@ -172,7 +172,7 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .empty{font-family:'Karla',sans-serif; color:var(--dim); text-align:center; padding:24px 10px; font-size:14.5px; line-height:1.7}
 .empty .hrt{color:var(--rose)}
 .datanote{font-family:'Karla',sans-serif; font-size:13px; letter-spacing:0; color:var(--dimmer); text-align:center; margin-top:10px}
-.danger-zone{margin-top:18px; padding-top:16px; border-top:1px solid rgba(246,239,227,.1)}
+.danger-zone{margin-top:24px; padding-top:16px; border-top:1.5px solid rgba(240,138,126,.35)}
 
 /* ---------- month calendar ---------- */
 .cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px}
@@ -1213,15 +1213,18 @@ function syncSectionHTML(){
 function housekeepingHTML(){
   const inner = !ui.hkOpen ? '' : `
       <div class="row2" style="margin-top:14px">
-        <button class="cta ghost" style="flex:1; margin-top:0" id="backup-btn">⬇ Back up</button>
-        <button class="cta ghost" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
+        <button class="cta ghostd" style="flex:1; margin-top:0" id="backup-btn">⬇ Back up</button>
+        <button class="cta ghostd" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
       </div>
       <p class="datanote">Your history lives on this device${sync?' and in your shared cloud copy':''}. Keep a backup somewhere safe.</p>
-      <button class="cta ghost" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
-      <button class="cta ghost" style="width:100%" onclick="showOnboard()">👀 Preview the couple opening</button>
+      <button class="cta ghostd" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
+      <button class="cta ghostd" style="width:100%" onclick="showOnboard()">👀 Preview the couple opening</button>
       ${sync?`<button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
-      <button class="cta danger" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>`:''}
-      <div class="danger-zone"><button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button></div>
+      <button class="cta ghostd" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>`:''}
+      <div class="danger-zone">
+        <label class="f" style="color:var(--withdrawal); margin-bottom:8px">⚠ Careful — this cannot be undone</label>
+        <button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button>
+      </div>
       <input type="file" id="restore-file" accept="application/json,.json" hidden>`;
   return `<div class="sechead"><h2>Housekeeping &amp; data</h2><span class="lead"></span><span class="tag">The back office</span></div>
     <div class="cardbox">
@@ -1969,7 +1972,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=79;
+const APP_V=80;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
