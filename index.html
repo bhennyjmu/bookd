@@ -260,6 +260,7 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 .bestline b{color:var(--champagne)}
 .resv-status{font-size:13.5px; line-height:1.5; color:var(--dim); margin-top:8px}
 .resv-status button{background:none; border:0; color:var(--rose); text-decoration:underline; cursor:pointer; font-size:13.5px; font-family:'Karla'; padding:0}
+.changelink{background:none; border:0; color:var(--rose); text-decoration:underline; cursor:pointer; font-family:'Karla',sans-serif; font-size:13px; padding:0 0 0 6px}
 .minilinks{display:flex; gap:20px; margin-top:12px}
 .minilinks a,.minilinks button{background:none; border:0; color:var(--dimmer); font-size:13.5px; cursor:pointer; padding:4px 0; text-decoration:none; font-family:'Karla'}
 .minilinks a:hover,.minilinks button:hover{color:var(--rose)}
@@ -561,7 +562,7 @@ function stripHTML(){
   let right;
   if(goal){
     const pct=Math.max(0, Math.min(1, s.balance/goal));
-    const cls = pct>=1 ? 'done' : pct>=0.5 ? 'mid' : 'lo';
+    const cls = pct>=1 ? 'done' : 'mid';   // a nudge, not a grade — no red shaming under half
     right=`<div class="gtrack"><div class="goalfill ${cls}" style="width:${(pct*100).toFixed(0)}%; height:100%; border-radius:99px"></div></div>
       <div class="gtext">${s.balance.toFixed(1)} of ${goal} hrs goal${pct>=1?' — met ♥':''}</div>`;
   } else {
@@ -1169,72 +1170,69 @@ function statementHTML(){
 
 /* ---------- SETTINGS ---------- */
 function syncSectionHTML(){
-  const rolePills=`<div class="fgroup"><label class="f">Who's holding this phone?</label>
-    <div class="pills">
-      <button class="pill gold ${pairRole==='me'?'on':''}" onclick="setPairRole('me')">${esc(nameMe())}</button>
-      <button class="pill gold ${pairRole==='partner'?'on':''}" onclick="setPairRole('partner')">${esc(namePa())}</button>
-    </div></div>`;
-  if(!sync) return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Two phones, same books</span></div>
-    <p class="secsub">One of you gets an invite code and texts it to the other. Enter it, and both phones share the same books — even long-distance.</p>
+  const other=pairRole==='me'?'partner':'me';
+  const roleLine=`<p class="datanote" style="text-align:left; margin:0 0 14px">This phone: <b style="color:var(--cream)">${esc(pairRole==='me'?nameMe():namePa())}</b>
+    <button class="changelink" onclick="setPairRole('${other}')">change</button></p>`;
+  if(!sync) return `<div class="sechead"><h2>Sync with your partner</h2><span class="lead"></span><span class="tag">Two phones, same books</span></div>
+    <p class="secsub">One of you gets an invite code, the other enters it. After that, both phones see the same dates — even long-distance.</p>
     <div class="cardbox" id="sync-card">
-      ${rolePills}
-      <button class="cta pink" style="margin-top:0" onclick="getInvite()">🎟 Get an invite code</button>
-      <div class="divline">— or —</div>
-      <div class="fgroup"><label class="f" for="sync-code">Enter your partner's code</label>
+      ${roleLine}
+      <button class="cta pink" style="margin-top:0" onclick="getInvite()">Get an invite code</button>
+      <div class="divline">— or, if your partner already has one —</div>
+      <div class="fgroup"><label class="f" for="sync-code">Their invite code</label>
         <input type="text" id="sync-code" placeholder="XXXX-XXXX" autocapitalize="characters"></div>
-      <button class="cta pink" style="margin-top:0" onclick="joinVault()">Connect this phone</button>
+      <button class="cta pink" style="margin-top:0" onclick="joinVault()">Join with this code</button>
     </div>`;
   const statusLine = syncStatus==='live' ? '<span style="color:var(--deposit)">● Live — two phones, same books</span>'
     : syncStatus==='connecting' ? '<span style="color:var(--champagne)">● Connecting…</span>'
     : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Connection trouble — will retry</span>'
     : '<span style="color:var(--dimmer)">● Waiting for the sync engine…</span>';
-  return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Connected</span></div>
+  return `<div class="sechead"><h2>Sync with your partner</h2><span class="lead"></span><span class="tag">Connected</span></div>
     <div class="cardbox" id="sync-card">
       <div class="statusline" style="margin-top:0">${statusLine}</div>
       <p class="datanote" style="text-align:left; margin-top:6px">This phone signs as ${esc(sync.role==='me'?nameMe():namePa())}</p>
 
       <label class="f" style="margin-top:18px">Partner invite</label>
-      <button class="cta pink" style="margin-top:0" onclick="mintInvite()">🎟 Invite my partner — code valid 24 hours</button>
+      <button class="cta pink" style="margin-top:0" onclick="mintInvite()">Invite my partner — code valid 24 hours</button>
       <p class="datanote" style="margin-top:8px">Your invite code works once and expires in 24 hours.</p>
 
       <label class="f" style="margin-top:18px">Nudges</label>
       ${pushOn
-        ? `<button class="cta ghostd" style="width:100%; margin-top:0" onclick="disableNudges()">🔔 On — turn off for this phone</button>`
-        : `<button class="cta pink" style="width:100%; margin-top:0" onclick="enableNudges()">🔔 Turn on nudges (this phone)</button>
+        ? `<button class="cta ghostd" style="width:100%; margin-top:0" onclick="disableNudges()">On — turn off for this phone</button>`
+        : `<button class="cta pink" style="width:100%; margin-top:0" onclick="enableNudges()">Turn on nudges (this phone)</button>
            <p class="datanote" style="margin-top:8px">One permission pop-up, then: when your partner logs a date, tomorrow's plans, goal check-ins — even with the app closed.</p>`}
       <div class="pillgroup" style="margin-top:12px"><label class="f">"Book something" reminder pace</label>
         <div class="pills">
           ${[7,15,30].map(n=>`<button class="pill ${nudgeEvery===n?'on':''}" onclick="setNudgeEvery(${n})">Every ${n} days</button>`).join('')}
         </div></div>
       <p class="datanote" style="margin-top:6px">Tomorrow's-date reminders always come. The "running behind" nags wait this long between rings — on this phone. Your partner sets their own pace.</p>
-
+      <div class="minilinks" style="margin-top:16px"><button onclick="openFreeSeatSheet()">free ${esc(sync.role==='me'?namePa():nameMe())}'s seat</button><button onclick="openDisconnectSheet()">disconnect this phone</button></div>
     </div>`;
 }
-function housekeepingHTML(){
-  const inner = !ui.hkOpen ? '' : `
-      <div class="row2" style="margin-top:14px">
-        <button class="cta ghostd" style="flex:1; margin-top:0" id="backup-btn">⬇ Back up</button>
-        <button class="cta ghostd" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
-      </div>
-      <p class="datanote">Your history lives on this device${sync?' and in your shared cloud copy':''}. Keep a backup somewhere safe.</p>
-      <button class="cta ghostd" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
-      <button class="cta ghostd" style="width:100%" onclick="showOnboard()">👀 Preview the couple opening</button>
-      ${sync?`<button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
-      <button class="cta ghostd" style="width:100%" onclick="openDisconnectSheet()">Disconnect this phone</button>`:''}
-      <div class="danger-zone">
-        <label class="f" style="color:var(--withdrawal); margin-bottom:8px">⚠ Careful — this cannot be undone</label>
-        <button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account (erase everything)</button>
-      </div>
-      <input type="file" id="restore-file" accept="application/json,.json" hidden>`;
-  return `<div class="sechead"><h2>Housekeeping &amp; data</h2><span class="lead"></span><span class="tag">The back office</span></div>
+function backupHTML(){
+  return `<div class="sechead"><h2>Backup</h2><span class="lead"></span><span class="tag">Keep it safe</span></div>
     <div class="cardbox">
-      <button class="linklike" style="margin-bottom:0" onclick="ui.hkOpen=!ui.hkOpen;renderPage()">${ui.hkOpen?'▾':'▸'} backups, tours &amp; rarely-needed switches</button>
-      ${inner}
+      <div class="row2" style="margin-top:0">
+        <button class="cta ghostd" style="flex:1; margin-top:0" id="backup-btn">Back up</button>
+        <button class="cta ghostd" style="flex:1; margin-top:0" id="restore-btn">Restore</button>
+      </div>
+      <p class="datanote">Your history lives on this device${sync?' and in your shared cloud copy':''} — keep a copy somewhere safe.</p>
+      <input type="file" id="restore-file" accept="application/json,.json" hidden>
+    </div>
+    <button class="linklike" style="margin-top:14px" onclick="replayWelcome()">Replay the welcome tour</button>
+    <div class="sechead"><h2 style="color:var(--withdrawal)">Danger zone</h2><span class="lead"></span></div>
+    <div class="cardbox">
+      <button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account &amp; erase everything</button>
+      <p class="datanote">This can't be undone. You'll be asked to confirm.</p>
     </div>`;
 }
+window.replayWelcome=()=>{
+  ['spot_home','spot_plan','spot_cal','spot_set'].forEach(k=>localStorage.removeItem('bookd.'+k));
+  showOnboard();
+};
 function settingsPage(){
   return `<div class="sechead"><h2>Account holders</h2><span class="lead"></span><span class="tag">You two</span></div>
-    <p class="secsub">First names only — they label "who booked it" and sign the passbook. Nothing leaves this phone.</p>
+    <p class="secsub">First names only — they label who booked each date. Everything stays on this phone until you sync with your partner below.</p>
     <div class="cardbox">
       <div class="grid2 fgroup">
         <div><label class="f" for="p-me">You</label><input type="text" id="p-me" maxlength="20" value="${esc(profile.me)}" placeholder="Brad"></div>
@@ -1246,23 +1244,24 @@ function settingsPage(){
         <div class="pills">
           <button class="pill ${kidsOn()?'on':''}" onclick="setKids(true)">Yes — track the sitter</button>
           <button class="pill ${!kidsOn()?'on':''}" onclick="setKids(false)">No kids to cover</button>
-        </div></div>
-      <button class="cta pink" style="margin-top:0" onclick="saveProfile()">Save the account holders</button>
+        </div>
+        <p class="datanote" style="text-align:left; margin-top:8px">Turns sitter status on the Calendar on or off — for both of you.</p></div>
+      <button class="cta pink" style="margin-top:0" onclick="saveProfile()">Save</button>
     </div>
     ${syncSectionHTML()}
-    <div class="sechead"><h2>Goals</h2><span class="lead"></span><span class="tag">The baseline</span></div>
-    <p class="secsub">Set a monthly hours goal and the passbook tracks your rolling 30-day balance against it. Fall under half and it flags you in red.</p>
+    <div class="sechead"><h2>Goal</h2><span class="lead"></span><span class="tag">A nudge, not a grade</span></div>
+    <p class="secsub">Set a monthly target. Home shows your progress toward it — a gentle nudge, not a grade.</p>
     <div class="cardbox">
       <div class="fgroup"><label class="f" for="g-goal">Monthly hours goal</label>
         <input type="number" id="g-goal" min="1" max="200" step="0.5" value="${goal??''}" placeholder="15"></div>
-      <button class="cta pink" style="margin-top:0" onclick="saveGoal()">Set the goal</button>
-      ${goal?`<button class="cta ghost" onclick="clearGoal()">Clear the goal (no more flags)</button>`:''}
+      <button class="cta pink" style="margin-top:0" onclick="saveGoal()">Save</button>
+      ${goal?`<button class="cta ghostd" onclick="clearGoal()">Clear the goal</button>`:''}
     </div>
-    ${housekeepingHTML()}`;
+    ${backupHTML()}`;
 }
 window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
   if(plans.length){ plans.forEach(p=>{ p.sitter = v ? (p.sitter||'needed') : null; }); savePlans(); }
-  toast(v?'Sitter tracking on 🍼':'Sitter tracking off'); renderAll(); };
+  toast(v?'Sitter tracking on':'Sitter tracking off'); renderAll(); };
 window.saveProfile=()=>{
   profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:profile.kids!==false };
   store.set('profile',profile); pushMeta();
@@ -1972,7 +1971,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=80;
+const APP_V=81;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
