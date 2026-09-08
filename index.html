@@ -1175,18 +1175,18 @@ function syncSectionHTML(){
       <button class="pill gold ${pairRole==='partner'?'on':''}" onclick="setPairRole('partner')">${esc(namePa())}</button>
     </div></div>`;
   if(!sync) return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Two phones, same books</span></div>
-    <p class="secsub">One of you opens the vault and gets a code; the other joins with it. From then on, both phones share the same books — dates appear on both, even long-distance.</p>
+    <p class="secsub">One of you gets an invite code and texts it to the other. Enter it, and both phones share the same books — even long-distance.</p>
     <div class="cardbox" id="sync-card">
       ${rolePills}
-      <button class="cta pink" style="margin-top:0" onclick="openVault()">🔐 Open the vault (first phone)</button>
-      <div class="divline">— or, if your partner already opened it —</div>
-      <div class="fgroup"><label class="f" for="sync-code">Invite code</label>
-        <input type="text" id="sync-code" placeholder="XXXX-XXXX from your partner's invite" autocapitalize="characters"></div>
-      <button class="cta pink" style="margin-top:0" onclick="joinVault()">🔑 Join the joint account</button>
+      <button class="cta pink" style="margin-top:0" onclick="getInvite()">🎟 Get an invite code</button>
+      <div class="divline">— or —</div>
+      <div class="fgroup"><label class="f" for="sync-code">Enter your partner's code</label>
+        <input type="text" id="sync-code" placeholder="XXXX-XXXX" autocapitalize="characters"></div>
+      <button class="cta pink" style="margin-top:0" onclick="joinVault()">Connect this phone</button>
     </div>`;
   const statusLine = syncStatus==='live' ? '<span style="color:var(--deposit)">● Live — two phones, same books</span>'
     : syncStatus==='connecting' ? '<span style="color:var(--champagne)">● Connecting…</span>'
-    : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Trouble reaching the vault — will retry</span>'
+    : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Connection trouble — will retry</span>'
     : '<span style="color:var(--dimmer)">● Waiting for the sync engine…</span>';
   return `<div class="sechead"><h2>Joint Account sync</h2><span class="lead"></span><span class="tag">Connected</span></div>
     <div class="cardbox" id="sync-card">
@@ -1216,7 +1216,7 @@ function housekeepingHTML(){
         <button class="cta ghost" style="flex:1; margin-top:0" id="backup-btn">⬇ Back up</button>
         <button class="cta ghost" style="flex:1; margin-top:0" id="restore-btn">⬆ Restore</button>
       </div>
-      <p class="datanote">Your ledger lives on this device${sync?' and in the shared vault':''}. Keep a copy somewhere safe.</p>
+      <p class="datanote">Your history lives on this device${sync?' and in your shared cloud copy':''}. Keep a backup somewhere safe.</p>
       <button class="cta ghost" style="width:100%" onclick="replayTour()">🎓 Replay the new-account orientation</button>
       <button class="cta ghost" style="width:100%" onclick="showOnboard()">👀 Preview the couple opening</button>
       ${sync?`<button class="cta ghostd" style="width:100%" onclick="openFreeSeatSheet()">Free ${esc(sync.role==='me'?namePa():nameMe())}'s seat (new phone)</button>
@@ -1293,7 +1293,7 @@ window.openWipeSheet=()=>{
   openSheet(`
     <div class="eyebrow">Close the account</div><h3>Erase everything?</h3>
     <div class="sheetnote">${sync
-      ?'This wipes <b>this phone only</b> and disconnects it. The shared vault in the cloud — and your partner\'s phone — stay intact. Rejoin with the code to get everything back.'
+      ?'This wipes <b>this phone only</b> and disconnects it. Your shared history in the cloud — and your partner\'s phone — stay intact. Reconnect with a fresh invite code to get everything back.'
       :'This erases every entry, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.'}</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Never mind</button>
     <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="wipeAll()">Yes — erase it all</button></div>`);
@@ -1306,7 +1306,7 @@ window.wipeAll=()=>{
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
   entries=[]; reservation=null; plans=[]; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
-  renderAll(); toast(hadSync?'This phone wiped — the vault is untouched':'Account closed — fresh books');
+  renderAll(); toast(hadSync?'This phone wiped — your shared history is untouched':'Account closed — fresh books');
   setTimeout(()=>showOnboard(), 1200);   // fresh books = the full opening sequence
 };
 function wireSettings(){
@@ -1497,6 +1497,10 @@ window.setPairRole=r=>{ pairRole=r; renderPage(); };
 window.setNudgeEvery=n=>{ nudgeEvery=n; store.set('nudgeEvery',n);
   if(sync&&db) window.fb.setDoc(metaRef(), {nudgePace:{[sync.role]:n}}, {merge:true}).catch(()=>{});
   toast('This phone gets reminder nags every '+n+' days'); renderPage(); };
+window.getInvite=async()=>{
+  if(!sync){ await openVault(); }
+  if(sync) mintInvite();
+};
 window.openVault=async()=>{
   if(!ensureDb()) return toast('Sync engine still loading — try again in a moment');
   sync={cid:newCid(), role:pairRole}; store.set('sync',sync);
@@ -1505,9 +1509,9 @@ window.openVault=async()=>{
     const b=window.fb.writeBatch(db);
     entries.forEach(r=>b.set(entryRef(r.id), r));
     await b.commit();
-  }catch(e){ sync=null; store.set('sync',null); return toast('The vault door stuck — check your connection and try again'); }
+  }catch(e){ sync=null; store.set('sync',null); return toast('Could not connect — check your connection and try again'); }
   startSync();
-  toast('Vault open ♥ — send Marilee the code');
+  toast('Sharing is on ♥');
   renderAll();
 };
 window.joinVault=async()=>{
@@ -1522,7 +1526,7 @@ window.joinVault=async()=>{
   } else if(cid.length<16) return toast('That code looks short — check it and try again');
   let snap=null;
   try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
-  if(!snap||!snap.exists()) return toast("Couldn't find that vault — double-check the code");
+  if(!snap||!snap.exists()) return toast("Couldn't find a match for that code — double-check it");
   const d=snap.data()||{};
   const seat=d.devices&&d.devices[pairRole];
   if(seat && seat!==deviceId){
@@ -1550,7 +1554,7 @@ window.finishJoin=async cid=>{
 function inviteCodeGen(){ const chars='ABCDEFGHJKMNPQRSTVWXYZ23456789'; const a=new Uint32Array(8);
   crypto.getRandomValues(a); let s=''; for(let i=0;i<8;i++) s+=chars[a[i]%chars.length]; return s; }
 window.mintInvite=async()=>{
-  if(!sync||!ensureDb()) return toast('Not connected to a vault');
+  if(!sync||!ensureDb()) return toast('Connect with your partner first');
   const code=inviteCodeGen();
   try{
     await window.fb.setDoc(window.fb.doc(db,'tickets',code),
@@ -1603,7 +1607,7 @@ window.openFreeSeatSheet=()=>{
   const name=other==='me'?nameMe():namePa();
   openSheet(`
     <div class="eyebrow">Free a seat</div><h3>Free ${esc(name)}'s seat?</h3>
-    <div class="sheetnote">Use this only when ${esc(name)} has a new phone (or lost the old one). Their old phone gets disconnected, and the seat opens for their next phone to join with the couple code. The vault and every entry stay safe.</div>
+    <div class="sheetnote">Use this only when ${esc(name)} has a new phone (or lost the old one). Their old phone gets disconnected, and the seat opens for their next phone to connect with a fresh invite code. Your shared history stays safe.</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
     <button class="cta pink" style="flex:1" onclick="freeSeat('${other}')">Free the seat</button></div>`);
 };
@@ -1611,12 +1615,12 @@ window.freeSeat=other=>{
   closeSheet();
   if(db&&sync) window.fb.setDoc(metaRef(), {devices:{[other]:null}}, {merge:true})
     .then(()=>toast('Seat freed — their new phone can join with the code'))
-    .catch(()=>toast('Could not reach the vault — try again'));
+    .catch(()=>toast('Could not connect — try again'));
 };
 window.openDisconnectSheet=()=>{
   openSheet(`
     <div class="eyebrow">Disconnect</div><h3>Unplug this phone?</h3>
-    <div class="sheetnote">The vault and everything in it stays safe in the cloud — this phone just stops syncing. Rejoin anytime with the code.</div>
+    <div class="sheetnote">Your shared history stays safe in the cloud — this phone just stops syncing. Reconnect anytime with a fresh invite code.</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Stay connected</button>
     <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="disconnectVault()">Disconnect</button></div>`);
 };
@@ -1625,7 +1629,7 @@ window.disconnectVault=()=>{
   if(db&&sync) window.fb.setDoc(metaRef(), {devices:{[sync.role]:null}}, {merge:true}).catch(()=>{});  // give the seat back on the way out
   stopSync();
   sync=null; store.set('sync',null);
-  toast('Disconnected — the vault is untouched');
+  toast('Disconnected — your shared history is untouched');
   renderAll();
 };
 window.fbReady=()=>{ if(sync) startSync(); };
@@ -1760,7 +1764,7 @@ window.obJoinCode=async()=>{
     cid=t.data().cid; window.fb.deleteDoc(window.fb.doc(db,'tickets',code)).catch(()=>{});
   } else if(code.length<16) return toast('That code looks short — check it and try again');
   let snap=null; try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
-  if(!snap||!snap.exists()) return toast("Couldn't find that vault — double-check the code");
+  if(!snap||!snap.exists()) return toast("Couldn't find a match for that code — double-check it");
   const d=snap.data()||{};
   ob.join={cid, profile:d.profile||{}, devices:d.devices||{}};
   obGo('jwho');
@@ -1879,7 +1883,7 @@ function obRender(){
       <label class="f" for="ob-code">Invite code</label>
       <input type="text" id="ob-code" placeholder="XXXX-XXXX" autocapitalize="characters">
       <div class="grow"></div>
-      <button class="cta pink" onclick="obJoinCode()">Open the vault</button>
+      <button class="cta pink" onclick="obJoinCode()">Connect this phone</button>
       <button class="olink" style="align-self:center" onclick="ob.mode='founder';obGo('name')">No code? Open a new account instead</button>`;
   }
   if(s==='jwho'){
@@ -1914,7 +1918,7 @@ const ORIENT=[
   {big:'✦', e:'The Plan tab', h:'Out of ideas? Spin.',
    p:'Spin the roulette for your next date, browse real places near you, or book a standing reservation — your weekly table for two. Everything you book ahead lands on the Calendar.'},
   {big:'🔐', e:'Two phones, same books', h:'Bring your partner in',
-   p:'In Settings, add your first names, then open the vault and text your partner a 24-hour invite code. From then on, every date shows up on both phones — even long-distance.'}
+   p:'In Settings, add your first names, then get an invite code and text it to your partner — it works for 24 hours. From then on, every date shows up on both phones — even long-distance.'}
 ];
 window.showOrientation=(i=0)=>{
   let o=$('#orient'); if(!o){ o=document.createElement('div'); o.id='orient'; o.className='orient'; document.body.appendChild(o); }
@@ -1965,7 +1969,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=78;
+const APP_V=79;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
