@@ -188,7 +188,6 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .entry .links{display:flex; gap:20px; justify-content:flex-end; margin-top:6px}
 .entry .links button{background:none; border:0; color:var(--dimmer); cursor:pointer; font-size:13.5px; padding:6px 8px; min-height:32px}
 .entry .links button:hover{color:var(--rose)}
-.entry .links button[data-armed]{color:var(--withdrawal); font-weight:700}
 .empty{font-family:'Karla',sans-serif; color:var(--dim); text-align:center; padding:24px 10px; font-size:14.5px; line-height:1.7}
 .empty .hrt{color:var(--rose)}
 .datanote{font-family:'Karla',sans-serif; font-size:13px; letter-spacing:0; color:var(--dimmer); text-align:center; margin-top:10px}
@@ -1186,7 +1185,7 @@ function statementHTML(){
       </div>
       <div>
         <div class="amt dep">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</div>
-        <div class="links"><button onclick="editEntry(${e.id})">edit</button><button onclick="askDel(${e.id},this)">delete</button></div>
+        <div class="links"><button onclick="editEntry(${e.id})">edit</button><button onclick="askDelEntry(${e.id})">delete</button></div>
       </div></div>`})),
     ...missedOccurrences().map(d=>{const iso=toISO(d); return {sort:iso, html:`
       <div class="entry"><div style="flex:1">
@@ -1324,13 +1323,13 @@ window.editEntry=id=>{
   setTimeout(()=>{ const f=$('#d-title'); if(f) f.scrollIntoView({behavior:'smooth', block:'center'}); },80);
 };
 window.delEntry=id=>{ entries=entries.filter(e=>e.id!==id); store.set('entries',entries); pushDelete(id); renderAll(); toast('Removed'); };
-window.askDel=(id,btn)=>{   // destruction takes two taps: arm, then confirm within 3s
-  if(btn.dataset.armed){
-    if(Date.now()-(+btn.dataset.armed)<400) return;   // ghost double-fire from one physical tap — ignore
-    delEntry(id); return;
-  }
-  btn.dataset.armed=String(Date.now()); btn.textContent='delete?';
-  setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armed; btn.textContent='delete'; } }, 3000);
+window.askDelEntry=id=>{
+  const e=entries.find(x=>x.id===id); if(!e) return;
+  openSheet(`
+    <div class="eyebrow">Delete this entry</div><h3>Delete "${esc(e.title)}"?</h3>
+    <div class="sheetnote">It comes off the books and out of your balance — on both phones. <b>There is no undo.</b></div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep it</button>
+    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="closeSheet();delEntry(${id})">Delete it</button></div>`);
 };
 window.openWipeSheet=()=>{
   openSheet(`
@@ -2022,7 +2021,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=91;
+const APP_V=92;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
