@@ -1228,17 +1228,16 @@ function syncSectionHTML(){
       <button class="cta pink" style="margin-top:0" onclick="mintInvite()">Invite my partner — code valid 24 hours</button>
       <p class="datanote" style="margin-top:8px">Your invite code works once and expires in 24 hours.</p>
 
-      <button class="linklike" style="margin:18px 0 0" onclick="ui.nudgeOpen=!ui.nudgeOpen;renderPage()">${ui.nudgeOpen?'▾':'▸'} nudges · ${pushOn?`on · every ${nudgeEvery} days`:'off'}</button>
-      ${!ui.nudgeOpen?'':`
+      <label class="f" style="margin-top:18px">Nudges</label>
       ${pushOn
-        ? `<button class="cta ghostd" style="width:100%; margin-top:10px" onclick="disableNudges()">On — turn off for this phone</button>`
-        : `<button class="cta pink" style="width:100%; margin-top:10px" onclick="enableNudges()">Turn on nudges (this phone)</button>
+        ? `<button class="cta ghostd" style="width:100%; margin-top:0" onclick="disableNudges()">On — turn off for this phone</button>`
+        : `<button class="cta pink" style="width:100%; margin-top:0" onclick="enableNudges()">Turn on nudges (this phone)</button>
            <p class="datanote" style="margin-top:8px">One permission pop-up, then: when your partner logs a date, tomorrow's plans, goal check-ins — even with the app closed.</p>`}
-      <div class="pillgroup" style="margin-top:12px"><label class="f">"Book something" reminder pace</label>
-        <div class="pills">
-          ${[7,15,30].map(n=>`<button class="pill ${nudgeEvery===n?'on':''}" onclick="setNudgeEvery(${n})">Every ${n} days</button>`).join('')}
-        </div></div>
-      <p class="datanote" style="margin-top:6px">Tomorrow's-date reminders always come. The "running behind" nags wait this long between rings — on this phone. Your partner sets their own pace.</p>`}
+      <div class="fgroup" style="margin-top:12px"><label class="f" for="pace-sel">"Book something" reminder pace</label>
+        <select id="pace-sel" onchange="setNudgeEvery(+this.value)">
+          ${[7,15,30].map(n=>`<option value="${n}" ${nudgeEvery===n?'selected':''}>Every ${n} days</option>`).join('')}
+        </select></div>
+      <p class="datanote" style="margin-top:6px">Tomorrow's-date reminders always come. The "running behind" nags wait this long between rings — on this phone. Your partner sets their own pace.</p>
       <div class="minilinks" style="margin-top:16px"><button onclick="openFreeSeatSheet()">free ${esc(sync.role==='me'?namePa():nameMe())}'s seat</button><button onclick="openDisconnectSheet()">disconnect this phone</button></div>
     </div>`;
 }
@@ -2024,7 +2023,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=87;
+const APP_V=88;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
