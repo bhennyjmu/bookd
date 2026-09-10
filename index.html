@@ -43,11 +43,11 @@ body{background:var(--plum); color:var(--cream); font-family:'Karla',sans-serif;
 :focus-visible{outline:2px solid var(--rose); outline-offset:1px}
 
 /* ---------- header ---------- */
-header{text-align:center; padding:26px 16px 6px}
+header{text-align:center; padding:calc(26px + env(safe-area-inset-top)) 16px 6px}
 .brand{font-family:'Fraunces',serif; font-weight:900; font-size:34px; letter-spacing:-.5px; color:var(--cream)}
 .brand .hrt{color:var(--rose); font-size:24px; vertical-align:6%}
 .tagline{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--rose); margin-top:6px}
-header.compact{text-align:left; padding:18px 0 0}
+header.compact{text-align:left; padding:calc(16px + env(safe-area-inset-top)) 0 0}
 .brand-row{display:flex; align-items:center; justify-content:space-between; max-width:480px; margin:0 auto; padding:0 16px}
 .brand.sm{font-size:22px}
 .brand.sm .hrt{font-size:16px}
@@ -2023,7 +2023,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=84;
+const APP_V=85;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
