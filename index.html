@@ -1139,7 +1139,7 @@ window.openDay=iso=>{
       <div class="row2" style="margin-top:8px">
         ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">🍼 ${p.sitter==='locked'?'sitter: covered':'mark covered'}</button>`:''}
         ${iso<=t?`<button class="cta pink" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
-        <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="removePlan(${p.id});openDay('${iso}')">Clear</button>
+        <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="askClearPlan(${p.id})">Cancel date</button>
       </div>
       <a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">📆 Google Calendar</a></div>`;
   });
@@ -1166,7 +1166,7 @@ function comingUpHTML(){
     return `<div class="entry"><div style="flex:1">
       <div class="t">${esc(p.title)}</div>
       <div class="m">${fmtDate(p.date)} · ${when}</div>
-      <div class="links" style="text-align:left; margin-top:3px">${sit}<a href="${gcalOneOffURL(p)}" target="_blank" rel="noopener" style="color:inherit">📆 calendar</a>${days<=0?` · <button onclick="logPlan(${p.id})">log it</button>`:''} · <button onclick="removePlan(${p.id})">clear</button></div>
+      <div class="links" style="text-align:left; margin-top:3px">${sit}<a href="${gcalOneOffURL(p)}" target="_blank" rel="noopener" style="color:inherit">📆 calendar</a>${days<=0?` · <button onclick="logPlan(${p.id})">log it</button>`:''} · <button onclick="askClearPlan(${p.id})">cancel date</button></div>
     </div></div>`;
   };
   return `<div class="sechead"><h2>Coming up</h2><span class="lead"></span></div>
@@ -1429,10 +1429,10 @@ window.removePlan=id=>{ plans=plans.filter(p=>p.id!==id); savePlans(); toast('Bo
 window.askClearPlan=id=>{
   const p=planById(id); if(!p) return;
   openSheet(`
-    <div class="eyebrow">Didn't happen</div><h3>Clear "${esc(p.title)}"?</h3>
-    <div class="sheetnote">It comes off the books — no withdrawal, no judgment. Life happens; book the next one.</div>
+    <div class="eyebrow">Cancel this date</div><h3>Cancel "${esc(p.title)}"?</h3>
+    <div class="sheetnote">It comes off the books — no penalty, no judgment. You can always book it again.</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep it</button>
-    <button class="cta pink" style="flex:1" onclick="closeSheet();removePlan(${id})">Clear it</button></div>`);
+    <button class="cta pink" style="flex:1" onclick="closeSheet();removePlan(${id})">Cancel the date</button></div>`);
 };
 window.logPlan=id=>{
   const p=planById(id); if(!p) return;
@@ -2022,7 +2022,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=90;
+const APP_V=91;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
