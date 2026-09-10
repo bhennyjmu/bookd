@@ -47,6 +47,14 @@ header{text-align:center; padding:26px 16px 6px}
 .brand{font-family:'Fraunces',serif; font-weight:900; font-size:34px; letter-spacing:-.5px; color:var(--cream)}
 .brand .hrt{color:var(--rose); font-size:24px; vertical-align:6%}
 .tagline{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--rose); margin-top:6px}
+header.compact{text-align:left; padding:18px 0 0}
+.brand-row{display:flex; align-items:center; justify-content:space-between; max-width:480px; margin:0 auto; padding:0 16px}
+.brand.sm{font-size:22px}
+.brand.sm .hrt{font-size:16px}
+.hdot{width:9px; height:9px; border-radius:50%; background:transparent; flex-shrink:0}
+.hdot.live{background:var(--deposit)}
+.hdot.connecting{background:var(--champagne)}
+.hdot.error{background:var(--withdrawal)}
 
 /* ---------- banners ---------- */
 .banner{margin:14px 0 0; padding:12px 14px; border-radius:12px; font-size:15px; display:flex; gap:10px; align-items:center; justify-content:space-between}
@@ -321,7 +329,7 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 </head>
 <body>
 
-<header>
+<header id="hdr">
   <div class="brand">Book<span class="hrt">♥</span>d</div>
   <div class="tagline">Your relationship, on the books</div>
 </header>
@@ -1685,7 +1693,17 @@ function renderPage(){
   if(ui.tab===1){ tickCountdown(); if(inPlaces && near.coords && !map) mountMap(); }
   if(ui.tab===3) wireSettings();
 }
-function renderAll(){ renderBanners(); renderPage(); renderTabbar(); setTimeout(maybeSpot,350); }
+function renderHeader(){
+  const h=$('#hdr'); if(!h) return;
+  if(ui.tab===0){
+    h.className='';
+    h.innerHTML=`<div class="brand">Book<span class="hrt">♥</span>d</div><div class="tagline">Your relationship, on the books</div>`;
+  } else {
+    h.className='compact';
+    h.innerHTML=`<div class="brand-row"><div class="brand sm">Book<span class="hrt">♥</span>d</div><span class="hdot ${sync?esc(syncStatus):''}" title="sync: ${sync?esc(syncStatus):'off'}"></span></div>`;
+  }
+}
+function renderAll(){ renderHeader(); renderBanners(); renderPage(); renderTabbar(); setTimeout(maybeSpot,350); }
 function renderTabbar(){
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on', +b.dataset.t===ui.tab));
 }
@@ -2005,7 +2023,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=83;
+const APP_V=84;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
