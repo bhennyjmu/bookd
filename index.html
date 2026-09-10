@@ -24,7 +24,7 @@
 }
 /* paper-ledger light theme — parchment, deep ink, terracotta stamp */
 :root[data-theme="light"]{
-  --plum:#F3ECDD; --card:#FFFCF3; --rose:#BC5230; --champagne:#A8842F;
+  --plum:#F3ECDD; --card:#FFFCF3; --rose:#AE3D58; --champagne:#A8842F;
   --deposit:#2E7D4F; --withdrawal:#B0402F; --cream:#2A1B2E;
   --lineC:42,27,46; --tabbg:#EAE1CD;
   --dim:rgba(42,27,46,.72); --dimmer:rgba(42,27,46,.55);
@@ -2005,7 +2005,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=82;
+const APP_V=83;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
