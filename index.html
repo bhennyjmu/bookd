@@ -744,7 +744,7 @@ function planPage(){
   const ideaCard=`<div class="cardbox">
       <div class="pillgroup"><div class="pills">
         <button class="pill ${ui.planMode==='ideas'?'on':''}" onclick="setMode('ideas')">Idea cards</button>
-        <button class="pill ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Real places near me</button>
+        <button class="pill ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Places near me</button>
       </div></div>
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
       ${best?`<div class="bestline">✦ Best so far: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ avg, based on ${best.n} dates logged</div>`:''}
@@ -2022,7 +2022,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=89;
+const APP_V=90;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
