@@ -181,6 +181,7 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .entry .t{font-weight:700; font-size:16px}
 .entry .m{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.03em; text-transform:uppercase; color:var(--dimmer); margin-top:3px}
 .entry .m .hearts-s{color:var(--rose); letter-spacing:1px}
+.hrt-off{color:rgba(var(--lineC),.25)}
 .entry .moment{font-size:14px; font-style:italic; color:var(--dim); margin-top:3px}
 .entry .amt{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:16px; white-space:nowrap; text-align:right}
 .entry .amt.dep{color:var(--deposit)}
@@ -414,6 +415,7 @@ const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()
 const isDate=e=>(e.type||'date')==='date';
 const attr=e=>e.planner||e.by||null;   // credit: the who-booked-it pills win; else whoever logged it
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
+const heartRow=r=>{ r=Math.max(0,Math.min(5,r||0)); return '♥'.repeat(r)+`<span class="hrt-off">${'♥'.repeat(5-r)}</span>`; };
 const fmtMS=s=>{ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
   return h>0 ? h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0') : m+':'+String(sec).padStart(2,'0'); };
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
@@ -1127,7 +1129,7 @@ window.openDay=iso=>{
   let body='';
   dayEntries.forEach(e=>{
     body+=`<div class="recap" style="text-align:left"><div class="rt">${esc(e.title)}</div>
-      <div class="rm">${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${e.rating?` · <span style="color:var(--rose)">${'♥'.repeat(e.rating)}</span>`:''}${attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
+      <div class="rm">${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${e.rating?` · <span class="hearts-s" style="color:var(--rose)">${heartRow(e.rating)}</span>`:''}${attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
       ${e.moment?`<div class="rm" style="font-style:italic">“${esc(e.moment)}”</div>`:''}
       <div class="rm"><button class="cta ghostd" style="width:auto; margin-top:6px; padding:6px 12px; font-size:13px" onclick="closeSheet();editEntry(${e.id})">edit this entry</button></div></div>`;
   });
@@ -1180,7 +1182,7 @@ function statementHTML(){
     ...entries.map(e=>({sort:e.date, html:`
       <div class="entry"><div style="flex:1">
         <div class="t">${esc(e.title)}</div>
-        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}${e.rating?` · <span class="hearts-s">${'♥'.repeat(e.rating)}</span>`:''}</div>
+        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}${e.rating?` · <span class="hearts-s">${heartRow(e.rating)}</span>`:''}</div>
         ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}
       </div>
       <div>
@@ -2021,7 +2023,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=92;
+const APP_V=93;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
