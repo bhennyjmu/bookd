@@ -103,7 +103,6 @@ header.compact{text-align:left; padding:calc(16px + env(safe-area-inset-top)) 0 
 .sechead{display:flex; align-items:baseline; gap:12px; margin:34px 0 14px}
 .sechead h2{font-family:'Fraunces',serif; font-weight:700; font-size:22px; white-space:nowrap}
 .sechead .lead{flex:1; min-width:14px; border-bottom:1.5px dotted rgba(var(--lineC),.25); transform:translateY(-4px)}
-.sechead .tag{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--rose); text-align:right; line-height:1.35; max-width:45%}
 .cardbox{background:var(--card); border-radius:14px; padding:18px 16px}
 label.f{display:block; font-family:'Karla',sans-serif; font-weight:700; font-size:13px; letter-spacing:.05em; text-transform:uppercase; color:var(--dimmer); margin:0 0 6px}
 .fgroup{margin-bottom:14px}
@@ -750,13 +749,13 @@ function planPage(){
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
       ${best?`<div class="bestline">✦ Best so far: <b>${esc(best.c.toLowerCase())}</b> — ${best.avg.toFixed(1)}♥ avg, based on ${best.n} dates logged</div>`:''}
     </div>`;
-  return `<div class="sechead"><h2>Plan a date</h2><span class="lead"></span><span class="tag">Your next move</span></div>
+  return `<div class="sechead"><h2>Plan a date</h2><span class="lead"></span></div>
     <div class="intent-tabs">
       <button class="intent ${ui.planIntent!=='know'?'on':''}" onclick="ui.planIntent='idea';renderPage();if(ui.planMode==='places')mountMap()"><span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg></span>Give me an idea</button>
       <button class="intent ${ui.planIntent==='know'?'on':''}" onclick="ui.planIntent='know';renderPage()"><span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.5 L11 15 L15.5 9.5"/></svg></span>I know what we're doing</button>
     </div>
     ${ui.planIntent==='know'?knowCard:ideaCard}
-    <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span><span class="tag">Date night</span></div>
+    <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span></div>
     ${reservation?'':`<p class="secsub">Different from booking one date: this is the recurring slot you two hold for each other — weekly, every other week, or monthly, your call. Let a whole cycle pass with no date and it simply shows on the statement as a missed night. No penalty — just honesty.</p>`}
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
 }
@@ -1106,7 +1105,7 @@ function calGridHTML(){
     const marks=(past[iso]?'<span class="cd past">♥</span>':'')+(fut[iso]?`<span class="cd fut">${fut[iso]==='need'?'◌':'●'}</span>`:'')+resv;
     cells+=`<div class="cal-cell ${iso===tISO?'today':''}" onclick="openDay('${iso}')" role="button" tabindex="0"><span class="cn2">${d}</span>${marks}</div>`;
   }
-  return `<div class="sechead"><h2>Calendar</h2><span class="lead"></span><span class="tag">Us, by the month</span></div>
+  return `<div class="sechead"><h2>Calendar</h2><span class="lead"></span></div>
     <div class="cardbox" id="cal-card">
       <div class="cal-head"><button class="cal-nav" onclick="calNav(-1)">‹</button><span class="cal-title">${monthName}</span><button class="cal-nav" onclick="calNav(1)">›</button></div>
       <div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
@@ -1170,7 +1169,7 @@ function comingUpHTML(){
       <div class="links" style="text-align:left; margin-top:3px">${sit}<a href="${gcalOneOffURL(p)}" target="_blank" rel="noopener" style="color:inherit">📆 calendar</a>${days<=0?` · <button onclick="logPlan(${p.id})">log it</button>`:''} · <button onclick="removePlan(${p.id})">clear</button></div>
     </div></div>`;
   };
-  return `<div class="sechead"><h2>Coming up</h2><span class="lead"></span><span class="tag">Booked ahead</span></div>
+  return `<div class="sechead"><h2>Coming up</h2><span class="lead"></span></div>
     ${all.length?`<div class="cardbox">${all.map(row).join('')}</div>`
       :`<div class="cardbox"><div class="empty">Nothing booked ahead. Spin something on the Plan tab. <span class="hrt">♥</span></div></div>`}`;
 }
@@ -1195,7 +1194,7 @@ function statementHTML(){
         <div class="m">${fmtDate(iso)} · no date logged</div></div>
       <div class="amt" style="color:var(--dimmer)">—</div></div>`};})
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
-  return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span><span class="tag">On the books</span></div>
+  return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span></div>
     <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
       :'<div class="empty">No transactions yet. Log your first date to open the account. <span class="hrt">♥</span></div>'}</div>`;
 }
@@ -1205,7 +1204,7 @@ function syncSectionHTML(){
   const other=pairRole==='me'?'partner':'me';
   const roleLine=`<p class="datanote" style="text-align:left; margin:0 0 14px">This phone: <b style="color:var(--cream)">${esc(pairRole==='me'?nameMe():namePa())}</b>
     <button class="changelink" onclick="setPairRole('${other}')">change</button></p>`;
-  if(!sync) return `<div class="sechead"><h2>Sync with your partner</h2><span class="lead"></span><span class="tag">Two phones, same books</span></div>
+  if(!sync) return `<div class="sechead"><h2>Sync with your partner</h2><span class="lead"></span></div>
     <p class="secsub">One of you gets an invite code, the other enters it. After that, both phones see the same dates — even long-distance.</p>
     <div class="cardbox" id="sync-card">
       ${roleLine}
@@ -1219,7 +1218,7 @@ function syncSectionHTML(){
     : syncStatus==='connecting' ? '<span style="color:var(--champagne)">● Connecting…</span>'
     : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Connection trouble — will retry</span>'
     : '<span style="color:var(--dimmer)">● Waiting for the sync engine…</span>';
-  return `<div class="sechead"><h2>Sync with your partner</h2><span class="lead"></span><span class="tag">Connected</span></div>
+  return `<div class="sechead"><h2>Sync with your partner</h2><span class="lead"></span></div>
     <div class="cardbox" id="sync-card">
       <div class="statusline" style="margin-top:0">${statusLine}</div>
       <p class="datanote" style="text-align:left; margin-top:6px">This phone signs as ${esc(sync.role==='me'?nameMe():namePa())}</p>
@@ -1242,7 +1241,7 @@ function syncSectionHTML(){
     </div>`;
 }
 function backupHTML(){
-  return `<div class="sechead"><h2>Backup</h2><span class="lead"></span><span class="tag">Keep it safe</span></div>
+  return `<div class="sechead"><h2>Backup</h2><span class="lead"></span></div>
     <div class="cardbox">
       <div class="row2" style="margin-top:0">
         <button class="cta ghostd" style="flex:1; margin-top:0" id="backup-btn">Back up</button>
@@ -1267,13 +1266,13 @@ function settingsPage(){
   const sun=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9L19 19M19 5l-2.1 2.1M7.1 16.9L5 19"/></svg>`;
   const moon=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5 A8.5 8.5 0 1 1 9.5 4 a7 7 0 0 0 10.5 10.5 Z"/></svg>`;
   const mon=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="13" rx="2"/><path d="M9 21h6M12 17.5V21"/></svg>`;
-  return `<div class="sechead"><h2>Appearance</h2><span class="lead"></span><span class="tag">This phone</span></div>
+  return `<div class="sechead"><h2>Appearance</h2><span class="lead"></span></div>
     <p class="secsub">Choose how Book'd looks on this phone.</p>
     <div class="intent-tabs" style="grid-template-columns:1fr 1fr 1fr">
       ${themeBtn('light','Light',sun)}${themeBtn('dark','Dark',moon)}${themeBtn('system','System',mon)}
     </div>
     <p class="datanote" style="margin-top:0; margin-bottom:24px">"System" is the default — Book'd matches your phone's own setting, so most people never have to touch this.</p>
-    <div class="sechead" style="margin-top:0"><h2>Account holders</h2><span class="lead"></span><span class="tag">You two</span></div>
+    <div class="sechead" style="margin-top:0"><h2>Account holders</h2><span class="lead"></span></div>
     <p class="secsub">First names only — they label who booked each date. Everything stays on this phone until you sync with your partner below.</p>
     <div class="cardbox">
       <div class="grid2 fgroup">
@@ -1291,7 +1290,7 @@ function settingsPage(){
       <button class="cta pink" style="margin-top:0" onclick="saveProfile()">Save</button>
     </div>
     ${syncSectionHTML()}
-    <div class="sechead"><h2>Goal</h2><span class="lead"></span><span class="tag">A nudge, not a grade</span></div>
+    <div class="sechead"><h2>Goal</h2><span class="lead"></span></div>
     <p class="secsub">Set a monthly target. Home shows your progress toward it — a gentle nudge, not a grade.</p>
     <div class="cardbox">
       <div class="fgroup"><label class="f" for="g-goal">Monthly hours goal</label>
@@ -2023,7 +2022,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=88;
+const APP_V=89;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
