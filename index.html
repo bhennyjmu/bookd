@@ -1386,7 +1386,7 @@ function wireSettings(){
 /* ---------- banners ---------- */
 function renderBanners(){
   const el=$('#banners'); el.innerHTML='';
-  if(ui.tab===3) return;   // Settings is for configuring, not reminding
+  if(ui.tab!==0) return;   // banners live on Home only — the other tabs are for doing, not reminding
   const now=new Date(); now.setHours(0,0,0,0);
   if(ui.awayNote) el.insertAdjacentHTML('beforeend',
     `<div class="banner memory"><span>${ui.awayNote}</span><button onclick="dismissAway()">✕</button></div>`);
@@ -2023,7 +2023,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=85;
+const APP_V=86;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
