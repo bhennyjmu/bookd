@@ -188,7 +188,9 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .entry .t{font-weight:700; font-size:16px}
 .entry .m{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.03em; text-transform:uppercase; color:var(--dimmer); margin-top:3px}
 .entry .m .hearts-s{color:var(--rose); letter-spacing:1px}
-.hrt-off{color:rgba(var(--lineC),.25)}
+.hs{width:13px; height:13px; display:inline-block; vertical-align:-2px; margin-right:1px}
+.hs.off{opacity:.28}
+.hearts button .hs{width:24px; height:24px; vertical-align:middle; margin:0}
 .entry .moment{font-size:14px; font-style:italic; color:var(--dim); margin-top:3px}
 .entry .amt{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:16px; white-space:nowrap; text-align:right}
 .entry .amt.dep{color:var(--deposit)}
@@ -422,7 +424,9 @@ const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()
 const isDate=e=>(e.type||'date')==='date';
 const attr=e=>e.planner||e.by||null;   // credit: the who-booked-it pills win; else whoever logged it
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
-const heartRow=r=>{ r=Math.max(0,Math.min(5,r||0)); return '♥'.repeat(r)+`<span class="hrt-off">${'♥'.repeat(5-r)}</span>`; };
+const HEART_D='M12 21s-8-5.3-8-11a4.6 4.6 0 0 1 8-3.1A4.6 4.6 0 0 1 20 10c0 5.7-8 11-8 11z';
+const heartSVG=off=>`<svg class="hs${off?' off':''}" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}" fill="currentColor"/></svg>`;
+const heartRow=r=>{ r=Math.max(0,Math.min(5,r||0)); return heartSVG(false).repeat(r)+heartSVG(true).repeat(5-r); };
 const fmtMS=s=>{ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
   return h>0 ? h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0') : m+':'+String(sec).padStart(2,'0'); };
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
@@ -680,7 +684,7 @@ function depositFormHTML(){
       <div><label class="f" for="d-cat">Category</label>
         <select id="d-cat">${cats.map(c=>`<option ${c===defCat?'selected':''}>${c}</option>`).join('')}</select></div>
       <div><label class="f">How was it?</label>
-        <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="grabDep();dep.rating=${i};renderPage()">♥</button>`).join('')}</div></div>
+        <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="grabDep();dep.rating=${i};renderPage()">${heartSVG(false)}</button>`).join('')}</div></div>
     </div>
     <div class="fgroup"><label class="f" for="d-moment">Best moment (optional)</label>
       <input type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
@@ -2032,7 +2036,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=96;
+const APP_V=97;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
