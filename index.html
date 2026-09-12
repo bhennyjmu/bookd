@@ -22,18 +22,25 @@
   --dim:rgba(var(--lineC),.6); --dimmer:rgba(var(--lineC),.5);
   --green:#2f9e63; --greenv:#1f7a4a;
 }
-/* paper-ledger light theme — parchment, deep ink, terracotta stamp */
+/* light theme — "Cool Ivory": ivory page, white cards, slate ink, raspberry accent, muted gold */
 :root[data-theme="light"]{
-  --plum:#F3ECDD; --card:#FFFCF3; --rose:#AE3D58; --champagne:#A8842F;
-  --deposit:#2E7D4F; --withdrawal:#B0402F; --cream:#2A1B2E;
-  --lineC:42,27,46; --tabbg:#EAE1CD;
-  --dim:rgba(42,27,46,.72); --dimmer:rgba(42,27,46,.55);
+  --plum:#F4F3EF; --card:#FFFFFF; --rose:#B5405E; --champagne:#8F7A3A;
+  --deposit:#2E7D4F; --withdrawal:#B0402F; --cream:#22252B; --ink:#22252B;
+  --lineC:34,37,43; --tabbg:#E9E8E3;
+  --dim:rgba(34,37,43,.72); --dimmer:rgba(34,37,43,.56);
   --green:#2E9960; --greenv:#1F7A4A;
   color-scheme:light;
 }
-:root[data-theme="light"] .passbook{background:#FBF6E8; box-shadow:0 10px 28px rgba(42,27,46,.14)}
-:root[data-theme="light"] .sheet{box-shadow:0 18px 40px rgba(42,27,46,.28)}
-:root[data-theme="light"] .strip, :root[data-theme="light"] .cardbox{box-shadow:0 2px 10px rgba(42,27,46,.06)}
+:root[data-theme="light"] .passbook{background:#FFFFFF; border:1px solid rgba(34,37,43,.1); box-shadow:0 6px 22px rgba(34,37,43,.08)}
+:root[data-theme="light"] .balance-label, :root[data-theme="light"] .balance-sub, :root[data-theme="light"] .stat .k,
+:root[data-theme="light"] .pb-split{color:rgba(34,37,43,.62)}
+:root[data-theme="light"] .pb-head{border-bottom-color:rgba(34,37,43,.12)}
+:root[data-theme="light"] .pb-rule{border-top-color:rgba(34,37,43,.1)}
+:root[data-theme="light"] .cardbox, :root[data-theme="light"] .strip{border:1px solid rgba(34,37,43,.08); box-shadow:0 2px 10px rgba(34,37,43,.05)}
+:root[data-theme="light"] .banner.booked{background:#EDEFF3; border:1px solid rgba(34,37,43,.14); color:#22252B}
+:root[data-theme="light"] .banner.memory{background:#FFFFFF; border:1px dashed rgba(34,37,43,.3); color:#22252B}
+:root[data-theme="light"] .banner button{background:#22252B; color:#F4F3EF}
+:root[data-theme="light"] .sheet{box-shadow:0 18px 40px rgba(34,37,43,.28)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%; color-scheme:dark}
 body{background:var(--plum); color:var(--cream); font-family:'Karla',sans-serif; font-size:17px; line-height:1.5;
@@ -392,7 +399,7 @@ function applyTheme(){
   const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content = resolved==='light' ? '#F3ECDD' : '#1D1320';
 }
 window.setTheme=t=>{ theme=t; store.set('theme',t); applyTheme(); renderPage();
-  toast(t==='system'?"Matching your phone's setting":t==='light'?'Paper ledger, coming up':'Back to the dark books'); };
+  toast(t==='system'?"Matching your phone's setting":t==='light'?'Light mode on':'Dark mode on'); };
 try{ matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if(theme==='system') applyTheme(); }); }catch(e){}
 applyTheme();   // days between "running behind" reminder nags
 let db=null, unsubMeta=null, unsubEntries=null, syncStatus='off', pairRole='me';
@@ -2023,7 +2030,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=93;
+const APP_V=94;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
