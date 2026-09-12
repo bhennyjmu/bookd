@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1D1320">
+<meta name="theme-color" content="#1B1D22">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Book'd — your relationship, on the books</title>
@@ -16,9 +16,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous" defer></script>
 <style>
 :root{
-  --plum:#1D1320; --card:#2A1B2E; --rose:#F27D98; --champagne:#E9C580;
-  --deposit:#8FD6A8; --withdrawal:#F08A7E; --cream:#F6EFE3; --ink:#2A1B2E;
-  --lineC:246,239,227; --tabbg:#241629;
+  --plum:#1B1D22; --card:#262930; --rose:#E0607F; --champagne:#D2B266;
+  --deposit:#8FD6A8; --withdrawal:#F08A7E; --cream:#ECEDF0; --ink:#22252B;
+  --lineC:236,237,240; --tabbg:#202329;
   --dim:rgba(var(--lineC),.6); --dimmer:rgba(var(--lineC),.5);
   --green:#2f9e63; --greenv:#1f7a4a;
 }
@@ -66,39 +66,39 @@ header.compact{text-align:left; padding:calc(16px + env(safe-area-inset-top)) 0 
 /* ---------- banners ---------- */
 .banner{margin:14px 0 0; padding:12px 14px; border-radius:12px; font-size:15px; display:flex; gap:10px; align-items:center; justify-content:space-between}
 .banner.tonight{background:var(--rose); color:var(--plum); font-weight:700}
-.banner.booked{background:rgba(233,197,128,.16); border:1px solid rgba(233,197,128,.5); color:var(--champagne)}
-.banner.memory{background:var(--card); border:1px dashed var(--champagne); color:var(--champagne)}
-.banner button{border:0; border-radius:8px; padding:7px 12px; font-family:'Karla'; font-weight:700; font-size:14px; cursor:pointer; flex-shrink:0; background:var(--plum); color:var(--cream)}
+.banner.booked{background:#2B2F38; border:1px solid rgba(var(--lineC),.14); color:var(--cream)}
+.banner.memory{background:var(--card); border:1px dashed rgba(var(--lineC),.3); color:var(--cream)}
+.banner button{border:0; border-radius:8px; padding:7px 12px; font-family:'Karla'; font-weight:700; font-size:14px; cursor:pointer; flex-shrink:0; background:var(--cream); color:var(--plum)}
 .banner a{color:inherit}
 
 /* ---------- passbook: The Joint Account ---------- */
 .passbook{background:var(--cream); color:var(--ink); border-radius:16px;
   margin-top:20px; padding:18px 20px 20px; position:relative; text-align:center;
   box-shadow:0 12px 40px rgba(0,0,0,.45)}
-.pb-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid rgba(42,27,46,.15); padding-bottom:9px; text-align:left}
+.pb-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid rgba(34,37,43,.15); padding-bottom:9px; text-align:left}
 .pb-title{font-family:'Karla',sans-serif; font-weight:700; font-size:16.5px; letter-spacing:.01em}
-.balance-label{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:18px;
+.balance-label{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:rgba(34,37,43,.55); margin-top:18px;
   display:flex; justify-content:center; align-items:center; gap:7px}
 .balance{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:52px; letter-spacing:2px; line-height:1.05}
 .balance small{font-size:20px; font-weight:500; letter-spacing:0}
 .balance.neg{color:#B0402F}
-.balance-sub{font-size:13.5px; color:rgba(42,27,46,.65); margin-top:2px}
-.pb-rule{border:0; border-top:1px solid rgba(42,27,46,.12); margin:16px 0 14px}
+.balance-sub{font-size:13.5px; color:rgba(34,37,43,.65); margin-top:2px}
+.pb-rule{border:0; border-top:1px solid rgba(34,37,43,.12); margin:16px 0 14px}
 .pb-stats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
 .stat .v{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:22px}
 .stat .v.hearts{color:#d4527a}
-.stat .k{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:2px}
+.stat .k{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:rgba(34,37,43,.55); margin-top:2px}
 .stat.live .v{color:var(--greenv); animation:glow 1.8s ease-in-out infinite}
 .stat.live .k{color:rgba(31,122,74,.75)}
 @keyframes glow{0%,100%{text-shadow:0 0 0 rgba(47,158,99,0)}50%{text-shadow:0 0 14px rgba(47,158,99,.55)}}
-.pb-split{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.04em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:14px}
+.pb-split{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.04em; text-transform:uppercase; color:rgba(34,37,43,.55); margin-top:14px}
 .goalrow{margin-top:14px}
-.goaltrack{height:7px; border-radius:999px; background:rgba(42,27,46,.15); overflow:hidden}
+.goaltrack{height:7px; border-radius:999px; background:rgba(34,37,43,.15); overflow:hidden}
 .goalfill{height:100%; border-radius:999px; transition:width .4s}
 .goalfill.lo{background:#B0402F}
 .goalfill.mid{background:#C99A3F}
 .goalfill.done{background:var(--green)}
-.goaltext{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:rgba(42,27,46,.55); margin-top:6px}
+.goaltext{font-family:'Karla',sans-serif; font-weight:700; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:rgba(34,37,43,.55); margin-top:6px}
 .goaltext.lo{color:#B0402F; font-weight:600}
 .goaltext.done{color:var(--greenv)}
 .dot{width:8px; height:8px; border-radius:50%; background:var(--green); display:none; animation:pulse 1.8s ease-out infinite}
@@ -220,7 +220,7 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .cal-legend{font-family:'Karla',sans-serif; font-size:12.5px; letter-spacing:.02em; color:var(--dimmer); text-align:center; margin-top:10px}
 
 /* ---------- confirm sheet ---------- */
-.sheetwrap{position:fixed; inset:0; background:rgba(20,12,22,.75); backdrop-filter:blur(2px); z-index:90; display:none; align-items:flex-end; padding:14px; padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+.sheetwrap{position:fixed; inset:0; background:rgba(20,22,26,.75); backdrop-filter:blur(2px); z-index:90; display:none; align-items:flex-end; padding:14px; padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 .sheetwrap.show{display:flex}
 .sheet{width:100%; max-width:452px; margin:0 auto; border-radius:18px; padding:18px; background:var(--card); border:1px solid rgba(var(--lineC),.12); box-shadow:0 18px 40px rgba(0,0,0,.5)}
 .sheet .eyebrow{color:var(--rose)}
@@ -246,7 +246,7 @@ footer{max-width:480px; margin:40px auto 0; padding:0 16px; text-align:center}
 footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dimmer)}
 .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom)); background:var(--champagne); color:var(--plum); font-weight:700; font-size:14.5px; border-radius:10px; padding:10px 16px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:95}
 /* new-account orientation */
-.orient{position:fixed; inset:0; z-index:80; background:rgba(20,12,22,.93); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; padding:22px}
+.orient{position:fixed; inset:0; z-index:80; background:rgba(20,22,26,.93); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; padding:22px}
 .ocard{width:100%; max-width:400px; background:var(--card); border:1px solid rgba(var(--lineC),.14); border-radius:18px; padding:28px 22px; text-align:center; box-shadow:0 18px 40px rgba(0,0,0,.5)}
 .obig{font-size:42px; line-height:1; margin-bottom:12px}
 .onote{color:var(--dim); font-size:15px; line-height:1.65; margin:0 0 4px}
@@ -256,7 +256,7 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 .olink{background:none; border:0; color:var(--dimmer); font-family:'Karla'; font-size:13.5px; margin-top:12px; cursor:pointer; text-decoration:underline}
 /* one-time coach marks: darken the room, light up one button */
 .spotwrap{position:fixed; inset:0; z-index:75}
-.spot{position:absolute; border-radius:14px; box-shadow:0 0 0 9999px rgba(20,12,22,.82); outline:2px solid var(--champagne); pointer-events:none}
+.spot{position:absolute; border-radius:14px; box-shadow:0 0 0 9999px rgba(20,22,26,.82); outline:2px solid var(--champagne); pointer-events:none}
 .spottip{position:absolute; width:min(88vw,340px); background:var(--card); border:1px solid rgba(var(--lineC),.14); border-radius:14px; padding:14px 16px; color:var(--cream); font-size:14.5px; line-height:1.55; box-shadow:0 12px 30px rgba(0,0,0,.5)}
 .spotok{font-family:'Karla',sans-serif; font-weight:700; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--champagne); margin-top:8px}
 /* opening sequence — "opening your joint account" */
@@ -396,7 +396,7 @@ let theme=store.get('theme','system');   // 'light' | 'dark' | 'system'
 function applyTheme(){
   const resolved = theme==='system' ? (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') : theme;
   document.documentElement.dataset.theme=resolved;
-  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content = resolved==='light' ? '#F3ECDD' : '#1D1320';
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content = resolved==='light' ? '#F4F3EF' : '#1B1D22';
 }
 window.setTheme=t=>{ theme=t; store.set('theme',t); applyTheme(); renderPage();
   toast(t==='system'?"Matching your phone's setting":t==='light'?'Light mode on':'Dark mode on'); };
@@ -1077,7 +1077,7 @@ function mapDraw(recenter){
   if(!map||!near.coords) return;
   mapMarkers.forEach(m=>map.removeLayer(m)); mapMarkers=[];
   if(mapRing) map.removeLayer(mapRing);
-  mapRing=L.circle([near.coords.lat,near.coords.lon],{radius:near.radiusMi*1609.34,color:'#F27D98',weight:1,opacity:.35,fillColor:'#F27D98',fillOpacity:.05,interactive:false}).addTo(map);
+  mapRing=L.circle([near.coords.lat,near.coords.lon],{radius:near.radiusMi*1609.34,color:'#E0607F',weight:1,opacity:.35,fillColor:'#E0607F',fillOpacity:.05,interactive:false}).addTo(map);
   near.results.slice(0,40).forEach(p=>{
     const on=p.name===near.sel, s=on?30:22;
     const m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:'',html:`<div class="pin${on?' onp':''}" style="width:${s}px;height:${s}px;font-size:${on?14:10}px">♥</div>`,iconSize:[s,s],iconAnchor:[s/2,s/2]}),title:p.name}).addTo(map);
@@ -1731,46 +1731,46 @@ const OB_H='M12 21s-8-5.3-8-11a4.6 4.6 0 0 1 8-3.1A4.6 4.6 0 0 1 20 10c0 5.7-8 1
 const OB_ART={
  welcome:`<svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
    <circle cx="100" cy="65" r="56" fill="none" stroke="rgba(var(--lineC),.18)" stroke-dasharray="4 6" stroke-width="1.5"/>
-   <g transform="translate(64,26) scale(3)"><path d="${OB_H}" fill="#F27D98"/></g>
-   <g transform="translate(112,58) scale(2)"><path d="${OB_H}" fill="none" stroke="#E9C580" stroke-width="1.6"/></g>
-   <path d="M38 34 v12 M32 40 h12" stroke="#E9C580" stroke-width="2" stroke-linecap="round"/>
-   <path d="M158 28 v10 M153 33 h10" stroke="#F27D98" stroke-width="2" stroke-linecap="round"/>
+   <g transform="translate(64,26) scale(3)"><path d="${OB_H}" fill="#E0607F"/></g>
+   <g transform="translate(112,58) scale(2)"><path d="${OB_H}" fill="none" stroke="#D2B266" stroke-width="1.6"/></g>
+   <path d="M38 34 v12 M32 40 h12" stroke="#D2B266" stroke-width="2" stroke-linecap="round"/>
+   <path d="M158 28 v10 M153 33 h10" stroke="#E0607F" stroke-width="2" stroke-linecap="round"/>
  </svg>`,
  anniv:`<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <circle cx="78" cy="55" r="34" fill="none" stroke="#F27D98" stroke-width="2"/>
-   <circle cx="122" cy="55" r="34" fill="none" stroke="#E9C580" stroke-width="2"/>
-   <g transform="translate(86,41) scale(1.2)"><path d="${OB_H}" fill="#F27D98"/></g>
+   <circle cx="78" cy="55" r="34" fill="none" stroke="#E0607F" stroke-width="2"/>
+   <circle cx="122" cy="55" r="34" fill="none" stroke="#D2B266" stroke-width="2"/>
+   <g transform="translate(86,41) scale(1.2)"><path d="${OB_H}" fill="#E0607F"/></g>
  </svg>`,
  kids:`<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <g transform="translate(44,16) scale(2.4)"><path d="${OB_H}" fill="#F27D98"/></g>
-   <g transform="translate(100,16) scale(2.4)"><path d="${OB_H}" fill="none" stroke="#E9C580" stroke-width="1.4"/></g>
-   <g transform="translate(86,64) scale(1.3)"><path d="${OB_H}" fill="#F27D98" opacity=".85"/></g>
+   <g transform="translate(44,16) scale(2.4)"><path d="${OB_H}" fill="#E0607F"/></g>
+   <g transform="translate(100,16) scale(2.4)"><path d="${OB_H}" fill="none" stroke="#D2B266" stroke-width="1.4"/></g>
+   <g transform="translate(86,64) scale(1.3)"><path d="${OB_H}" fill="#E0607F" opacity=".85"/></g>
  </svg>`,
  jcode:`<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <rect x="34" y="30" width="132" height="52" rx="10" fill="none" stroke="#F27D98" stroke-width="2"/>
-   <line x1="128" y1="34" x2="128" y2="78" stroke="#F27D98" stroke-width="1.6" stroke-dasharray="3 5"/>
-   <g transform="translate(62,42) scale(1.2)"><path d="${OB_H}" fill="#E9C580"/></g>
-   <circle cx="147" cy="56" r="7" fill="none" stroke="#E9C580" stroke-width="1.8"/>
+   <rect x="34" y="30" width="132" height="52" rx="10" fill="none" stroke="#E0607F" stroke-width="2"/>
+   <line x1="128" y1="34" x2="128" y2="78" stroke="#E0607F" stroke-width="1.6" stroke-dasharray="3 5"/>
+   <g transform="translate(62,42) scale(1.2)"><path d="${OB_H}" fill="#D2B266"/></g>
+   <circle cx="147" cy="56" r="7" fill="none" stroke="#D2B266" stroke-width="1.8"/>
  </svg>`,
  name:`<svg viewBox="0 0 200 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <g transform="translate(76,4) scale(2)"><path d="${OB_H}" fill="#F27D98"/></g>
-   <path d="M40 66 q20 -12 40 0 t40 0 t40 0" fill="none" stroke="#E9C580" stroke-width="2" stroke-linecap="round"/>
+   <g transform="translate(76,4) scale(2)"><path d="${OB_H}" fill="#E0607F"/></g>
+   <path d="M40 66 q20 -12 40 0 t40 0 t40 0" fill="none" stroke="#D2B266" stroke-width="2" stroke-linecap="round"/>
  </svg>`,
  partner:`<svg viewBox="0 0 200 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <g transform="translate(46,8) scale(2.2)"><path d="${OB_H}" fill="#F27D98"/></g>
-   <g transform="translate(104,8) scale(2.2)"><path d="${OB_H}" fill="none" stroke="#E9C580" stroke-width="1.5"/></g>
+   <g transform="translate(46,8) scale(2.2)"><path d="${OB_H}" fill="#E0607F"/></g>
+   <g transform="translate(104,8) scale(2.2)"><path d="${OB_H}" fill="none" stroke="#D2B266" stroke-width="1.5"/></g>
  </svg>`,
  jwho:`<svg viewBox="0 0 200 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <rect x="28" y="14" width="64" height="52" rx="9" fill="none" stroke="#F27D98" stroke-width="2"/>
-   <rect x="108" y="14" width="64" height="52" rx="9" fill="none" stroke="#E9C580" stroke-width="2"/>
-   <g transform="translate(50,26) scale(1.1)"><path d="${OB_H}" fill="#F27D98"/></g>
-   <g transform="translate(130,26) scale(1.1)"><path d="${OB_H}" fill="none" stroke="#E9C580" stroke-width="1.6"/></g>
+   <rect x="28" y="14" width="64" height="52" rx="9" fill="none" stroke="#E0607F" stroke-width="2"/>
+   <rect x="108" y="14" width="64" height="52" rx="9" fill="none" stroke="#D2B266" stroke-width="2"/>
+   <g transform="translate(50,26) scale(1.1)"><path d="${OB_H}" fill="#E0607F"/></g>
+   <g transform="translate(130,26) scale(1.1)"><path d="${OB_H}" fill="none" stroke="#D2B266" stroke-width="1.6"/></g>
  </svg>`,
  pair:`<svg viewBox="0 0 200 104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <rect x="40" y="14" width="34" height="76" rx="9" fill="#2A1B2E" stroke="rgba(var(--lineC),.4)" stroke-width="1.6"/>
-   <rect x="126" y="14" width="34" height="76" rx="9" fill="#2A1B2E" stroke="rgba(var(--lineC),.4)" stroke-width="1.6"/>
-   <line x1="76" y1="52" x2="124" y2="52" stroke="#E9C580" stroke-width="1.6" stroke-dasharray="3 5"/>
-   <g transform="translate(86,37) scale(1.25)"><path d="${OB_H}" fill="#F27D98"/></g>
+   <rect x="40" y="14" width="34" height="76" rx="9" fill="#262930" stroke="rgba(var(--lineC),.4)" stroke-width="1.6"/>
+   <rect x="126" y="14" width="34" height="76" rx="9" fill="#262930" stroke="rgba(var(--lineC),.4)" stroke-width="1.6"/>
+   <line x1="76" y1="52" x2="124" y2="52" stroke="#D2B266" stroke-width="1.6" stroke-dasharray="3 5"/>
+   <g transform="translate(86,37) scale(1.25)"><path d="${OB_H}" fill="#E0607F"/></g>
    <line x1="50" y1="80" x2="64" y2="80" stroke="rgba(var(--lineC),.3)" stroke-width="2" stroke-linecap="round"/>
    <line x1="136" y1="80" x2="150" y2="80" stroke="rgba(var(--lineC),.3)" stroke-width="2" stroke-linecap="round"/>
  </svg>`
@@ -2030,7 +2030,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=94;
+const APP_V=95;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
