@@ -1261,8 +1261,10 @@ function backupHTML(){
     <button class="linklike" style="margin-top:14px" onclick="replayWelcome()">Replay the welcome tour</button>
     <div class="sechead"><h2 style="color:var(--withdrawal)">Danger zone</h2><span class="lead"></span></div>
     <div class="cardbox">
-      <button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Close the account &amp; erase everything</button>
-      <p class="datanote">This can't be undone. You'll be asked to confirm.</p>
+      <button class="cta danger" style="width:100%; margin-top:0" onclick="openWipeSheet()">Clear my history</button>
+      <p class="datanote">${sync
+        ? "Wipes this phone's copy of everything and disconnects it — the app stays installed. Your shared history in the cloud and your partner's phone are untouched; reconnect anytime with a fresh invite code."
+        : "Wipes every date, booking, and setting from this phone and starts you fresh — the app itself stays installed. It can't be undone; you'll be asked to confirm."}</p>
     </div>`;
 }
 window.replayWelcome=()=>{
@@ -1342,12 +1344,12 @@ window.askDelEntry=id=>{
 };
 window.openWipeSheet=()=>{
   openSheet(`
-    <div class="eyebrow">Close the account</div><h3>Erase everything?</h3>
+    <div class="eyebrow">Clear my history</div><h3>Clear everything on this phone?</h3>
     <div class="sheetnote">${sync
-      ?'This wipes <b>this phone only</b> and disconnects it. Your shared history in the cloud — and your partner\'s phone — stay intact. Reconnect with a fresh invite code to get everything back.'
-      :'This erases every entry, the balance, your reservation and bookings — everything on this phone. <b>There is no undo.</b> Consider Back up first.'}</div>
+      ?"This wipes <b>this phone only</b> and disconnects it. The app stays installed. Your shared history in the cloud — and your partner's phone — stay intact; reconnect with a fresh invite code to get everything back."
+      :"This erases every date, the balance, your reservation and bookings — everything on this phone. The app stays installed; you just start fresh. <b>There is no undo.</b> Consider Back up first."}</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Never mind</button>
-    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="wipeAll()">Yes — erase it all</button></div>`);
+    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="wipeAll()">Yes — clear it</button></div>`);
 };
 window.wipeAll=()=>{
   closeSheet();
@@ -1357,7 +1359,7 @@ window.wipeAll=()=>{
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
   entries=[]; reservation=null; plans=[]; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
-  renderAll(); toast(hadSync?'This phone wiped — your shared history is untouched':'Account closed — fresh books');
+  renderAll(); toast(hadSync?'History cleared on this phone — your shared copy is untouched':'History cleared — fresh books');
   setTimeout(()=>showOnboard(), 1200);   // fresh books = the full opening sequence
 };
 function wireSettings(){
@@ -2030,7 +2032,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=95;
+const APP_V=96;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
