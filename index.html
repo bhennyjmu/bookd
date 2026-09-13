@@ -823,10 +823,12 @@ window.commitDeposit=()=>{
     hours: small?raw/60:raw, cat:dep.cat||'Food & drink', rating:dep.rating||(small?0:4),
     type:small?'small':'date', planner:dep.planner||null, moment:(dep.moment||'').trim()||null, by:sync?sync.role:null,
     photo: dep.removePhoto?null:(dep.photoUrl||null), photoFocus: dep.removePhoto?null:(dep.photoFocus||null) };
+  const wasUnderGoal = goal>0 && stats().balance < goal;   // celebrate crossing the line, not merely being over it
   if(dep.editingId){ entries=entries.map(e=>e.id===dep.editingId?record:e); toast('Entry updated'); }
   else { entries.unshift(record); toast(small?'Saved +'+Math.round(raw)+' min':'Saved +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
   pushEntry(record);
+  if(wasUnderGoal && stats().balance>=goal) setTimeout(()=>toast('Goal met — '+goal+' hrs together this month ♥'), 2200);
   if(dep.removePhoto && dep.photoUrl) deletePhoto(dep.photoUrl);
   if(dep.photoBlob) uploadPhoto(record.id, dep.photoBlob);
   const pix=plans.findIndex(p=>p.title===record.title);
@@ -2153,7 +2155,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=110;
+const APP_V=111;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
