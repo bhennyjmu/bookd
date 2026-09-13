@@ -1303,9 +1303,9 @@ function statementHTML(){
         <div class="m">${fmtDate(iso)} · no date logged</div></div>
       <div class="amt" style="color:var(--dimmer)">—</div></div>`};})
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
-  return `<div class="sechead"><h2>Account statement</h2><span class="lead"></span></div>
+  return `<div class="sechead"><h2>Date history</h2><span class="lead"></span></div>
     <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
-      :'<div class="empty">No transactions yet. Log your first date to open the account. <span class="hrt">♥</span></div>'}</div>`;
+      :'<div class="empty">No dates logged yet — your first one goes here. <span class="hrt">♥</span></div>'}</div>`;
 }
 
 /* ---------- SETTINGS ---------- */
@@ -2139,7 +2139,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=104;
+const APP_V=105;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
