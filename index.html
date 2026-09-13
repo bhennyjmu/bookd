@@ -611,8 +611,8 @@ function homePage(){
     +`<div class="cardbox" style="margin-top:18px">
       ${clockButtonsHTML()}
       ${ui.depOpen
-        ? `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="closeDepForm()">− log a past date</button>${depositFormHTML()}`
-        : `<button class="linklike" style="margin:12px auto 0; text-align:center" onclick="openDepForm()">+ log a past date</button>
+        ? `<button class="cta ghostd" onclick="closeDepForm()">− Hide the form</button>${depositFormHTML()}`
+        : `<button class="cta ghostd" onclick="openDepForm()">+ Log a past date</button>
            ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}`}
     </div>
     ${stripHTML()}`;
@@ -2139,7 +2139,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=106;
+const APP_V=107;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
