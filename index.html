@@ -433,6 +433,7 @@ const todayISO=()=>toISO(new Date());
 const toISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const parseISO=s=>{const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d);};
 const fmtDate=s=>parseISO(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+const fmtDateY=s=>parseISO(s).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
 const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x;};
 const isDate=e=>(e.type||'date')==='date';
 const attr=e=>e.planner||e.by||null;   // credit: the who-booked-it pills win; else whoever logged it
@@ -1289,7 +1290,7 @@ function statementHTML(){
     ...entries.map(e=>({sort:e.date, html:`
       <div class="entry">${e.photo?`<img class="ethumb" src="${e.photo}" alt="" loading="lazy" style="${focusCSS(e)}" onclick="viewPhotoEntry(${e.id})">`:''}<div style="flex:1">
         <div class="t">${esc(e.title)}</div>
-        <div class="m">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}</div>
+        <div class="m">${fmtDateY(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}</div>
         ${e.rating?`<div class="hearts-row">${heartRow(e.rating)}</div>`:''}
         ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}
       </div>
@@ -1300,7 +1301,7 @@ function statementHTML(){
     ...missedOccurrences().map(d=>{const iso=toISO(d); return {sort:iso, html:`
       <div class="entry"><div style="flex:1">
         <div class="t">Missed date night</div>
-        <div class="m">${fmtDate(iso)} · no date logged</div></div>
+        <div class="m">${fmtDateY(iso)} · no date logged</div></div>
       <div class="amt" style="color:var(--dimmer)">—</div></div>`};})
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
   return `<div class="sechead"><h2>Date history</h2><span class="lead"></span></div>
@@ -2139,7 +2140,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=107;
+const APP_V=108;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
