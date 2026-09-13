@@ -54,7 +54,13 @@ header{text-align:center; padding:calc(26px + env(safe-area-inset-top)) 16px 6px
 .brand{font-family:'Fraunces',serif; font-weight:900; font-size:34px; letter-spacing:-.5px; color:var(--cream)}
 .brand .hrt{color:var(--rose); font-size:24px; vertical-align:6%}
 .tagline{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--rose); margin-top:6px}
+header{position:relative}
 header.compact{text-align:left; padding:calc(16px + env(safe-area-inset-top)) 0 0}
+.hgear{background:none; border:0; color:var(--dimmer); cursor:pointer; padding:6px; line-height:0; border-radius:8px}
+.hgear svg{width:22px; height:22px; display:block}
+.hgear.on, .hgear:hover{color:var(--rose)}
+header:not(.compact) .hgear{position:absolute; right:14px; top:calc(18px + env(safe-area-inset-top))}
+.hright{display:flex; align-items:center; gap:10px}
 .brand-row{display:flex; align-items:center; justify-content:space-between; max-width:480px; margin:0 auto; padding:0 16px}
 .brand.sm{font-size:22px}
 .brand.sm .hrt{font-size:16px}
@@ -366,7 +372,7 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
   <button data-t="0" class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 L12 3.5 21 11"/><path d="M5.5 9.5 V20 H18.5 V9.5"/></svg></span><span class="lbl">Home</span></button>
   <button data-t="1"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg></span><span class="lbl">Plan</span></button>
   <button data-t="2"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10.5 H20 M8.5 3.5 V7 M15.5 3.5 V7"/></svg></span><span class="lbl">Calendar</span></button>
-  <button data-t="3"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7.5 H20 M4 12 H20 M4 16.5 H20"/><circle cx="9.5" cy="7.5" r="2.2" fill="var(--tabbg)"/><circle cx="15" cy="12" r="2.2" fill="var(--tabbg)"/><circle cx="8" cy="16.5" r="2.2" fill="var(--tabbg)"/></svg></span><span class="lbl">Settings</span></button>
+  <button data-t="3"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 3.5v5h5"/><path d="M12 8v4.5l3 2"/></svg></span><span class="lbl">History</span></button>
 </div></nav>
 
 <div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet"></div></div>
@@ -637,7 +643,7 @@ function stripHTML(){
     <div class="sgoal">${right}</div>
   </div>`;
 }
-window.goGoal=()=>{ ui.tab=3; renderAll();
+window.goGoal=()=>{ ui.tab=4; renderAll();
   setTimeout(()=>{ const g=$('#g-goal'); if(g){ g.scrollIntoView({behavior:'smooth', block:'center'}); g.focus({preventScroll:true}); } },120); };
 window.openDepForm=()=>{
   ui.depOpen=true; ui.justSaved=false; renderPage();
@@ -1283,7 +1289,10 @@ function comingUpHTML(){
       :`<div class="cardbox"><div class="empty">Nothing booked ahead. Spin something on the Plan tab. <span class="hrt">♥</span></div></div>`}`;
 }
 function calendarPage(){
-  return calGridHTML()+comingUpHTML()+statementHTML();
+  return calGridHTML()+comingUpHTML();
+}
+function historyPage(){
+  return statementHTML();
 }
 function statementHTML(){
   const rows=[
@@ -1525,7 +1534,7 @@ function renderBanners(){
     const sitterChip=(kidsOn()&&next.sitter==='needed')
       ? ` · <a href="#" onclick="event.preventDefault();toggleSitter(${next.id})" style="text-decoration:underline">🍼 no sitter yet</a>` : '';
     el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>Next up: ${esc(next.title)} · ${fmtDate(next.date)} — ${days} day${days===1?'':'s'} to go${sitterChip} · <a href="#" onclick="event.preventDefault();ui.tab=2;renderAll()" style="text-decoration:underline">all dates ▦</a></span></div>`);
+      `<div class="banner booked"><span>Next up: ${esc(next.title)} · ${fmtDate(next.date)} — ${days} day${days===1?'':'s'} to go${sitterChip} · <a href="#" onclick="event.preventDefault();ui.tab=3;renderAll()" style="text-decoration:underline">all dates</a></span></div>`);
   }
   if(resvTonight() && !tonight){
     el.insertAdjacentHTML('beforeend',
@@ -1805,19 +1814,23 @@ function renderPage(){
   if(map && !inPlaces){ map.remove(); map=null; mapMarkers=[]; mapRing=null; }
   if(ui.tab!==1) clearInterval(cdTimer);
   const liveMap = (inPlaces && map) ? $('#mapbox') : null;
-  $('#page').innerHTML=[homePage,planPage,calendarPage,settingsPage][ui.tab]();
+  $('#page').innerHTML=[homePage,planPage,calendarPage,historyPage,settingsPage][ui.tab]();
   if(liveMap && $('#mapbox')) $('#mapbox').replaceWith(liveMap);
   if(ui.tab===1){ tickCountdown(); if(inPlaces && near.coords && !map) mountMap(); }
-  if(ui.tab===3) wireSettings();
+  if(ui.tab===4) wireSettings();
 }
+function gearHTML(){
+  return `<button class="hgear ${ui.tab===4?'on':''}" aria-label="Settings" title="Settings" onclick="openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7.5 H20 M4 12 H20 M4 16.5 H20"/><circle cx="9.5" cy="7.5" r="2.2" fill="var(--plum)"/><circle cx="15" cy="12" r="2.2" fill="var(--plum)"/><circle cx="8" cy="16.5" r="2.2" fill="var(--plum)"/></svg></button>`;
+}
+window.openSettings=()=>{ ui.tab=4; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); };
 function renderHeader(){
   const h=$('#hdr'); if(!h) return;
   if(ui.tab===0){
     h.className='';
-    h.innerHTML=`<div class="brand">Book<span class="hrt">♥</span>d</div><div class="tagline">Your relationship, on the books</div>`;
+    h.innerHTML=`<div class="brand">Book<span class="hrt">♥</span>d</div><div class="tagline">Your relationship, on the books</div>${gearHTML()}`;
   } else {
     h.className='compact';
-    h.innerHTML=`<div class="brand-row"><div class="brand sm">Book<span class="hrt">♥</span>d</div><span class="hdot ${sync?esc(syncStatus):''}" title="sync: ${sync?esc(syncStatus):'off'}"></span></div>`;
+    h.innerHTML=`<div class="brand-row"><div class="brand sm">Book<span class="hrt">♥</span>d</div><span class="hright"><span class="hdot ${sync?esc(syncStatus):''}" title="sync: ${sync?esc(syncStatus):'off'}"></span>${gearHTML()}</span></div>`;
   }
 }
 function renderAll(){ renderHeader(); renderBanners(); renderPage(); renderTabbar(); setTimeout(maybeSpot,350); }
@@ -2124,7 +2137,7 @@ function maybeSpot(){
   } else if(ui.tab===2 && !store.get('spot_cal',false) && $('#cal-card')){
     target=$('#cal-card'); key='spot_cal';
     msg='Your month at a glance — ♥ is a date you logged, a gold dot is one booked ahead. Tap any day for the full story.';
-  } else if(ui.tab===3 && !store.get('spot_set',false) && $('#sync-card')){
+  } else if(ui.tab===4 && !store.get('spot_set',false) && $('#sync-card')){
     target=$('#sync-card'); key='spot_set';
     msg='The big one: add your names above, then bring your partner in here — two phones, same books.';
   }
@@ -2140,7 +2153,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=109;
+const APP_V=110;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
