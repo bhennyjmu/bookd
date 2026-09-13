@@ -191,7 +191,10 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .ephoto{width:100%; max-height:260px; object-fit:cover; border-radius:10px; margin-bottom:10px; cursor:pointer; display:block}
 .ebig{width:100%; max-height:70vh; object-fit:contain; border-radius:12px; display:block; margin-bottom:12px}
 .photorow{display:flex; align-items:center; gap:14px}
-.pthumb{width:112px; height:112px; object-fit:cover; border-radius:10px; cursor:crosshair; flex-shrink:0}
+.focusbox{position:relative; width:min(100%,240px); aspect-ratio:1; border-radius:12px; overflow:hidden; touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none}
+.focusbox:active{cursor:grabbing}
+.pthumb{width:100%; height:100%; object-fit:cover; display:block; pointer-events:none}
+.gridlines{position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,.55) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.55) 1px, transparent 1px); background-size:33.34% 33.34%; background-position:-1px -1px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
 .hearts-row{color:var(--rose); white-space:nowrap; line-height:1; margin-top:5px; display:flex; gap:2px}
 .hearts-row .hs{width:13px; height:13px; margin:0}
 .hs{width:13px; height:13px; display:inline-block; vertical-align:-2px; margin-right:1px}
@@ -706,7 +709,9 @@ function depositFormHTML(){
       <input type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
     <div class="fgroup"><label class="f">Photo (optional)</label>
       ${(dep.photoPrev||(dep.photoUrl&&!dep.removePhoto))
-        ? `<div class="photorow"><img class="pthumb" src="${dep.photoPrev||dep.photoUrl}" alt="" style="object-position:${(dep.photoFocus||{x:50,y:35}).x}% ${(dep.photoFocus||{x:50,y:35}).y}%" onclick="setFocus(event)"><div><p class="datanote" style="text-align:left; margin:0 0 6px">Tap the photo where the thumbnail should center.</p><button class="linklike" style="margin:0" onclick="dropPhoto()">remove photo</button></div></div>`
+        ? `<div class="focusbox" onpointerdown="focusDown(event)" onpointermove="focusMove(event)" onpointerup="focusUp(event)" onpointercancel="focusUp(event)"><img class="pthumb" id="focus-img" src="${dep.photoPrev||dep.photoUrl}" alt="" draggable="false" style="object-position:${(dep.photoFocus||{x:50,y:35}).x}% ${(dep.photoFocus||{x:50,y:35}).y}%"><div class="gridlines"></div></div>
+           <p class="datanote" style="text-align:left; margin:8px 0 6px">Slide the photo until the part you want is centered — that's your thumbnail.</p>
+           <button class="linklike" style="margin:0" onclick="dropPhoto()">remove photo</button>`
         : sync ? `<button class="cta ghostd" style="margin-top:0" onclick="pickPhoto()">Add a photo</button>`
                : `<p class="datanote" style="text-align:left; margin:0">Photos turn on once you're connected with your partner (Settings).</p>`}
       <input type="file" id="d-photo" accept="image/*" hidden onchange="photoChosen(this)"></div>
@@ -740,8 +745,14 @@ function shrinkImage(file, max=1280, q=.82){
     im.src=url;
   });
 }
-window.setFocus=ev=>{ grabDep(); const r=ev.currentTarget.getBoundingClientRect();
-  dep.photoFocus={x:Math.round((ev.clientX-r.left)/r.width*100), y:Math.round((ev.clientY-r.top)/r.height*100)}; renderPage(); };
+let focusDrag=null;   // slide-to-frame: dragging the photo pans the thumbnail's focus point
+window.focusDown=ev=>{ ev.preventDefault(); const f=dep.photoFocus||{x:50,y:35}; focusDrag={x0:ev.clientX, y0:ev.clientY, fx:f.x, fy:f.y}; ev.currentTarget.setPointerCapture(ev.pointerId); };
+window.focusMove=ev=>{ if(!focusDrag) return; const r=ev.currentTarget.getBoundingClientRect();
+  const nx=Math.max(0,Math.min(100, focusDrag.fx-(ev.clientX-focusDrag.x0)/r.width*110));
+  const ny=Math.max(0,Math.min(100, focusDrag.fy-(ev.clientY-focusDrag.y0)/r.height*110));
+  dep.photoFocus={x:Math.round(nx), y:Math.round(ny)};
+  const im=$('#focus-img'); if(im) im.style.objectPosition=nx+'% '+ny+'%'; };
+window.focusUp=()=>{ focusDrag=null; };
 const focusCSS=e=>{ const f=e.photoFocus||{x:50,y:35}; return `object-position:${f.x}% ${f.y}%`; };
 window.viewPhotoEntry=id=>{
   const e=entries.find(x=>x.id===id); if(!e||!e.photo) return;
@@ -2128,7 +2139,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=103;
+const APP_V=104;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
