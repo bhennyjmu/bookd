@@ -760,7 +760,7 @@ window.viewPhotoEntry=id=>{
   const who=attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:'';
   openSheet(`<img class="ebig" src="${e.photo}" alt="">
     <div class="recap" style="text-align:left"><div class="rt">${esc(e.title)}</div>
-      <div class="rm">${fmtDate(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${who}</div>
+      <div class="rm">${fmtDateY(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${who}</div>
       ${e.rating?`<div class="hearts-row">${heartRow(e.rating)}</div>`:''}
       ${e.moment?`<div class="rm" style="font-style:italic; margin-top:6px">“${esc(e.moment)}”</div>`:''}</div>
     <button class="cta ghostd" onclick="closeSheet()">Close</button>`);
@@ -2140,7 +2140,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=108;
+const APP_V=109;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
