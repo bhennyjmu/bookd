@@ -1386,7 +1386,7 @@ function backupHTML(){
     </div>`;
 }
 window.replayWelcome=()=>{
-  ['spot_home','spot_plan','spot_cal','spot_set'].forEach(k=>localStorage.removeItem('bookd.'+k));
+  ['spot_home','spot_plan','spot_gear','spot_cal','spot_hist','spot_set'].forEach(k=>localStorage.removeItem('bookd.'+k));
   showOnboard();
 };
 function settingsPage(){
@@ -2098,13 +2098,13 @@ function obRender(){
 /* ---------- new-account orientation & coach marks ---------- */
 const ORIENT=[
   {big:'<span style="color:var(--rose)">♥</span>', e:'Welcome to Book’d', h:'Every date counts',
-   p:'Every date night and everyday moment you log adds up. The number on Home is your last 30 days together, in hours. No penalties, no grades — just the two of you, on the books.'},
-  {big:'⏱', e:'The Home tab', h:'Clock in like it’s payday',
-   p:'On a date right now? Clock in and let it run — clock out when you’re home and it logs itself. Under 45 minutes counts as an everyday moment. Date already happened? Log it after the fact, right below the clock.'},
-  {big:'✦', e:'The Plan tab', h:'Out of ideas? Spin.',
-   p:'Spin the roulette for your next date, browse real places near you, or book a standing reservation — your weekly table for two. Everything you book ahead lands on the Calendar.'},
-  {big:'🔐', e:'Two phones, same books', h:'Bring your partner in',
-   p:'In Settings, add your first names, then get an invite code and text it to your partner — it works for 24 hours. From then on, every date shows up on both phones — even long-distance.'}
+   p:'Log date nights and everyday moments — Home shows your time together over the last 30 days, your streak, and your goal. No penalties, no grades — just the two of you, on the books.'},
+  {big:'⏱', e:'The Home tab', h:'Start a date, or log one',
+   p:'On a date right now? Tap Start a date and let the clock run — clock out when you’re home and it logs itself. Already happened? Tap “+ Log a past date” and add a photo if you like.'},
+  {big:'✦', e:'Plan, Calendar & History', h:'Ideas, bookings, and the record',
+   p:'On Plan, spin the roulette for an idea or book something you already have in mind, and hold a standing date night. Calendar shows your month; History keeps every logged date with its photos and ratings.'},
+  {big:'<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--rose)" stroke-width="1.8" stroke-linecap="round"><path d="M4 7.5 H20 M4 12 H20 M4 16.5 H20"/><circle cx="9.5" cy="7.5" r="2.2" fill="var(--card)"/><circle cx="15" cy="12" r="2.2" fill="var(--card)"/><circle cx="8" cy="16.5" r="2.2" fill="var(--card)"/></svg>', e:'Settings & your partner', h:'Tap the gear',
+   p:'Behind the gear in the corner: your names, connecting with your partner so both phones share the same books, your monthly goal, backups, and light or dark mode.'}
 ];
 window.showOrientation=(i=0)=>{
   let o=$('#orient'); if(!o){ o=document.createElement('div'); o.id='orient'; o.className='orient'; document.body.appendChild(o); }
@@ -2126,36 +2126,45 @@ window.replayTour=()=>{   // a replay replays everything: cards now, spotlights 
   showOrientation(0);
 };
 function maybeSpot(){
-  if(!store.get('oriented',false)) return;                    // orientation first, always
+  if(!store.get('oriented',false)) return;                    // the opening sequence comes first, always
   if($('#orient') || $('#spotwrap') || $('#onboard')) return;
   if($('#sheetwrap').classList.contains('show')) return;
+  const seen=k=>store.get(k,false);
   let target=null, msg='', key='';
-  if(ui.tab===0 && !store.get('spot_home',false) && $('#timer-btn')){
+  if(ui.tab===0 && !seen('spot_home') && $('#timer-btn')){
     target=$('#timer-btn'); key='spot_home';
-    msg='Next date night, start here — one tap clocks you in, one tap clocks you out. Book’d logs the rest.';
-  } else if(ui.tab===1 && !store.get('spot_plan',false) && $('#spin-btn')){
-    target=$('#spin-btn'); key='spot_plan';
-    msg='No ideas? One tap spins up your next date. Save the good ones, book the great ones.';
-  } else if(ui.tab===2 && !store.get('spot_cal',false) && $('#cal-card')){
+    msg='On a date right now? Tap Start a date and let the clock run — it logs itself when you clock out. Already happened? Use “+ Log a past date” just below.';
+  } else if(ui.tab===1 && !seen('spot_plan') && $('.intent-tabs')){
+    target=$('.intent-tabs'); key='spot_plan';
+    msg='Two ways to plan: let the roulette give you an idea, or book something you already have in mind. Your standing date night lives further down this page.';
+  } else if(ui.tab===1 && seen('spot_plan') && !seen('spot_gear') && $('.hgear')){
+    target=$('.hgear'); key='spot_gear';
+    msg='Settings live behind this gear: your names, connecting with your partner, your monthly goal, backups, and light or dark mode.';
+  } else if(ui.tab===2 && !seen('spot_cal') && $('#cal-card')){
     target=$('#cal-card'); key='spot_cal';
-    msg='Your month at a glance — ♥ is a date you logged, a gold dot is one booked ahead. Tap any day for the full story.';
-  } else if(ui.tab===4 && !store.get('spot_set',false) && $('#sync-card')){
+    msg='Your month at a glance — a heart is a date you logged, a dot is one booked ahead, an outline heart is your standing date night. Tap any day for the details.';
+  } else if(ui.tab===3 && !seen('spot_hist') && $('#page .cardbox')){
+    target=$('#page .cardbox'); key='spot_hist';
+    msg='Every date you’ve logged, newest first — photos, ratings, and the moments you didn’t want to forget. Tap a photo to see it big; edit or delete from here.';
+  } else if(ui.tab===4 && !seen('spot_set') && $('#sync-card')){
     target=$('#sync-card'); key='spot_set';
-    msg='The big one: add your names above, then bring your partner in here — two phones, same books.';
+    msg='The important one: get an invite code here and text it to your partner — then both phones share the same books.';
   }
   if(!target) return;
-  const r=target.getBoundingClientRect();
+  let r=target.getBoundingClientRect();
   if(r.width===0) return;
+  if(r.top<70 || r.bottom>innerHeight-70){ target.scrollIntoView({block:'center', behavior:'auto'}); r=target.getBoundingClientRect(); }   // bring the stop on screen first
   const w=document.createElement('div'); w.className='spotwrap'; w.id='spotwrap';
-  const below = r.bottom+140 < innerHeight;
-  w.innerHTML=`<div class="spot" style="left:${r.left-6}px; top:${r.top-6}px; width:${r.width+12}px; height:${r.height+12}px"></div>
-    <div class="spottip" style="left:50%; transform:translateX(-50%); ${below?`top:${r.bottom+16}px`:`bottom:${innerHeight-r.top+16}px`}">${msg}<div class="spotok">Got it — tap anywhere</div></div>`;
-  w.onclick=()=>{ w.remove(); store.set(key,1); };
+  const below = r.bottom+150 < innerHeight;
+  const tipPos = below ? `top:${r.bottom+16}px` : (r.top>150 ? `bottom:${innerHeight-r.top+16}px` : `top:${Math.min(r.top+80, innerHeight-170)}px`);
+  w.innerHTML=`<div class="spot" style="left:${r.left-6}px; top:${r.top-6}px; width:${r.width+12}px; height:${Math.min(r.height+12, innerHeight-r.top)}px"></div>
+    <div class="spottip" style="left:50%; transform:translateX(-50%); ${tipPos}">${msg}<div class="spotok">Got it — tap anywhere</div></div>`;
+  w.onclick=()=>{ w.remove(); store.set(key,1); setTimeout(maybeSpot,450); };   // chain to the next stop on this tab, if any
   document.body.appendChild(w);
 }
 
 /* ---------- boot ---------- */
-const APP_V=112;
+const APP_V=113;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
