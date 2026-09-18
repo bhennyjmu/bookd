@@ -605,11 +605,11 @@ function clockButtonsHTML(){
   const state = timer&&timer.running?'running':(timer&&secs>0?'paused':'idle');
   if(state==='idle') return `<button class="cta pink" id="timer-btn" onclick="clockIn()">⏱ Start a date</button>`;
   const main = state==='running'
-    ? `<button class="cta pink" id="timer-btn" onclick="clockOut()">■ Clock out — <span class="mono" id="tbtn-t">${fmtMS(secs)}</span> so far</button>`
+    ? `<button class="cta pink" id="timer-btn" onclick="clockOut()">♥ End the date — <span class="mono" id="tbtn-t">${fmtMS(secs)}</span> so far</button>`
     : `<button class="cta pink" id="timer-btn" onclick="clockResume()">▶ Resume — <span class="mono">${fmtMS(secs)}</span> banked</button>`;
   return main+`<div class="row2">
     ${state==='running'?`<button class="cta ghostd" style="flex:1" onclick="clockPause()">⏸ Pause</button>`
-                       :`<button class="cta ghostd" style="flex:1" onclick="clockOut()">■ Clock out</button>`}
+                       :`<button class="cta ghostd" style="flex:1" onclick="clockOut()">♥ End the date</button>`}
     <button class="cta danger" style="flex:1" onclick="openScrapSheet()">✕ Scrap it</button>
   </div>`;
 }
@@ -2100,7 +2100,7 @@ const ORIENT=[
   {big:'<span style="color:var(--rose)">♥</span>', e:'Welcome to Book’d', h:'Every date counts',
    p:'Log date nights and everyday moments — Home shows your time together over the last 30 days, your streak, and your goal. No penalties, no grades — just the two of you, on the books.'},
   {big:'⏱', e:'The Home tab', h:'Start a date, or log one',
-   p:'On a date right now? Tap Start a date and let the clock run — clock out when you’re home and it logs itself. Already happened? Tap “+ Log a past date” and add a photo if you like.'},
+   p:'On a date right now? Tap Start a date and let the clock run — tap End the date when you’re home and it logs itself. Already happened? Tap “+ Log a past date” and add a photo if you like.'},
   {big:'✦', e:'Plan, Calendar & History', h:'Ideas, bookings, and the record',
    p:'On Plan, spin the roulette for an idea or book something you already have in mind, and hold a standing date night. Calendar shows your month; History keeps every logged date with its photos and ratings.'},
   {big:'<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--rose)" stroke-width="1.8" stroke-linecap="round"><path d="M4 7.5 H20 M4 12 H20 M4 16.5 H20"/><circle cx="9.5" cy="7.5" r="2.2" fill="var(--card)"/><circle cx="15" cy="12" r="2.2" fill="var(--card)"/><circle cx="8" cy="16.5" r="2.2" fill="var(--card)"/></svg>', e:'Settings & your partner', h:'Tap the gear',
@@ -2133,7 +2133,7 @@ function maybeSpot(){
   let target=null, msg='', key='';
   if(ui.tab===0 && !seen('spot_home') && $('#timer-btn')){
     target=$('#timer-btn'); key='spot_home';
-    msg='On a date right now? Tap Start a date and let the clock run — it logs itself when you clock out. Already happened? Use “+ Log a past date” just below.';
+    msg='On a date right now? Tap Start a date and let the clock run — it logs itself when you end the date. Already happened? Use “+ Log a past date” just below.';
   } else if(ui.tab===1 && !seen('spot_plan') && $('.intent-tabs')){
     target=$('.intent-tabs'); key='spot_plan';
     msg='Two ways to plan: let the roulette give you an idea, or book something you already have in mind. Your standing date night lives further down this page.';
@@ -2164,7 +2164,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=113;
+const APP_V=114;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
