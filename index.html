@@ -478,6 +478,30 @@ input[type=text],input[type=date],input[type=number],input[type=time],select{bor
 
 .toast{background:var(--toastbg); color:var(--toastink); border-radius:99px; padding:11px 16px; max-width:86%; text-align:center}
 @media (hover:none){ .cal-cell:hover{background:none} .hgear:hover{color:var(--dim)} .hgear.on:hover{color:var(--rose)} .entry .links button:hover,.linklike:hover,.minilinks a:hover,.minilinks button:hover{color:var(--dimmer)} .cal-nav:hover{color:var(--cream)} }
+
+/* ===== SLICE 2 — logging ===== */
+#logwrap{z-index:88}
+.logbtn .cta{margin-top:10px}
+.ringbox circle{transition:none}
+.sugg{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -20px 8px 0; padding-right:20px}
+.sugg::-webkit-scrollbar,.catrow::-webkit-scrollbar{display:none}
+.sugg .pill{min-height:40px; font-size:13.5px; background:var(--card2); border-color:transparent; color:var(--cream); white-space:nowrap; flex-shrink:0}
+.catrow{flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; margin-right:-20px; padding-right:20px}
+.catrow .pill{white-space:nowrap; flex-shrink:0}
+input.bad{border-color:var(--withdrawal)!important}
+.ferr{color:var(--withdrawal); font-size:13.5px; font-weight:700; margin-top:6px; display:flex; gap:6px; align-items:center}
+.ferr::before{content:"!"; width:16px; height:16px; border-radius:50%; border:1.5px solid var(--withdrawal); display:grid; place-items:center; font-size:11px; flex-shrink:0}
+.draftnote{background:var(--card2); border-radius:14px; padding:9px 12px; font-size:14px; margin:0 0 12px}
+#logsheet h3{margin-bottom:14px}
+.celeb{position:relative; text-align:center; overflow:hidden; padding-top:4px}
+.celeb .bigc{font-family:'Fraunces',serif; font-weight:900; font-size:54px; line-height:1; color:var(--champagne); margin:8px 0 4px}
+.rise{position:absolute; bottom:-20px; width:16px; height:16px; color:var(--rose); opacity:0; pointer-events:none}
+.rise svg{width:100%; height:100%; display:block}
+.sheetwrap.show .rise{animation:rise 1.4s ease-out forwards}
+@keyframes rise{0%{opacity:0; transform:translateY(0) scale(.6)}20%{opacity:.9}100%{opacity:0; transform:translateY(-280px) scale(1.2)}}
+/* while a sheet is up, pop-ups move to the top so they never cover it */
+.sheetwrap.show ~ .toast{bottom:auto; top:calc(14px + env(safe-area-inset-top))}
+/* SLICE 2 end */
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -501,7 +525,8 @@ input[type=text],input[type=date],input[type=number],input[type=time],select{bor
   <button data-t="3"><span class="ico"><svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 3.5v5h5"/><path d="M12 8v4.5l3 2"/></svg><svg class="i-on" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="currentColor"/><path fill="none" stroke="var(--tabbg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 7.5v5l3.2 2"/></svg></span><span class="lbl">History</span></button>
 </div></nav>
 
-<div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet"></div></div>
+<div class="sheetwrap" id="logwrap"><div class="sheet" id="logsheet" role="dialog" aria-modal="true" aria-labelledby="logtitle" tabindex="-1"></div></div>
+<div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet" role="dialog" aria-modal="true" tabindex="-1"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -581,7 +606,23 @@ const CAL_MK={
 const heartRow=r=>{ r=Math.max(0,Math.min(5,r||0)); return heartSVG(false).repeat(r)+heartSVG(true).repeat(5-r); };
 const fmtMS=s=>{ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
   return h>0 ? h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0') : m+':'+String(sec).padStart(2,'0'); };
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+const toastQ=[]; let toastBusy=false;
+function toast(msg){ toastQ.push(String(msg)); if(toastQ.length>3) toastQ.splice(0,toastQ.length-3); if(!toastBusy) nextToast(); }
+function nextToast(){ const t=$('#toast'), m=toastQ.shift(); if(m==null||!t){ toastBusy=false; return; }
+  toastBusy=true; t.textContent=m; t.classList.add('show');
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(nextToast,260); }, Math.min(6000,Math.max(2600,m.length*60))); }
+/* a light tap on Android for the moments that matter; iPhones ignore this in a web app */
+const buzz=p=>{ try{ const ua=navigator.userActivation; if(navigator.vibrate && (!ua||ua.hasBeenActive) && !matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(p); }catch(e){} };
+/* errors belong next to the field, not in a pop-up */
+function fieldError(id,msg){
+  const i=$('#'+id); if(!i) return toast(msg);
+  document.querySelectorAll('.ferr').forEach(x=>x.remove());
+  i.classList.add('bad'); i.setAttribute('aria-invalid','true');
+  i.insertAdjacentHTML('afterend',`<div class="ferr" role="alert" id="${id}-err">${esc(msg)}</div>`); i.setAttribute('aria-describedby',id+'-err');
+  const sc=i.closest('.sheet'); if(sc){ const r=i.getBoundingClientRect(), b=sc.getBoundingClientRect(); sc.scrollTop+=r.top-b.top-sc.clientHeight/2+30; } else i.scrollIntoView({block:'center'});
+  i.focus({preventScroll:true});
+}
+document.addEventListener('input',e=>{ const t=e.target; if(t.classList&&t.classList.contains('bad')){ t.classList.remove('bad'); t.removeAttribute('aria-invalid'); t.removeAttribute('aria-describedby'); const f=t.parentElement.querySelector('.ferr'); if(f) f.remove(); } });
 
 const CADENCE={ weekly:{step:7, label:'every week', interval:1},
   biweekly:{step:14, label:'every other week', interval:2},
@@ -751,7 +792,7 @@ function ringHTML(bal, size, stroke, inner){
   const r=60-stroke/2-1, C=2*Math.PI*r, pct=goal?Math.max(0,Math.min(1,bal/goal)):0;
   return `<div class="ringbox" style="width:${size}px;height:${size}px"><svg viewBox="0 0 120 120" aria-hidden="true">
       <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(var(--lineC),.1)" stroke-width="${stroke}"/>
-      <circle cx="60" cy="60" r="${r}" fill="none" stroke="${pct>=1?'var(--champagne)':'var(--rose)'}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-pct)).toFixed(1)}"/>
+      <circle data-ring data-c="${C.toFixed(1)}" cx="60" cy="60" r="${r}" fill="none" stroke="${pct>=1?'var(--champagne)':'var(--rose)'}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-pct)).toFixed(1)}"/>
     </svg><div class="ringmid">${inner}</div></div>`;
 }
 function heroHTML(){
@@ -802,12 +843,8 @@ function homeTilesHTML(){
 }
 function homePage(){
   return heroHTML()+homeTilesHTML()
-    +`<div class="logwrap">
-      ${ui.depOpen
-        ? `<button class="cta ghostd" onclick="closeDepForm()">− Hide the form</button><div class="cardbox" style="margin-top:12px">${depositFormHTML()}</div>`
-        : `<button class="cta ghostd" onclick="openDepForm()">${ICO.plus} Log a past date</button>
-           ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}`}
-    </div>`;
+    +`<div class="logbtn"><button class="cta ghostd" onclick="openDepForm()">${ICO.plus} Log a past date</button>
+      ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}</div>`;
 }
 function stripHTML(){
   const s=stats();
@@ -831,17 +868,42 @@ function stripHTML(){
 window.goGoal=()=>{ if(ui.tab!==4) ui.prevTab=ui.tab; ui.tab=4; renderAll();
   setTimeout(()=>{ const g=$('#g-goal'); if(g){ g.scrollIntoView({behavior:'smooth', block:'center'}); g.focus({preventScroll:true}); } },120); };
 window.openDepForm=()=>{
+  ui.showDraftNote=!!dep._draft && !dep.editingId; dep._draft=false;
   ui.depOpen=true; ui.justSaved=false; renderPage();
-  setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
 window.closeDepForm=()=>{
-  if(dep.editingId) return cancelEdit();   // folding away mid-edit = walking away from the edit
-  ui.depOpen=false; renderPage();
+  if(dep.editingId) return cancelEdit();   // closing mid-edit = walking away from the edit
+  grabDep(); dep._draft=!!(dep.title||'').trim();   // anything typed is kept for next time
+  ui.depOpen=false; renderDep(); flushRemote();
 };
+function suggHTML(){
+  const n={}; entries.forEach(e=>{ const t=(e.title||'').trim(); if(t && t.length<=24) n[t]=(n[t]||0)+1; });
+  let top=Object.entries(n).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
+  if(top.length<3) top=['Dinner out','Coffee walk','Movie night in','Long walk'];
+  return `<div class="sugg" aria-label="Suggestions from your history">${top.map(t=>`<button type="button" class="pill" data-v="${esc(t)}" onclick="pickSugg(this)">${esc(t)}</button>`).join('')}</div>`;
+}
+window.pickSugg=b=>{ const i=$('#d-title'); if(i){ i.value=b.dataset.v; i.dispatchEvent(new Event('input',{bubbles:true})); buzz(8); } };
+function logSheetHTML(){
+  const clocked = elapsedSecs()>0 && !(timer&&timer.running) && !dep.editingId;
+  const eyebrow = dep.editingId ? 'Editing' : clocked ? 'Date ended · '+fmtMS(elapsedSecs()) : 'On the books';
+  const head = dep.editingId ? esc(dep.title||'This date') : clocked ? 'How was it?' : 'Log a date';
+  return `<div class="eyebrow">${eyebrow}</div><h3 id="logtitle">${head}</h3>
+    ${ui.showDraftNote?`<div class="draftnote">Picked up where you left off.</div>`:''}${depositFormHTML()}`;
+}
+/* the log sheet redraws itself whenever the page does, so every existing pill and photo handler keeps working */
+function renderDep(){
+  const w=$('#logwrap'), sh=$('#logsheet'); if(!w||!sh) return;
+  document.body.style.overflow = ui.depOpen ? 'hidden' : '';
+  if(!ui.depOpen){ ui.showDraftNote=false; w.classList.remove('show'); return; }
+  const y=sh.scrollTop, cr=sh.querySelector('.catrow'), cx=cr?cr.scrollLeft:0;
+  sh.innerHTML=logSheetHTML(); sh.scrollTop=y;
+  const cr2=sh.querySelector('.catrow'); if(cr2) cr2.scrollLeft=cx;
+  w.classList.add('show');
+}
 window.clockIn=()=>{
   timer={startedAt:Date.now(), elapsed:0, running:true, date:todayISO(),
     title:todayPlan()?todayPlan().title:null};
-  store.set('timer',timer); pushClock(); toast('Clocked in — enjoy each other ♥'); renderAll();
+  store.set('timer',timer); pushClock(); toast('Clocked in — enjoy each other ♥'); buzz(18); renderAll();
 };
 window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); pushClock(); renderAll(); };
 window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); pushClock(); renderAll(); };
@@ -849,8 +911,7 @@ window.clockOut=()=>{
   if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); }
   dep={etype:'date', rating:0, planner:null, editingId:null};   // fresh form; prefill logic reads the clock
   ui.justSaved=false; ui.depOpen=true;
-  renderAll();
-  setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
+  renderAll(); buzz(18);
 };
 window.openScrapSheet=()=>{
   openSheet(`
@@ -885,15 +946,15 @@ function depositFormHTML(){
         <button class="pill ${small?'on':''}" onclick="grabDep();dep.etype='small';renderPage()">Everyday moment</button>
       </div></div>
     <div class="fgroup"><label class="f" for="d-title">What did you do?</label>
-      <input type="text" id="d-title" maxlength="60" value="${esc(defTitle)}" placeholder="${small?'Morning walk, phones at home':'Dinner at that new ramen place'}"></div>
+      ${suggHTML()}<input type="text" id="d-title" enterkeyhint="done" maxlength="60" value="${esc(defTitle)}" placeholder="${small?'Morning walk, phones at home':'Dinner at that new ramen place'}"></div>
     <div class="grid2 fgroup">
       <div><label class="f" for="d-date">Date</label><input type="date" id="d-date" value="${defDate}"></div>
       <div><label class="f" for="d-hours" id="d-hours-label">${small?'Minutes together':'Hours together'}</label>
-        <input type="number" id="d-hours" min="${small?1:0.1}" max="${small?600:24}" step="${small?1:0.1}" value="${defHours}" placeholder="${small?'45':'2.5'}"></div>
+        <input type="number" inputmode="decimal" id="d-hours" min="${small?1:0.1}" max="${small?600:24}" step="${small?1:0.1}" value="${defHours}" placeholder="${small?'45':'2.5'}"></div>
     </div>
     <div class="fgroup stack">
-      <div><label class="f" for="d-cat">Category</label>
-        <select id="d-cat">${cats.map(c=>`<option ${c===defCat?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label class="f">Category</label>
+        <div class="pills catrow">${cats.map(c=>`<button type="button" class="pill ${c===defCat?'on':''}" onclick="grabDep();dep.cat='${c}';renderDep()">${c}</button>`).join('')}</div></div>
       <div><label class="f">How was it?</label>
         <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="grabDep();dep.rating=${i};renderPage()">${heartSVG(false)}</button>`).join('')}</div></div>
     </div>
@@ -913,8 +974,7 @@ function depositFormHTML(){
         <button class="pill gold ${(dep.planner==='partner'||(!dep.planner&&sync&&sync.role==='partner'))?'on':''}" onclick="grabDep();dep.planner='partner';renderPage()">${esc(namePa())}</button>
       </div></div>
     <button class="cta pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Save this date'}</button>
-    ${dep.editingId?`<button class="cta ghost" onclick="cancelEdit()">Cancel edit</button>`:''}
-    ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}`;
+    ${dep.editingId?`<button class="cta ghostd" onclick="cancelEdit()">Cancel edit</button>`:`<button class="cta ghostd" onclick="closeDepForm()">Close · keeps your draft</button>`}`;
 }
 function grabDep(){
   if($('#d-title')) dep.title=$('#d-title').value;
@@ -986,9 +1046,9 @@ window.viewPhoto=url=>openSheet(`<img class="ebig" src="${url}" alt=""><button c
 window.openDepositSheet=()=>{
   grabDep();
   const title=(dep.title||'').trim(), raw=parseFloat(dep.hours);
-  if(!title) return toast('Give it a name');
-  if(!dep.date) return toast('Pick the date');
-  if(!(raw>0)) return toast(dep.etype==='small'?'How many minutes?':'How many hours?');
+  if(!title) return fieldError('d-title','Give it a name');
+  if(!dep.date) return fieldError('d-date','Pick the date');
+  if(!(raw>0)) return fieldError('d-hours', dep.etype==='small'?'How many minutes?':'How many hours?');
   const small=dep.etype==='small';
   const meta = small?Math.round(raw)+' min':raw+' hrs';
   const rate = dep.rating>0?'♥'.repeat(dep.rating):'no rating yet (saves as 4♥)';
@@ -1008,21 +1068,43 @@ window.commitDeposit=()=>{
     hours: small?raw/60:raw, cat:dep.cat||'Food & drink', rating:dep.rating||(small?0:4),
     type:small?'small':'date', planner:dep.planner||null, moment:(dep.moment||'').trim()||null, by:sync?sync.role:null,
     photo: dep.removePhoto?null:(dep.photoUrl||null), photoFocus: dep.removePhoto?null:(dep.photoFocus||null) };
+  const balBefore=stats().balance, wasEdit=!!dep.editingId, firstEver=!wasEdit&&entries.length===0, tabBefore=ui.tab;
   const wasUnderGoal = goal>0 && stats().balance < goal;   // celebrate crossing the line, not merely being over it
   if(dep.editingId){ entries=entries.map(e=>e.id===dep.editingId?record:e); toast('Entry updated'); }
   else { entries.unshift(record); toast(small?'Saved +'+Math.round(raw)+' min':'Saved +'+record.hours.toFixed(1)+' hrs'); }
   store.set('entries',entries);
   pushEntry(record);
-  if(wasUnderGoal && stats().balance>=goal) setTimeout(()=>toast('Goal met — '+goal+' hrs together this month ♥'), 2200);
+  const crossed = wasUnderGoal && stats().balance>=goal;
   if(dep.removePhoto && dep.photoUrl) deletePhoto(dep.photoUrl);
   if(dep.photoBlob) uploadPhoto(record.id, dep.photoBlob);
   const pix=plans.findIndex(p=>p.title===record.title);
   if(pix>-1){ plans.splice(pix,1); savePlans(); }
   if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); pushClock(); }
   dep={etype:'date',rating:0,planner:null,editingId:null};
-  ui.justSaved=true; ui.tab=0; ui.depOpen=false;   // fold the counter back up after a deposit
-  renderAll();
+  ui.justSaved=!wasEdit; ui.tab=wasEdit?tabBefore:0; ui.depOpen=false;   // a new date lands you on Home to watch it add up; an edit leaves you where you were
+  renderAll(); buzz(18);
+  if(ui.tab===0) tweenBalance(balBefore, stats().balance);
+  if(firstEver) setTimeout(()=>celebrate('first'),1000); else if(crossed) setTimeout(()=>celebrate('goal'),1000);
 };
+function tweenBalance(from,to){
+  if(from===to || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const num=$('.hero .ringnum'), ring=$('.hero [data-ring]'); if(!num) return;
+  const set=v=>{ num.textContent=v.toFixed(1); if(ring&&goal) ring.setAttribute('stroke-dashoffset',(ring.dataset.c*(1-Math.max(0,Math.min(1,v/goal)))).toFixed(1)); };
+  const t0=performance.now(); set(from);
+  const step=now=>{ const p=Math.min(1,(now-t0)/750), e=1-Math.pow(1-p,3); set(from+(to-from)*e); if(p<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+/* rare on purpose: the first date ever, and crossing the monthly goal */
+function celebrate(kind){
+  const bal=stats().balance, hearts=[8,20,33,47,58,70,82,91,14,40,64,76].map((l,i)=>`<span class="rise" style="left:${l}%;animation-delay:${(i*.07).toFixed(2)}s"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}" fill="currentColor"/></svg></span>`).join('');
+  openSheet(`<div class="celeb">${hearts}
+    <div class="eyebrow">${kind==='first'?'First one':'Goal met'}</div>
+    <h3>${kind==='first'?'Your first date is on the books.':goal+' hrs together this month'}</h3>
+    <div class="bigc">${bal.toFixed(1)}</div>
+    <div class="sheetnote">${kind==='first'?'hours together, and counting.':'You two made the time.'}</div>
+    <button class="cta pink" onclick="closeSheet()">Lovely</button></div>`);
+  buzz([12,50,20]);
+}
 
 /* ---------- PLAN ---------- */
 function planPage(){
@@ -1119,7 +1201,7 @@ window.loadFav=i=>{
 window.logIdea=()=>{
   if(!currentIdea) return;
   dep={etype:'date', rating:0, planner:null, editingId:null, title:currentIdea.n, cat:currentIdea.cat||(currentIdea.w==='in'?'At home':'Something new'), _auto:true};
-  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
+  ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-hours'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
 window.bookIdea=()=>{
@@ -1453,7 +1535,7 @@ window.openDay=iso=>{
 };
 window.logDay=iso=>{
   dep={etype:'date', rating:0, planner:null, editingId:null, date:iso, _auto:true};
-  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
+  ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
 function comingUpHTML(){
@@ -1630,7 +1712,7 @@ window.editEntry=id=>{
   dep={ etype:isDate(e)?'date':'small', rating:e.rating||0, planner:e.planner||null, editingId:id,
     title:e.title, date:e.date, cat:e.cat, moment:e.moment||'',
     hours: isDate(e)?e.hours:Math.round(e.hours*60), photoUrl:e.photo||null, photoFocus:e.photoFocus||null, _auto:true };
-  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
+  ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-title'); if(f) f.scrollIntoView({behavior:'smooth', block:'center'}); },80);
 };
 window.delEntry=id=>{ const gone=entries.find(e=>e.id===id); if(gone&&gone.photo) deletePhoto(gone.photo);
@@ -1742,7 +1824,7 @@ window.logPlan=id=>{
   const p=planById(id); if(!p) return;
   plans=plans.filter(x=>x.id!==id); savePlans();
   dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true};
-  ui.tab=0; ui.justSaved=false; ui.depOpen=true; renderAll();
+  ui.justSaved=false; ui.depOpen=true; renderAll();
 };
 
 /* ---------- calendar ---------- */
@@ -1813,9 +1895,9 @@ function startSync(){
         plans.filter(p=>!prevIds.has(p.id) && p.by && p.by!==sync.role).forEach(p=>
           toast(partnerName()+' booked '+p.title+' · '+fmtDate(p.date)+' ♥'));
       }
-      renderAll();
+      renderFromRemote();
     } else if(firstMeta && d===undefined){ firstMeta=false; }
-  }, ()=>{ syncStatus='error'; renderAll(); });
+  }, ()=>{ syncStatus='error'; renderFromRemote(); });
   unsubEntries=window.fb.onSnapshot(window.fb.collection(db,'couples',sync.cid,'entries'), snap=>{
     syncStatus='live';
     if(firstEntries){
@@ -1833,8 +1915,8 @@ function startSync(){
     entries=snap.docs.map(d=>d.data())
       .sort((a,b)=>String(b.date).localeCompare(String(a.date))||((b.id||0)-(a.id||0)));
     store.set('entries',entries);
-    renderAll();
-  }, ()=>{ syncStatus='error'; renderAll(); });
+    renderFromRemote();
+  }, ()=>{ syncStatus='error'; renderFromRemote(); });
 }
 function stopSync(){ if(unsubMeta)unsubMeta(); if(unsubEntries)unsubEntries(); unsubMeta=unsubEntries=null; syncStatus='off'; }
 function pushMeta(){ if(sync&&db) window.fb.setDoc(metaRef(), metaPayload(), {merge:true}).catch(()=>{}); }
@@ -1983,8 +2065,21 @@ window.fbReady=()=>{ if(sync) startSync(); };
 
 /* ---------- sheet & render ---------- */
 function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.add('show'); }
-window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); };
+window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); setTimeout(flushRemote,0); };
 $('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
+$('#logwrap').addEventListener('click',e=>{ if(e.target.id==='logwrap') closeDepForm(); });
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if($('#sheetwrap').classList.contains('show')) closeSheet(); else if(ui.depOpen) closeDepForm(); });
+
+/* ---------- never redraw under someone who is typing ----------
+   A partner's phone syncing (even just starting the clock) used to redraw the screen and wipe a half-typed form.
+   Remote changes now wait until the person is done, then the screen quietly catches up. */
+let pendingRemote=false;
+function typingNow(){ const a=document.activeElement; return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.closest('#page,#logsheet,#sheet,#onboard')); }
+function busyNow(){ return typingNow() || ui.depOpen || $('#sheetwrap').classList.contains('show'); }
+function renderFromRemote(){ if(busyNow()){ pendingRemote=true; renderHeader(); renderBanners(); return; } renderAll(); }
+function flushRemote(){ if(pendingRemote && !busyNow()){ pendingRemote=false; renderAll(); } }
+document.addEventListener('focusout',()=>setTimeout(flushRemote,150));
+document.addEventListener('visibilitychange',flushRemote);
 
 function renderPage(){
   const inPlaces = ui.tab===1 && ui.planIntent!=='know' && ui.planMode==='places';
@@ -1995,6 +2090,7 @@ function renderPage(){
   if(liveMap && $('#mapbox')) $('#mapbox').replaceWith(liveMap);
   if(ui.tab===1){ tickCountdown(); if(inPlaces && near.coords && !map) mountMap(); }
   if(ui.tab===4) wireSettings();
+  renderDep();
 }
 function gearHTML(){
   return `<button class="hgear ${ui.tab===4?'on':''}" aria-label="Settings" title="Settings" onclick="openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>`;
@@ -2313,7 +2409,7 @@ window.replayTour=()=>{   // a replay replays everything: cards now, spotlights 
 function maybeSpot(){
   if(!store.get('oriented',false)) return;                    // the opening sequence comes first, always
   if($('#orient') || $('#spotwrap') || $('#onboard')) return;
-  if($('#sheetwrap').classList.contains('show')) return;
+  if($('#sheetwrap').classList.contains('show') || ui.depOpen || typingNow()) return;
   const seen=k=>store.get(k,false);
   let target=null, msg='', key='';
   if(ui.tab===0 && !seen('spot_home') && $('#timer-btn')){
