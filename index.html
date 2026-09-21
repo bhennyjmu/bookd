@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1B1D22">
+<meta name="theme-color" content="#1D1A22">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Book'd — your relationship, on the books</title>
@@ -16,18 +16,18 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous" defer></script>
 <style>
 :root{
-  --plum:#1B1D22; --card:#262930; --rose:#E0607F; --champagne:#D2B266;
-  --deposit:#8FD6A8; --withdrawal:#F08A7E; --cream:#ECEDF0; --ink:#22252B;
-  --lineC:236,237,240; --tabbg:#202329;
-  --dim:rgba(var(--lineC),.6); --dimmer:rgba(var(--lineC),.5);
+  --plum:#1D1A22; --card:#2A2631; --card2:#332E3B; --rose:#EB6F8E; --champagne:#DDBE76;
+  --deposit:#8FD6A8; --withdrawal:#F08A7E; --cream:#F1EDF2; --ink:#2A2230;
+  --lineC:241,237,242; --tabbg:#221F28; --toastbg:#DDBE76; --toastink:#1D1A22;
+  --dim:rgba(var(--lineC),.64); --dimmer:rgba(var(--lineC),.52);
   --green:#2f9e63; --greenv:#1f7a4a;
 }
-/* light theme — "Cool Ivory": ivory page, white cards, slate ink, raspberry accent, muted gold */
+/* light theme — warm blush page, white cards, plum ink, raspberry accent, muted gold */
 :root[data-theme="light"]{
-  --plum:#F4F3EF; --card:#FFFFFF; --rose:#B5405E; --champagne:#8F7A3A;
-  --deposit:#2E7D4F; --withdrawal:#B0402F; --cream:#22252B; --ink:#22252B;
-  --lineC:34,37,43; --tabbg:#E9E8E3;
-  --dim:rgba(34,37,43,.72); --dimmer:rgba(34,37,43,.56);
+  --plum:#FBF4F2; --card:#FFFFFF; --card2:#F6ECE9; --rose:#B93F5C; --champagne:#8A7232;
+  --deposit:#2E7D4F; --withdrawal:#B0402F; --cream:#2A2230; --ink:#2A2230;
+  --lineC:42,34,48; --tabbg:#F3E9E6; --toastbg:#6A5722; --toastink:#FFFFFF;
+  --dim:rgba(42,34,48,.72); --dimmer:rgba(42,34,48,.66);
   --green:#2E9960; --greenv:#1F7A4A;
   color-scheme:light;
 }
@@ -37,9 +37,6 @@
 :root[data-theme="light"] .pb-head{border-bottom-color:rgba(34,37,43,.12)}
 :root[data-theme="light"] .pb-rule{border-top-color:rgba(34,37,43,.1)}
 :root[data-theme="light"] .cardbox, :root[data-theme="light"] .strip{border:1px solid rgba(34,37,43,.08); box-shadow:0 2px 10px rgba(34,37,43,.05)}
-:root[data-theme="light"] .banner.booked{background:#EDEFF3; border:1px solid rgba(34,37,43,.14); color:#22252B}
-:root[data-theme="light"] .banner.memory{background:#FFFFFF; border:1px dashed rgba(34,37,43,.3); color:#22252B}
-:root[data-theme="light"] .banner button{background:#22252B; color:#F4F3EF}
 :root[data-theme="light"] .sheet{box-shadow:0 18px 40px rgba(34,37,43,.28)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%; color-scheme:dark}
@@ -349,6 +346,138 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 .mocknotif .mt{font-weight:700; font-size:15px}
 .mocknotif .mb{font-size:14.5px; line-height:1.4}
 .mocknotif .mw{font-family:'Karla',sans-serif; font-size:12.5px; color:#8a7f74; margin-left:auto}
+
+/* =====================================================================
+   CONCEPT 1 SKIN — "Tonight". Slice 1: look only. Sits last so it wins.
+   ===================================================================== */
+*{-webkit-tap-highlight-color:transparent}
+body{font-size:16.5px}
+button:active,.cal-cell:active,.fav:active,.place:active,.tile:active,.pcard:active{opacity:.6}
+.cta:active{opacity:.9}
+
+/* header: who you are, where you are, and a real gear */
+header{text-align:left; padding:calc(18px + env(safe-area-inset-top)) 0 4px; position:relative}
+.hbar{max-width:480px; margin:0 auto; padding:0 8px 0 16px; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:56px}
+.hleft{min-width:0}
+.hsmall{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--dim); min-width:0}
+.hnm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.htitle{font-family:'Fraunces',serif; font-weight:700; font-size:25px; line-height:1.15; overflow-wrap:anywhere}
+.hback{background:none; border:0; color:var(--rose); font-family:'Karla',sans-serif; font-weight:700; font-size:16px; min-height:44px; padding:0 12px 0 0; cursor:pointer}
+.hbar .hback+.htitle{flex:1}
+.hgear, header:not(.compact) .hgear{position:static; width:44px; height:44px; padding:0; display:grid; place-items:center; border-radius:14px; color:var(--dim); flex-shrink:0}
+.hgear.on{color:var(--rose)}
+.hdot{width:11px; height:11px; background:transparent; border:2px dashed var(--dimmer)}
+.hdot.live{background:var(--deposit); border:0}
+.hdot.connecting{background:transparent; border:2.5px solid var(--champagne)}
+.hdot.error{background:transparent; border:2.5px solid var(--withdrawal)}
+.hdot.solo{border:2px dashed var(--dimmer)}
+
+/* banners: one calm style, a coloured edge says what kind */
+.banner{margin:10px 0 0; padding:8px 8px 8px 14px; border-radius:14px; font-size:14.5px; background:var(--card); border:1px solid rgba(var(--lineC),.09); border-left:3px solid var(--rose); color:var(--cream); font-weight:400}
+.banner.tonight{background:var(--card); color:var(--cream); font-weight:400; border-left-color:var(--champagne)}
+.banner.booked{background:var(--card); border:1px solid rgba(var(--lineC),.09); border-left:3px solid var(--rose)}
+.banner.memory{background:var(--card); border:1px solid rgba(var(--lineC),.09); border-left:3px solid var(--dimmer)}
+.banner span{padding:4px 0}
+.banner button{border-radius:99px; padding:0 14px; min-height:40px; font-size:13px; background:var(--cream); color:var(--plum)}
+#banners:not(:empty){margin-bottom:10px}
+
+/* home: the ring */
+.hero{background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:22px 18px 18px; text-align:center; margin-top:8px}
+.ringbox{position:relative; margin:0 auto 6px; flex-shrink:0}
+.ringbox svg{width:100%; height:100%; transform:rotate(-90deg); display:block}
+.ringbox circle{transition:stroke-dashoffset .6s ease}
+.ringmid{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 22px}
+.ringnum{font-family:'Fraunces',serif; font-weight:900; font-size:50px; line-height:1; font-variant-numeric:tabular-nums}
+.ringnum.long{font-size:40px}
+.ringnum.neg{color:var(--withdrawal)}
+.ringsub,.herosub{color:var(--dim); font-size:14px}
+.herosub{margin-top:6px}
+.hero .gset{background:none; border:0; color:var(--rose); text-decoration:underline; text-underline-offset:3px; font-family:'Karla',sans-serif; font-weight:700; font-size:14.5px; cursor:pointer; min-height:44px}
+.hero .cta:first-of-type{margin-top:12px}
+.herolab{display:flex; align-items:center; justify-content:center; gap:8px; font-weight:700; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim)}
+.herolab .dot{background:var(--rose); animation:pulse2 1.6s ease-in-out infinite}
+@keyframes pulse2{50%{opacity:.25}}
+.herotime{font-family:'Spline Sans Mono',monospace; font-weight:500; font-size:46px; line-height:1.1; letter-spacing:-1px; font-variant-numeric:tabular-nums; margin-top:4px}
+.minibal{display:flex; align-items:center; gap:14px; margin-top:10px; padding:14px 16px}
+.minibal .ringbox{margin:0}
+.mb-n{font-family:'Fraunces',serif; font-weight:900; font-size:24px; line-height:1.1}
+.mb-n span{font-family:'Karla',sans-serif; font-weight:400; font-size:14px; color:var(--dim)}
+.tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px}
+.tile{background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:14px; text-align:left; min-height:92px; min-width:0; color:var(--cream); font-family:'Karla',sans-serif; cursor:pointer}
+div.tile{cursor:default}
+.tl{font-weight:700; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim)}
+.tv{font-family:'Fraunces',serif; font-weight:700; font-size:18px; line-height:1.2; margin-top:4px}
+.tflex{display:flex; align-items:center; gap:6px}
+.ts{color:var(--dim); font-size:13.5px; margin-top:2px; font-weight:400}
+.clamp2{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere}
+.pcard{display:flex; gap:12px; align-items:center; width:100%; text-align:left; background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:12px 14px; margin-top:10px; min-height:60px; color:var(--cream); font-family:'Karla',sans-serif; font-size:14.5px; cursor:pointer}
+.pini{width:34px; height:34px; border-radius:50%; background:var(--rose); color:var(--plum); display:grid; place-items:center; font-weight:700; flex-shrink:0}
+.ptxt{min-width:0}
+.logwrap .cta{margin-top:10px}
+
+/* cards, headings, fields */
+.cardbox{border-radius:22px; border:1px solid rgba(var(--lineC),.09); padding:16px}
+.sechead{margin:26px 2px 12px}
+.sechead h2{font-size:19px}
+.sechead .lead{display:none}
+label.f,.onb .f{font-size:11.5px; letter-spacing:.13em; color:var(--dim)}
+input[type=text],input[type=date],input[type=number],input[type=time],select{border-radius:14px; min-height:48px; border:1.5px solid rgba(var(--lineC),.12)}
+.stack>div+div{margin-top:14px}
+.ci{width:18px; height:18px; flex-shrink:0}
+
+/* buttons: fully round, 52px, one obvious pink one per screen */
+.cta{border-radius:99px; min-height:52px; padding:0 18px; font-size:16.5px; display:flex; align-items:center; justify-content:center; gap:9px; margin-top:12px}
+.cta.ghost{border-width:1.5px}
+.cta.ghostd{color:var(--cream); border:1.5px solid rgba(var(--lineC),.14)}
+.cta.danger{background:transparent; border:1.5px solid var(--withdrawal); color:var(--withdrawal)}
+.row2{gap:10px}
+.pill{min-height:44px; padding:0 15px; display:inline-flex; align-items:center; font-weight:700; border-width:1.5px; background:transparent}
+.pills{gap:8px}
+.intent{border-radius:22px}
+
+/* 44px touch targets */
+.hearts{gap:0; justify-content:space-between; max-width:240px}
+.hearts button{width:44px; height:44px; padding:0; display:grid; place-items:center}
+.hearts button .hs{width:26px; height:26px}
+.cal-nav{width:44px; height:44px; border:0}
+.cal-cell{border-radius:14px; min-height:46px}
+.entry .links{gap:4px}
+.entry .links{align-items:center; flex-wrap:wrap; justify-content:flex-start; color:var(--dimmer); font-size:13.5px}
+.entry>div:last-child>.links{justify-content:flex-end}
+.entry .links button,.entry .links a{min-height:44px; padding:0 8px; font-family:'Karla',sans-serif; font-size:13.5px; display:inline-flex; align-items:center; text-decoration:none}
+.linklike,.olink,.olater,.changelink,.strip .gset,.resv-status button{min-height:44px; display:inline-flex; align-items:center}
+.minilinks a,.minilinks button{min-height:44px; display:inline-flex; align-items:center}
+.fav button{width:44px; height:44px}
+.ethumb{border-radius:14px; width:62px; height:62px}
+.ephoto,.ebig,.focusbox,.recap,#mapbox,.spin-card,.callout,.oreact,.opanel,.vs-card{border-radius:14px}
+.ocardbtn,.ocard,.spottip{border-radius:22px}
+.onb input{border-radius:14px}
+
+/* sheets rise from the bottom */
+.sheetwrap{display:flex; visibility:hidden; opacity:0; transition:opacity .2s ease, visibility 0s linear .2s; padding:0; background:rgba(0,0,0,.5); backdrop-filter:none}
+.sheetwrap.show{visibility:visible; opacity:1; transition:opacity .2s ease}
+.sheet{max-width:480px; border-radius:28px 28px 0 0; border:0; padding:12px 20px calc(24px + env(safe-area-inset-bottom)); transform:translateY(40px); transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  max-height:calc(100vh - 40px - env(safe-area-inset-top)); max-height:calc(100dvh - 40px - env(safe-area-inset-top))}
+.sheet::before{content:""; display:block; width:38px; height:4px; border-radius:9px; background:rgba(var(--lineC),.14); margin:0 auto 14px}
+.sheetwrap.show .sheet{transform:none}
+.sheet h3{font-size:24px; line-height:1.2}
+.sheet .row2 .cta{padding:0 8px; font-size:15px; white-space:nowrap}
+.sheet .row2 .cta.pink{flex:1.4!important}
+
+/* tab bar: filled icon + soft pill says where you are */
+.tabbar button{padding:9px 4px 10px; transition:color .15s ease; font-family:'Karla',sans-serif}
+.tabbar .ico{height:auto; display:grid; place-items:center; padding:3px 18px; border-radius:99px; transition:transform .18s ease, background .18s ease}
+.tabbar .ico svg{width:23px; height:23px}
+.tabbar .ico svg.i-on{display:none}
+.tabbar button.on .ico svg.i-on{display:block}
+.tabbar button.on .ico svg.i-off{display:none}
+.tabbar button.on .ico{transform:none; background:color-mix(in srgb, var(--rose) 18%, transparent)}
+.tabbar button:active{opacity:1}
+.tabbar button:active .ico{transform:scale(.9)}
+.tabbar .lbl{text-transform:none; letter-spacing:0}
+
+.toast{background:var(--toastbg); color:var(--toastink); border-radius:99px; padding:11px 16px; max-width:86%; text-align:center}
+@media (hover:none){ .cal-cell:hover{background:none} .hgear:hover{color:var(--dim)} .hgear.on:hover{color:var(--rose)} .entry .links button:hover,.linklike:hover,.minilinks a:hover,.minilinks button:hover{color:var(--dimmer)} .cal-nav:hover{color:var(--cream)} }
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -356,10 +485,7 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 </head>
 <body>
 
-<header id="hdr">
-  <div class="brand">Book<span class="hrt">♥</span>d</div>
-  <div class="tagline">Your relationship, on the books</div>
-</header>
+<header id="hdr"></header>
 
 <div class="wrap">
   <div id="banners"></div>
@@ -368,11 +494,11 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 
 <footer><p>Book'd · <span id="vstamp"></span></p></footer>
 
-<nav class="tabbar"><div class="inner">
-  <button data-t="0" class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 L12 3.5 21 11"/><path d="M5.5 9.5 V20 H18.5 V9.5"/></svg></span><span class="lbl">Home</span></button>
-  <button data-t="1"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg></span><span class="lbl">Plan</span></button>
-  <button data-t="2"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10.5 H20 M8.5 3.5 V7 M15.5 3.5 V7"/></svg></span><span class="lbl">Calendar</span></button>
-  <button data-t="3"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 3.5v5h5"/><path d="M12 8v4.5l3 2"/></svg></span><span class="lbl">History</span></button>
+<nav class="tabbar" aria-label="Main"><div class="inner">
+  <button data-t="0" class="on" aria-current="page"><span class="ico"><svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 L12 3.5 21 11"/><path d="M5.5 9.5 V20 H18.5 V9.5"/></svg><svg class="i-on" viewBox="0 0 24 24" fill="none"><path fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3.5 21 11H18.5V20H5.5V11H3Z"/><path fill="none" stroke="var(--tabbg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 20v-5"/></svg></span><span class="lbl">Home</span></button>
+  <button data-t="1"><span class="ico"><svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg><svg class="i-on" viewBox="0 0 24 24" fill="none"><path fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg></span><span class="lbl">Plan</span></button>
+  <button data-t="2"><span class="ico"><svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10.5 H20 M8.5 3.5 V7 M15.5 3.5 V7"/></svg><svg class="i-on" viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="15" rx="2.5" fill="currentColor" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="var(--tabbg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 10.8H19"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M8.5 3.5V6M15.5 3.5V6"/></svg></span><span class="lbl">Calendar</span></button>
+  <button data-t="3"><span class="ico"><svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 3.5v5h5"/><path d="M12 8v4.5l3 2"/></svg><svg class="i-on" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="currentColor"/><path fill="none" stroke="var(--tabbg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 7.5v5l3.2 2"/></svg></span><span class="lbl">History</span></button>
 </div></nav>
 
 <div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet"></div></div>
@@ -417,7 +543,7 @@ let theme=store.get('theme','system');   // 'light' | 'dark' | 'system'
 function applyTheme(){
   const resolved = theme==='system' ? (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') : theme;
   document.documentElement.dataset.theme=resolved;
-  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content = resolved==='light' ? '#F4F3EF' : '#1B1D22';
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content = resolved==='light' ? '#FBF4F2' : '#1D1A22';
 }
 window.setTheme=t=>{ theme=t; store.set('theme',t); applyTheme(); renderPage();
   toast(t==='system'?"Matching your phone's setting":t==='light'?'Light mode on':'Dark mode on'); };
@@ -600,29 +726,88 @@ function goalRowHTML(s){
     <div class="goaltext ${cls}">${label}Goal · ${s.balance.toFixed(1)} / ${goal} hrs</div>
   </div>`;
 }
+const ICO={
+  watch:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/></svg>`,
+  pause:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>`,
+  play:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M8 5l11 7-11 7Z"/></svg>`,
+  plus:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`,
+  heart:`<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}" fill="currentColor"/></svg>`,
+  flame:`<svg class="ci" viewBox="0 0 24 24" style="color:var(--champagne)" aria-hidden="true"><path fill="currentColor" d="M13.2 2.2c.5 3.2-.9 5-2.4 6.6-1.4 1.5-2.8 3.1-2.8 5.6a6 6 0 0 0 12 0c0-2.1-.9-3.9-2-5.3-.3 1.3-1 2.4-2.1 3 .6-2.8-.3-7-2.7-9.9Z"/></svg>`
+};
 function clockButtonsHTML(){
   const secs=elapsedSecs();
   const state = timer&&timer.running?'running':(timer&&secs>0?'paused':'idle');
-  if(state==='idle') return `<button class="cta pink" id="timer-btn" onclick="clockIn()">⏱ Start a date</button>`;
+  if(state==='idle') return `<button class="cta pink" id="timer-btn" onclick="clockIn()">${ICO.watch} Start a date</button>`;
   const main = state==='running'
-    ? `<button class="cta pink" id="timer-btn" onclick="clockOut()">♥ End the date — <span class="mono" id="tbtn-t">${fmtMS(secs)}</span> so far</button>`
-    : `<button class="cta pink" id="timer-btn" onclick="clockResume()">▶ Resume — <span class="mono">${fmtMS(secs)}</span> banked</button>`;
+    ? `<button class="cta pink" id="timer-btn" onclick="clockOut()">${ICO.heart} End the date</button>`
+    : `<button class="cta pink" id="timer-btn" onclick="clockResume()">${ICO.play} Resume</button>`;
   return main+`<div class="row2">
-    ${state==='running'?`<button class="cta ghostd" style="flex:1" onclick="clockPause()">⏸ Pause</button>`
-                       :`<button class="cta ghostd" style="flex:1" onclick="clockOut()">♥ End the date</button>`}
-    <button class="cta danger" style="flex:1" onclick="openScrapSheet()">✕ Scrap it</button>
+    ${state==='running'?`<button class="cta ghostd" style="flex:1" onclick="clockPause()">${ICO.pause} Pause</button>`
+                       :`<button class="cta ghostd" style="flex:1" onclick="clockOut()">${ICO.heart} End the date</button>`}
+    <button class="cta danger" style="flex:1" onclick="openScrapSheet()">Scrap it</button>
   </div>`;
 }
-function homePage(){
-  return passbookHTML()
-    +`<div class="cardbox" style="margin-top:18px">
+function ringHTML(bal, size, stroke, inner){
+  const r=60-stroke/2-1, C=2*Math.PI*r, pct=goal?Math.max(0,Math.min(1,bal/goal)):0;
+  return `<div class="ringbox" style="width:${size}px;height:${size}px"><svg viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(var(--lineC),.1)" stroke-width="${stroke}"/>
+      <circle cx="60" cy="60" r="${r}" fill="none" stroke="${pct>=1?'var(--champagne)':'var(--rose)'}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-pct)).toFixed(1)}"/>
+    </svg><div class="ringmid">${inner}</div></div>`;
+}
+function heroHTML(){
+  const s=stats(), secs=elapsedSecs(), running=!!(timer&&timer.running), paused=!!(timer&&!running&&secs>0);
+  const lastD=entries.filter(isDate).map(e=>e.date).sort().pop();
+  let lastTxt='';
+  if(lastD){ const dd=Math.floor((parseISO(todayISO())-parseISO(lastD))/DAY); lastTxt='last date '+(dd<=0?'today':dd===1?'yesterday':dd+' days ago'); }
+  if(running||paused){
+    return `<div class="hero live ${paused?'paused':''}">
+        <div class="herolab"><span class="dot ${running?'show':''}"></span>${running?'On a date':'Paused'}${timer.title?' · '+esc(timer.title):''}</div>
+        <div class="herotime" ${running?'id="livev"':''}>${fmtMS(secs)}</div>
+        <div class="herosub">${running?'Put the phone down. This keeps counting.':'The clock is holding your time.'}</div>
+        ${clockButtonsHTML()}
+      </div>
+      <div class="cardbox minibal">${ringHTML(s.balance,64,12,'')}<div><div class="mb-n">${s.balance.toFixed(1)} <span>${goal?'of '+goal+' hrs':'hrs · last 30 days'}</span></div><div class="herosub" style="margin:2px 0 0">Tonight gets added when you end the date.</div></div></div>`;
+  }
+  const foot = goal
+    ? ((s.balance>=goal?'Goal met this month':(goal-s.balance).toFixed(1)+' hrs to go this month')+(lastTxt?' · '+lastTxt:''))
+    : (lastTxt ? lastTxt.charAt(0).toUpperCase()+lastTxt.slice(1) : 'No date nights on the books yet');
+  return `<div class="hero">
+      ${ringHTML(s.balance,190,9,`<div class="ringnum ${s.balance>=100?'long':''} ${s.balance<0?'neg':''}">${s.balance.toFixed(1)}</div><div class="ringsub">${goal?`of ${goal} hrs together`:'hrs together · 30 days'}</div>`)}
+      <div class="herosub">${foot}</div>
+      ${goal?'':`<button class="gset" onclick="goGoal()">set a monthly goal →</button>`}
       ${clockButtonsHTML()}
+    </div>`;
+}
+function homeTilesHTML(){
+  const s=stats(), next=nextPlan(), now=new Date(); now.setHours(0,0,0,0);
+  let nextTile;
+  if(next){
+    const days=Math.round((parseISO(next.date)-now)/DAY);
+    const wd=parseISO(next.date).toLocaleDateString(undefined,{weekday:'short'});
+    nextTile=`<button class="tile" onclick="ui.tab=2;ui.justSaved=false;renderAll();window.scrollTo({top:0})"><div class="tl">Next up</div><div class="tv clamp2">${esc(next.title)}</div>
+      <div class="ts">${wd} ${fmtDate(next.date)} · ${days} day${days===1?'':'s'} to go${(kidsOn()&&next.sitter==='needed')?' · no sitter yet':''}</div></button>`;
+  } else {
+    nextTile=`<button class="tile" onclick="ui.tab=1;ui.justSaved=false;renderAll();window.scrollTo({top:0})"><div class="tl">Next up</div><div class="tv">Nothing yet</div><div class="ts">Plan something</div></button>`;
+  }
+  const streakTile=`<div class="tile"><div class="tl">Streak</div><div class="tv tflex">${ICO.flame}${s.streak>0?s.streak+' week'+(s.streak===1?'':'s'):'Starts here'}</div>
+    <div class="ts">${s.streak>0?'Weeks in a row with a date':'One date this week begins it'}</div></div>`;
+  let partner='';
+  if(sync){
+    const pe=entries.filter(e=>e.by&&e.by!==sync.role).sort((a,b)=>b.date.localeCompare(a.date)||((b.id||0)-(a.id||0)))[0];
+    if(pe){ const nm=pe.by==='me'?nameMe():namePa();
+      partner=`<button class="pcard" onclick="ui.tab=3;ui.justSaved=false;renderAll();window.scrollTo({top:0})"><span class="pini">${esc(nm.charAt(0).toUpperCase())}</span>
+        <span class="ptxt"><b>${esc(nm)}</b> logged ${esc(pe.title)} · ${isDate(pe)?pe.hours.toFixed(1)+' hrs':Math.round(pe.hours*60)+' min'}<br><span class="ts">${fmtDate(pe.date)}</span></span></button>`; }
+  }
+  return `<div class="tiles">${nextTile}${streakTile}</div>${partner}`;
+}
+function homePage(){
+  return heroHTML()+homeTilesHTML()
+    +`<div class="logwrap">
       ${ui.depOpen
-        ? `<button class="cta ghostd" onclick="closeDepForm()">− Hide the form</button>${depositFormHTML()}`
-        : `<button class="cta ghostd" onclick="openDepForm()">+ Log a past date</button>
+        ? `<button class="cta ghostd" onclick="closeDepForm()">− Hide the form</button><div class="cardbox" style="margin-top:12px">${depositFormHTML()}</div>`
+        : `<button class="cta ghostd" onclick="openDepForm()">${ICO.plus} Log a past date</button>
            ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}`}
-    </div>
-    ${stripHTML()}`;
+    </div>`;
 }
 function stripHTML(){
   const s=stats();
@@ -643,7 +828,7 @@ function stripHTML(){
     <div class="sgoal">${right}</div>
   </div>`;
 }
-window.goGoal=()=>{ ui.tab=4; renderAll();
+window.goGoal=()=>{ if(ui.tab!==4) ui.prevTab=ui.tab; ui.tab=4; renderAll();
   setTimeout(()=>{ const g=$('#g-goal'); if(g){ g.scrollIntoView({behavior:'smooth', block:'center'}); g.focus({preventScroll:true}); } },120); };
 window.openDepForm=()=>{
   ui.depOpen=true; ui.justSaved=false; renderPage();
@@ -706,7 +891,7 @@ function depositFormHTML(){
       <div><label class="f" for="d-hours" id="d-hours-label">${small?'Minutes together':'Hours together'}</label>
         <input type="number" id="d-hours" min="${small?1:0.1}" max="${small?600:24}" step="${small?1:0.1}" value="${defHours}" placeholder="${small?'45':'2.5'}"></div>
     </div>
-    <div class="grid2 fgroup">
+    <div class="fgroup stack">
       <div><label class="f" for="d-cat">Category</label>
         <select id="d-cat">${cats.map(c=>`<option ${c===defCat?'selected':''}>${c}</option>`).join('')}</select></div>
       <div><label class="f">How was it?</label>
@@ -860,8 +1045,7 @@ function planPage(){
         const avg=r.reduce((a,e)=>a+e.rating,0)/r.length;
         return `<div class="bestline">Your dates average <b>${avg.toFixed(1)}</b> ${heartSVG(false)} across ${r.length} rated date${r.length===1?'':'s'}</div>`; })()}
     </div>`;
-  return `<div class="sechead"><h2>Plan a date</h2><span class="lead"></span></div>
-    <div class="intent-tabs">
+  return `    <div class="intent-tabs">
       <button class="intent ${ui.planIntent!=='know'?'on':''}" onclick="ui.planIntent='idea';renderPage();if(ui.planMode==='places')mountMap()"><span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/></svg></span>Give me an idea</button>
       <button class="intent ${ui.planIntent==='know'?'on':''}" onclick="ui.planIntent='know';renderPage()"><span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.5 L11 15 L15.5 9.5"/></svg></span>I know what we're doing</button>
     </div>
@@ -1216,8 +1400,7 @@ function calGridHTML(){
     const marks=(past[iso]?`<span class="cd">${CAL_MK.logged}</span>`:'')+(fut[iso]?`<span class="cd">${fut[iso]==='need'?CAL_MK.sitter:CAL_MK.booked}</span>`:'')+resv;
     cells+=`<div class="cal-cell ${iso===tISO?'today':''}" onclick="openDay('${iso}')" role="button" tabindex="0"><span class="cn2">${d}</span>${marks}</div>`;
   }
-  return `<div class="sechead"><h2>Calendar</h2><span class="lead"></span></div>
-    <div class="cardbox" id="cal-card">
+  return `    <div class="cardbox" id="cal-card">
       <div class="cal-head"><button class="cal-nav" onclick="calNav(-1)">‹</button><span class="cal-title">${monthName}</span><button class="cal-nav" onclick="calNav(1)">›</button></div>
       <div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
       <div class="cal-legend">
@@ -1315,8 +1498,7 @@ function statementHTML(){
         <div class="m">${fmtDateY(iso)} · no date logged</div></div>
       <div class="amt" style="color:var(--dimmer)">—</div></div>`};})
   ].sort((a,b)=>b.sort.localeCompare(a.sort));
-  return `<div class="sechead"><h2>Date history</h2><span class="lead"></span></div>
-    <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
+  return `    <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
       :'<div class="empty">No dates logged yet — your first one goes here. <span class="hrt">♥</span></div>'}</div>`;
 }
 
@@ -1530,13 +1712,6 @@ function renderBanners(){
     const when=rd===1?'Tomorrow':WD[reservation.weekday];
     el.insertAdjacentHTML('beforeend',
       `<div class="banner booked"><span>♡ ${when} ${fmtDate(resvISO)} is reserved for a date night — no plan for it yet</span><button onclick="planResvNight('${resvISO}')">Plan it</button></div>`);
-  }
-  else if(next){
-    const days=Math.round((parseISO(next.date)-now)/DAY);
-    const sitterChip=(kidsOn()&&next.sitter==='needed')
-      ? ` · <a href="#" onclick="event.preventDefault();toggleSitter(${next.id})" style="text-decoration:underline">🍼 no sitter yet</a>` : '';
-    el.insertAdjacentHTML('beforeend',
-      `<div class="banner booked"><span>Next up: ${esc(next.title)} · ${fmtDate(next.date)} — ${days} day${days===1?'':'s'} to go${sitterChip} · <a href="#" onclick="event.preventDefault();ui.tab=3;renderAll()" style="text-decoration:underline">all dates</a></span></div>`);
   }
   if(resvTonight() && !tonight){
     el.insertAdjacentHTML('beforeend',
@@ -1822,22 +1997,32 @@ function renderPage(){
   if(ui.tab===4) wireSettings();
 }
 function gearHTML(){
-  return `<button class="hgear ${ui.tab===4?'on':''}" aria-label="Settings" title="Settings" onclick="openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7.5 H20 M4 12 H20 M4 16.5 H20"/><circle cx="9.5" cy="7.5" r="2.2" fill="var(--plum)"/><circle cx="15" cy="12" r="2.2" fill="var(--plum)"/><circle cx="8" cy="16.5" r="2.2" fill="var(--plum)"/></svg></button>`;
+  return `<button class="hgear ${ui.tab===4?'on':''}" aria-label="Settings" title="Settings" onclick="openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>`;
 }
-window.openSettings=()=>{ ui.tab=4; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); };
+/* Settings behaves like a screen pushed on top: the tab you came from stays lit, and Back returns to it */
+window.openSettings=()=>{ if(ui.tab===4) return closeSettings(); ui.prevTab=ui.tab; ui.tab=4; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); };
+window.closeSettings=()=>{ ui.tab=ui.prevTab||0; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); };
 function renderHeader(){
   const h=$('#hdr'); if(!h) return;
-  if(ui.tab===0){
-    h.className='';
-    h.innerHTML=`<div class="brand">Book<span class="hrt">♥</span>d</div><div class="tagline">Your relationship, on the books</div>${gearHTML()}`;
-  } else {
-    h.className='compact';
-    h.innerHTML=`<div class="brand-row"><div class="brand sm">Book<span class="hrt">♥</span>d</div><span class="hright"><span class="hdot ${sync?esc(syncStatus):''}" title="sync: ${sync?esc(syncStatus):'off'}"></span>${gearHTML()}</span></div>`;
+  h.className='';
+  if(ui.tab===4){
+    h.innerHTML=`<div class="hbar"><button class="hback" onclick="closeSettings()">‹ Back</button><div class="htitle">Settings</div></div>`;
+    return;
   }
+  const who=((sync?sync.role:pairRole)==='partner')?profile.partner:profile.me;
+  const hr=new Date().getHours(), greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  const title=[who?`${greet}, ${esc(who)}`:greet, 'Plan a date', 'Calendar', 'Your dates'][ui.tab];
+  const names=(profile.me&&profile.partner)?` · ${esc(profile.me)} &amp; ${esc(profile.partner)}`:'';
+  const lab=!sync?'Not paired yet':syncStatus==='live'?'Synced':syncStatus==='error'?'Sync problem':'Connecting';
+  h.innerHTML=`<div class="hbar"><div class="hleft">
+      <div class="hsmall"><span class="hdot ${sync?esc(syncStatus):'solo'}" role="img" aria-label="${lab}" title="${lab}"></span><span class="hnm">Book’d${names}</span></div>
+      <div class="htitle">${title}</div></div>${gearHTML()}</div>`;
 }
 function renderAll(){ renderHeader(); renderBanners(); renderPage(); renderTabbar(); setTimeout(maybeSpot,350); }
 function renderTabbar(){
-  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on', +b.dataset.t===ui.tab));
+  const lit = ui.tab===4 ? (ui.prevTab||0) : ui.tab;
+  document.querySelectorAll('.tabbar button').forEach(b=>{ const on=+b.dataset.t===lit; b.classList.toggle('on',on);
+    if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
 }
 document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{ ui.tab=+b.dataset.t; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); });
 
