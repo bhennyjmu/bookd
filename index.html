@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Karla:wght@400;500;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Karla:wght@400;500;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous" defer></script>
 <style>
@@ -584,6 +584,22 @@ div.zstep{cursor:default; color:var(--dim)}
 .mocknotif .mi .ci{width:22px; height:22px}
 .banner .bx{background:none; color:var(--dim); padding:0; width:40px; font-size:16px}
 /* SLICE 3 end */
+/* ===== SLICE 4 — the first screen ===== */
+.wmark{font-family:'Fraunces',serif; font-weight:900; font-size:21px; letter-spacing:-.3px; display:flex; align-items:center; color:var(--cream); margin-top:6px}
+.wmark svg{width:13px; height:13px; color:var(--rose); margin:0 1px}
+.wbefore{font-family:'Fraunces',serif; font-style:italic; font-weight:400; font-size:27px; line-height:1.2; color:rgba(var(--lineC),.38); position:relative; display:inline-block}
+.wbefore::after{content:""; position:absolute; left:-2px; right:-2px; top:54%; height:1.5px; background:var(--rose); transform-origin:left; transform:scaleX(0); animation:wstrike .7s .7s cubic-bezier(.6,0,.2,1) forwards}
+.onb h1.wafter{font-weight:700; font-size:52px; line-height:1.04; letter-spacing:-.8px; margin:18px 0 0; opacity:0; transform:translateY(8px); animation:wrise .7s 1.35s ease-out forwards}
+.wrule{width:34px; height:2px; border-radius:2px; background:var(--champagne); margin:22px 0 0}
+.onb .sub.wsub{font-size:16.5px; margin:16px 0 0; max-width:290px}
+.wrule,.onb .sub.wsub{opacity:0; animation:wrise .7s 1.75s ease-out forwards}
+.wfine{text-align:center; color:rgba(var(--lineC),.4); font-size:13px; margin-top:2px}
+.wintro.still .wbefore::after{animation:none; transform:scaleX(1)}
+.wintro.still .wafter,.wintro.still .wrule,.wintro.still .wsub{animation:none; opacity:1; transform:none}
+@keyframes wstrike{to{transform:scaleX(1)}}
+@keyframes wrise{to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .wbefore::after{transform:scaleX(1)} .onb h1.wafter,.wrule,.onb .sub.wsub{opacity:1; transform:none} }
+/* SLICE 4 end */
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -2408,14 +2424,20 @@ function obRender(){
   const s=ob.step, me=esc(profile.me||''), pa=esc(profile.partner||'your partner');
   let top=obBarHTML(), body='';
   if(s==='welcome'){ top='';
-    body=`<div class="oart" style="margin-top:22px">${OB_ART.welcome}</div>
-      <div class="obrand" style="margin-top:0">Book<span class="hrt">♥</span>d</div>
-      <div class="otag">Your relationship, on the books</div>
-      <h1 style="text-align:center">Every date counts</h1>
-      <p class="sub" style="text-align:center">Log your time together and watch it add up.</p>
+    /* the old "Without Book'd / With Book'd" pitch, distilled to one moment. It plays once; coming Back shows it settled. */
+    const still=ob.introSeen?'still':''; ob.introSeen=true;
+    body=`<div class="wmark">Book<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}" fill="currentColor"/></svg>d</div>
+      <div class="grow"></div>
+      <div class="wintro ${still}">
+        <div><span class="wbefore">“We should go out more.”</span></div>
+        <h1 class="wafter">Tonight’s<br>on the books.</h1>
+        <div class="wrule"></div>
+        <p class="sub wsub">Book the date. Keep the hours. See them add up.</p>
+      </div>
       <div class="grow"></div>
       <button class="cta pink" onclick="ob.mode='founder';obGo('names')">Get started</button>
-      <button class="olink" style="align-self:center" onclick="ob.mode='joiner';obGo('jcode')">I have an invite code</button>`;
+      <button class="olink" style="align-self:center" onclick="ob.mode='joiner';obGo('jcode')">I have an invite code</button>
+      <div class="wfine">No account · about a minute</div>`;
   }
   if(s==='names'){
     body=`<div class="oart">${OB_ART.name}</div>
