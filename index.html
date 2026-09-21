@@ -617,6 +617,7 @@ div.zstep{cursor:default; color:var(--dim)}
 .spotrow .spotok{margin-top:0}
 .spotskip{background:none; border:0; color:var(--dim); font-family:'Karla',sans-serif; font-weight:700; font-size:13.5px; text-decoration:underline; text-underline-offset:3px; min-height:44px; padding:0 2px 0 12px; cursor:pointer; white-space:nowrap}
 /* SLICE 6 end */
+/* SLICE 7 — kids question asked once at the first booking (no new styles) */
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -663,7 +664,8 @@ let timer      = store.get('timer', null);   // {startedAt, elapsed, running, da
 let goal       = store.get('goal', null);    // monthly hours goal (number) — the low-balance baseline
 let profile    = store.get('profile', {me:'', partner:'', anniv:''});   // first names + anniversary
 const nameMe=()=>profile.me||'Me', namePa=()=>profile.partner||'My partner';
-const kidsOn=()=>profile.kids!==false;   // sitter tracking on unless switched off in Settings
+const kidsOn=()=>profile.kids!==false && profile.kids!=='ask';   // on unless switched off; 'ask' = new couple, not asked yet, so stay quiet
+const kidsAsk=()=>profile.kids==='ask';
 const plansSorted=()=>[...plans].sort((a,b)=>a.date.localeCompare(b.date));
 const todayPlan=()=>plans.find(p=>p.date===todayISO());
 const nextPlan=()=>plansSorted().find(p=>p.date>todayISO());
@@ -1352,22 +1354,34 @@ window.bookIdea=()=>{
     <button class="cta pink" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button></div>`;
 };
 window.bookOwn=()=>{
-  const title=$('#own-title').value.trim(); if(!title) return toast('What’s the plan? Give it a name');
-  const date=$('#own-date').value; if(!date) return toast('Pick a day');
+  const title=$('#own-title').value.trim(); if(!title) return fieldError('own-title','What’s the plan? Give it a name');
+  const date=$('#own-date').value; if(!date) return fieldError('own-date','Pick a day');
   const plan={ id:Date.now(), title, date, sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
   plans.push(plan); savePlans(); ui.bookDate=null;
   renderAll();
   openSitterSheet(plan.id);
 };
 window.confirmBook=()=>{
-  const date=$('#book-date').value; if(!date) return toast('Pick a day');
+  const date=$('#book-date').value; if(!date) return fieldError('book-date','Pick a day');
   const plan={ id:Date.now(), title:currentIdea.n, date, sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
   plans.push(plan); savePlans(); ui.bookDate=null;
   renderAll();
   openSitterSheet(plan.id);
 };
+window.answerKids=(v,id)=>{ setKids(v); openSitterSheet(id); };   // setKids marks open bookings 'needed' (or clears them), then the normal sheet takes over
 window.openSitterSheet=id=>{
   const p=planById(id); if(!p) return;
+  if(kidsAsk()){
+    openSheet(`
+      <div class="eyebrow">Booked ♥ · ${esc(p.title)} · ${fmtDate(p.date)}</div>
+      <h3>Kids to cover on date nights?</h3>
+      <div class="sheetnote">If a sitter’s part of the equation, Book’d tracks who’s got the kids for each date. We’ll only ask this once. You can change it in Settings.</div>
+      <div class="row2">
+        <button class="cta ghostd" style="flex:1" onclick="answerKids(false,${id})">No kids to cover</button>
+        <button class="cta pink" style="flex:1" onclick="answerKids(true,${id})">Yes, track the sitter</button>
+      </div>`);
+    return;
+  }
   const cal=`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a>`;
   if(!(kidsOn()&&p.sitter)){
     openSheet(`
@@ -1854,8 +1868,9 @@ function settingsPage(){
       <div class="fgroup"><label class="f">Kids to cover on date nights?</label>
         <div class="pills">
           <button class="pill ${kidsOn()?'on':''}" onclick="setKids(true)">Yes — track the sitter</button>
-          <button class="pill ${!kidsOn()?'on':''}" onclick="setKids(false)">No kids to cover</button>
+          <button class="pill ${profile.kids===false?'on':''}" onclick="setKids(false)">No kids to cover</button>
         </div>
+        ${kidsAsk()?`<p class="datanote" style="text-align:left; margin-top:8px">Not answered yet. We’ll ask once, the first time you book a date.</p>`:''}
         <p class="datanote" style="text-align:left; margin-top:8px">Turns sitter status on the Calendar on or off — for both of you.</p></div>
       <button class="cta pink" style="margin-top:0" onclick="saveProfile()">Save</button>
     </div>
@@ -1874,7 +1889,7 @@ window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
   if(plans.length){ plans.forEach(p=>{ p.sitter = v ? (p.sitter||'needed') : null; }); savePlans(); }
   renderAll(); };
 window.saveProfile=()=>{
-  profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:profile.kids!==false };
+  profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:kidsAsk()?'ask':profile.kids!==false };
   store.set('profile',profile); pushMeta();
   toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+' — on the books ♥':'Saved');
   renderAll();
@@ -2449,6 +2464,7 @@ window.obNext=()=>{ const path=obPath(), i=path.indexOf(ob.step); obGo(path[Math
 window.obSaveNames=()=>{ obGrab();
   if(!profile.me) return fieldError('ob-name','First name, please — it signs the passbook');
   if(!profile.partner) return fieldError('ob-partner','Their first name goes on the account too');
+  if(!ob.replay && profile.kids===undefined){ profile.kids='ask'; store.set('profile',profile); }
   obNext(); };
 window.obGoalPick=n=>{ ob.goal=n; document.querySelectorAll('.goalpick button').forEach(b=>b.classList.toggle('on', +b.dataset.v===n)); buzz(8); };
 window.obSaveGoal=()=>{ goal=ob.goal||12; store.set('goal',goal); pushMeta(); obNext(); };
@@ -2647,7 +2663,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=117;
+const APP_V=118;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
