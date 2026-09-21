@@ -600,6 +600,18 @@ div.zstep{cursor:default; color:var(--dim)}
 @keyframes wrise{to{opacity:1; transform:none}}
 @media (prefers-reduced-motion:reduce){ .wbefore::after{transform:scaleX(1)} .onb h1.wafter,.wrule,.onb .sub.wsub{opacity:1; transform:none} }
 /* SLICE 4 end */
+/* ===== SLICE 5 — tapping a thing opens that thing ===== */
+.hcard{cursor:pointer}
+.hcard:active{opacity:.6}
+.swk{font-weight:700; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim); margin:16px 0 2px}
+.srow{display:flex; align-items:center; gap:12px; width:100%; min-height:60px; padding:8px 0; background:none; border:0; border-top:1px solid rgba(var(--lineC),.09); text-align:left; color:var(--cream); font-family:'Karla',sans-serif; font-size:15.5px; cursor:pointer}
+.swk + .srow{border-top:0}
+.sthumb{width:44px; height:44px; border-radius:12px; object-fit:cover; flex-shrink:0; background:var(--card2)}
+.sthumb.none{display:grid; place-items:center; color:var(--dimmer)}
+.smid{flex:1; min-width:0; display:flex; flex-direction:column}
+.smid b{font-family:'Fraunces',serif; font-weight:700; font-size:16.5px; line-height:1.2}
+.samt{font-weight:700; font-size:14px; color:var(--deposit); white-space:nowrap}
+/* SLICE 5 end */
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -929,18 +941,18 @@ function homeTilesHTML(){
   if(next){
     const days=Math.round((parseISO(next.date)-now)/DAY);
     const wd=parseISO(next.date).toLocaleDateString(undefined,{weekday:'short'});
-    nextTile=`<button class="tile" onclick="ui.tab=2;ui.justSaved=false;renderAll();window.scrollTo({top:0})"><div class="tl">Next up</div><div class="tv clamp2">${esc(next.title)}</div>
+    nextTile=`<button class="tile" onclick="openDay('${next.date}')" aria-label="Next up: ${esc(next.title)}. Open the details."><div class="tl">Next up</div><div class="tv clamp2">${esc(next.title)}</div>
       <div class="ts">${wd} ${fmtDate(next.date)} · ${days} day${days===1?'':'s'} to go${(kidsOn()&&next.sitter==='needed')?' · no sitter yet':''}</div></button>`;
   } else {
     nextTile=`<button class="tile" onclick="ui.tab=1;ui.justSaved=false;renderAll();window.scrollTo({top:0})"><div class="tl">Next up</div><div class="tv">Nothing yet</div><div class="ts">Plan something</div></button>`;
   }
-  const streakTile=`<div class="tile"><div class="tl">Streak</div><div class="tv tflex">${ICO.flame}${s.streak>0?s.streak+' week'+(s.streak===1?'':'s'):'Starts here'}</div>
-    <div class="ts">${s.streak>0?'Weeks in a row with a date':'One date this week begins it'}</div></div>`;
+  const streakTile=`<button class="tile" onclick="openStreakSheet()"><div class="tl">Streak</div><div class="tv tflex">${ICO.flame}${s.streak>0?s.streak+' week'+(s.streak===1?'':'s'):'Starts here'}</div>
+    <div class="ts">${s.streak>0?'See the dates behind it':'One date this week begins it'}</div></button>`;
   let partner='';
   if(sync){
     const pe=entries.filter(e=>e.by&&e.by!==sync.role).sort((a,b)=>b.date.localeCompare(a.date)||((b.id||0)-(a.id||0)))[0];
     if(pe){ const nm=pe.by==='me'?nameMe():namePa();
-      partner=`<button class="pcard" onclick="ui.tab=3;ui.justSaved=false;renderAll();window.scrollTo({top:0})"><span class="pini">${esc(nm.charAt(0).toUpperCase())}</span>
+      partner=`<button class="pcard" onclick="openEntrySheet(${pe.id})"><span class="pini">${esc(nm.charAt(0).toUpperCase())}</span>
         <span class="ptxt"><b>${esc(nm)}</b> logged ${esc(pe.title)} · ${isDate(pe)?pe.hours.toFixed(1)+' hrs':Math.round(pe.hours*60)+' min'}<br><span class="ts">${fmtDate(pe.date)}</span></span></button>`; }
   }
   return `<div class="tiles">${nextTile}${streakTile}</div>${partner}`;
@@ -1652,7 +1664,7 @@ window.openDay=iso=>{
   if(!body) body=`<div class="sheetnote">Nothing on the books this day.</div>`;
   const act = iso<=t
     ? `<button class="cta pink" onclick="closeSheet();logDay('${iso}')">Log a date for this day</button>`
-    : `<button class="cta pink" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;ui.planIntent='know';renderAll();window.scrollTo({top:0,behavior:'smooth'})">${ICO.cal} Plan something for this day</button>`;
+    : `<button class="cta ${dayPlans.length?'ghostd':'pink'}" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;ui.planIntent='know';renderAll();window.scrollTo({top:0,behavior:'smooth'})">${ICO.cal} ${dayPlans.length?'Plan something else this day':'Plan something for this day'}</button>`;
   openSheet(`<div class="eyebrow">${wd}</div><h3>${when}</h3>${body}${act}
     <button class="cta ghostd" style="width:100%" onclick="closeSheet()">Close</button>`);
 };
@@ -1698,22 +1710,46 @@ function statementHTML(){
       out+=`<div class="hmonth"><b>${m}</b><span>${tot.toFixed(1)} hrs</span></div>`; }
     if(r.missed){ out+=`<div class="hmissed"><span>Standing night · no date logged</span><span>${fmtDate(r.sort)}</span></div>`; return; }
     const e=r.e;
-    out+=`<div class="hcard">${e.photo?`<img class="ethumb" src="${e.photo}" alt="" loading="lazy" style="${focusCSS(e)}" onclick="viewPhotoEntry(${e.id})">`:`<div class="ethumb none">${ICO.heart}</div>`}
+    out+=`<div class="hcard" role="button" tabindex="0" onclick="openEntrySheet(${e.id})" aria-label="Open ${esc(e.title)}">${e.photo?`<img class="ethumb" src="${e.photo}" alt="" loading="lazy" style="${focusCSS(e)}">`:`<div class="ethumb none">${ICO.heart}</div>`}
       <div class="hmid"><div class="t clamp2">${esc(e.title)}</div>
         <div class="m">${fmtDateY(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
         ${e.rating?`<div class="hearts-row">${heartRow(e.rating)}</div>`:''}
         ${e.moment?`<div class="moment clamp2">“${esc(e.moment)}”</div>`:''}</div>
-      <div class="hright"><button class="hmore" aria-label="Edit or delete ${esc(e.title)}" onclick="openEntrySheet(${e.id})">${ICO.more}</button>
+      <div class="hright"><button class="hmore" aria-label="Edit or delete ${esc(e.title)}" onclick="event.stopPropagation();openEntrySheet(${e.id})">${ICO.more}</button>
         <div class="amt dep">+${isDate(e)?e.hours.toFixed(1)+'h':Math.round(e.hours*60)+'m'}</div></div></div>`;
   });
   if(all.length>n) out+=`<button class="cta ghostd" onclick="ui.histN=(ui.histN||8)+8;renderPage()">Load ${Math.min(8,all.length-n)} more · ${all.length-n} older</button>`;
   else if(all.length>8) out+=`<p class="datanote" style="margin-top:16px">That’s everything, back to your first date.</p>`;
   return out;
 }
+/* the dates behind the streak, newest week first */
+window.openStreakSheet=()=>{
+  const st=stats().streak, dates=entries.filter(isDate);
+  if(!st){ openSheet(`<div class="eyebrow">Streak</div><h3>No streak yet</h3>
+      <div class="sheetnote">A streak counts weeks in a row with at least one date night. One date this week starts it.</div>
+      <button class="cta pink" onclick="closeSheet();openDepForm()">${ICO.plus} Log a date</button>
+      <button class="cta ghostd" onclick="closeSheet()">Close</button>`); return; }
+  const wkOf=e=>monday(parseISO(e.date)).getTime(), thisWk=monday(new Date()).getTime();
+  let w=thisWk; if(!dates.some(e=>wkOf(e)===w)) w-=7*DAY;   // same rule the streak count uses
+  let rows='';
+  const show=Math.min(st,12);
+  for(let i=0;i<show;i++, w-=7*DAY){
+    const wk=dates.filter(e=>wkOf(e)===w).sort((a,b)=>b.date.localeCompare(a.date));
+    rows+=`<div class="swk">${w===thisWk?'This week':w===thisWk-7*DAY?'Last week':'Week of '+fmtDate(toISO(new Date(w)))}</div>`
+      +wk.map(e=>`<button class="srow" onclick="openEntrySheet(${e.id})">${e.photo?`<img class="sthumb" src="${e.photo}" alt="" style="${focusCSS(e)}">`:`<span class="sthumb none">${ICO.heart}</span>`}
+          <span class="smid"><b class="clamp2">${esc(e.title)}</b><span class="ts">${parseISO(e.date).toLocaleDateString(undefined,{weekday:'short'})} ${fmtDate(e.date)}</span></span>
+          <span class="samt">+${e.hours.toFixed(1)}h</span></button>`).join('');
+  }
+  openSheet(`<div class="eyebrow">Streak</div><h3>${st} week${st===1?'':'s'} in a row</h3>
+    <div class="sheetnote">Every week here has at least one date night. These are the ones that count.</div>
+    ${rows}${st>show?`<p class="datanote">…and ${st-show} more week${st-show===1?'':'s'} before that. They’re all in History.</p>`:''}
+    <button class="cta ghostd" onclick="closeSheet()">Close</button>`);
+};
 window.openEntrySheet=id=>{
   const e=entries.find(x=>x.id===id); if(!e) return;
   openSheet(`${e.photo?`<img class="ephoto" src="${e.photo}" alt="" style="${focusCSS(e)}" onclick="closeSheet();viewPhotoEntry(${e.id})">`:''}
-    <div class="eyebrow">${fmtDateY(e.date)} · +${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</div><h3>${esc(e.title)}</h3>
+    <div class="eyebrow">${parseISO(e.date).toLocaleDateString(undefined,{weekday:'long'})} · ${fmtDateY(e.date)}</div><h3>${esc(e.title)}</h3>
+    <div class="sheetnote" style="margin:-6px 0 10px"><span style="color:var(--deposit); font-weight:700">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span> · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
     ${e.rating?`<div class="hearts-row" style="margin:-6px 0 8px">${heartRow(e.rating)}</div>`:''}
     ${e.moment?`<div class="sheetnote" style="font-style:italic">“${esc(e.moment)}”</div>`:''}
     <button class="cta ghostd" onclick="closeSheet();editEntry(${e.id})">Edit</button>
@@ -2207,7 +2243,8 @@ function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.
 window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); setTimeout(flushRemote,0); };
 $('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
 $('#logwrap').addEventListener('click',e=>{ if(e.target.id==='logwrap') closeDepForm(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.matches && e.target.matches('#onboard input')){ const b=$('#onboard .cta.pink'); if(b){ e.preventDefault(); b.click(); } return; }
+document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches && e.target.matches('[role="button"]')){ e.preventDefault(); e.target.click(); return; }
+  if(e.key==='Enter' && e.target.matches && e.target.matches('#onboard input')){ const b=$('#onboard .cta.pink'); if(b){ e.preventDefault(); b.click(); } return; }
   if(e.key!=='Escape') return; if($('#sheetwrap').classList.contains('show')) closeSheet(); else if(ui.depOpen) closeDepForm(); });
 
 /* ---------- never redraw under someone who is typing ----------
@@ -2598,7 +2635,7 @@ function maybeSpot(){
 }
 
 /* ---------- boot ---------- */
-const APP_V=115;
+const APP_V=116;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
