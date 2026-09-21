@@ -502,6 +502,88 @@ input.bad{border-color:var(--withdrawal)!important}
 /* while a sheet is up, pop-ups move to the top so they never cover it */
 .sheetwrap.show ~ .toast{bottom:auto; top:calc(14px + env(safe-area-inset-top))}
 /* SLICE 2 end */
+/* ===== SLICE 3 — history, calendar, plan, welcome, day zero ===== */
+.emptybig{text-align:center; padding:26px 10px 0}
+.emptybig svg{width:170px; height:auto; display:block; margin:0 auto 6px}
+.emptybig h3,.hero.zero h3{font-family:'Fraunces',serif; font-weight:700; font-size:23px; line-height:1.2}
+.emptybig p{color:var(--dim); font-size:15px; margin:6px 0 4px}
+/* history */
+.sum{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px}
+.sum div{background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:12px 6px; text-align:center; min-width:0}
+.sum b{display:block; font-family:'Fraunces',serif; font-weight:900; font-size:21px; line-height:1.1}
+.sum span{font-size:12px; color:var(--dim)}
+.hmonth{position:sticky; top:0; z-index:5; background:var(--plum); display:flex; justify-content:space-between; align-items:baseline; padding:14px 2px 6px; margin-top:6px}
+.hmonth b{font-family:'Fraunces',serif; font-size:18px}
+.hmonth span{font-size:13.5px; font-weight:700; color:var(--dim)}
+.hcard{display:flex; gap:12px; align-items:flex-start; background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:12px 4px 12px 12px; margin-top:8px}
+.hcard .ethumb{margin-right:0}
+.ethumb.none{display:grid; place-items:center; color:var(--dimmer); background:var(--card2); cursor:default}
+.hmid{flex:1; min-width:0}
+.hmid .t{font-family:'Fraunces',serif; font-weight:700; font-size:17px; line-height:1.2}
+.hmid .m{font-size:13px; color:var(--dim); margin-top:2px}
+.hmid .moment{font-family:'Fraunces',serif; font-style:italic; font-size:14.5px; color:var(--dim); margin-top:6px; line-height:1.35}
+.hright{display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0}
+.hmore{width:44px; height:44px; display:grid; place-items:center; background:none; border:0; color:var(--dim); cursor:pointer; border-radius:14px}
+.hright .amt{font-family:'Karla',sans-serif; font-weight:700; font-size:14px; color:var(--deposit); padding:2px 12px 0 0; white-space:nowrap}
+.hmissed{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1.5px dashed rgba(var(--lineC),.14); border-radius:22px; padding:12px 16px; margin-top:8px; color:var(--dim); font-size:14.5px}
+/* calendar */
+button.cal-cell{background:none; border:0; color:var(--cream); font-family:'Karla',sans-serif; display:flex; flex-direction:column; align-items:center; gap:2px; padding:5px 0 3px; width:100%}
+.cal-cell .cn2{font-family:'Karla',sans-serif; font-size:15px; font-weight:500; color:var(--cream); width:26px; height:26px; border-radius:50%; display:grid; place-items:center; line-height:1}
+.cal-cell.past .cn2{color:var(--dim)}
+.cal-cell.today{outline:0}
+.cal-cell.today .cn2{background:var(--rose); color:var(--plum); font-weight:700}
+.cal-nav{display:grid; place-items:center; background:none}
+.cal-title{font-size:19px}
+.upcard{margin-top:10px}
+.uprow{display:flex; gap:14px; align-items:flex-start}
+.dblock{width:54px; flex-shrink:0; background:var(--card2); border-radius:14px; text-align:center; padding:8px 0 9px; line-height:1.1}
+.dblock small{display:block; font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--rose); text-transform:uppercase}
+.dblock b{font-family:'Fraunces',serif; font-weight:900; font-size:23px}
+.upmid{flex:1; min-width:0}
+.upt{font-family:'Fraunces',serif; font-weight:700; font-size:18px; line-height:1.2}
+.upact{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+.chipbtn{min-height:44px; padding:0 13px; border-radius:99px; border:1.5px solid rgba(var(--lineC),.14); background:none; color:var(--cream); font-family:'Karla',sans-serif; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; cursor:pointer; text-decoration:none}
+.chipbtn.ok{color:var(--deposit)} .chipbtn.warn{color:var(--champagne); border-color:var(--champagne)} .chipbtn.quiet{color:var(--dim)}
+.chipbtn.go{background:var(--rose); border-color:var(--rose); color:var(--plum)}
+.sheet .recap .cta{min-height:44px; font-size:14px}
+/* plan */
+.intent-tabs:not([style]){gap:4px; background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:99px; padding:4px; margin-bottom:10px}
+.intent-tabs:not([style]) .intent{border:0; border-radius:99px; background:none; padding:0 8px; min-height:44px; font-size:14px; line-height:1.15}
+.intent-tabs:not([style]) .intent .ii{display:none}
+.intent-tabs:not([style]) .intent.on{background:var(--card2); color:var(--cream)}
+.spin-card{border:0; background:transparent; padding:6px 4px 0; margin-top:6px; min-height:0}
+.spin-card.ask{padding:10px 4px 4px}
+.spin-idea{font-size:25px; line-height:1.15; overflow-wrap:anywhere}
+.spin-empty{font-size:14.5px; color:var(--dim)}
+/* day zero */
+.hero.zero .oart svg{width:170px}
+.zsteps{text-align:left}
+.ztrack{height:7px; border-radius:99px; background:rgba(var(--lineC),.1); overflow:hidden; margin-bottom:6px}
+.ztrack i{display:block; height:100%; border-radius:99px; background:var(--champagne)}
+.zstep{display:flex; align-items:center; gap:12px; width:100%; min-height:52px; background:none; border:0; border-top:1px solid rgba(var(--lineC),.09); text-align:left; font-family:'Karla',sans-serif; font-size:15px; color:var(--cream); cursor:pointer}
+div.zstep{cursor:default; color:var(--dim)}
+.zck{width:24px; height:24px; border-radius:50%; border:2px solid var(--dimmer); display:grid; place-items:center; flex-shrink:0}
+.zstep.done .zck{background:var(--deposit); border-color:var(--deposit); color:var(--plum)}
+.zck .ci{width:14px; height:14px}
+.zgo{margin-left:auto; color:var(--rose); font-weight:700; font-size:14px; white-space:nowrap}
+/* welcome */
+.otop{gap:6px; margin:-6px 0 18px -10px}
+.oback{width:44px; height:44px; display:grid; place-items:center; background:none; border:0; color:var(--dim); cursor:pointer; border-radius:14px; flex-shrink:0}
+.ocount{font-size:12.5px; font-weight:700; color:var(--dim); white-space:nowrap; margin-left:6px}
+.obar span{height:4px}
+.onb h1{font-weight:700; font-size:29px; line-height:1.15}
+.onb .sub{font-size:16px}
+.onb .f{margin-top:4px}
+.onb .sugg{margin:0 -22px 10px 0; padding-right:22px}
+.onb .grid2 input{margin-bottom:8px}
+.goalpick{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px}
+.goalpick button{min-height:78px; border-radius:14px; border:1.5px solid rgba(var(--lineC),.14); background:none; color:var(--cream); font-family:'Karla',sans-serif; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.15; cursor:pointer}
+.goalpick button b{font-family:'Fraunces',serif; font-weight:900; font-size:22px}
+.goalpick button small{font-size:11.5px; color:var(--dim); font-weight:400}
+.goalpick button.on{border-color:var(--rose); background:color-mix(in srgb, var(--rose) 14%, transparent)}
+.mocknotif .mi .ci{width:22px; height:22px}
+.banner .bx{background:none; color:var(--dim); padding:0; width:40px; font-size:16px}
+/* SLICE 3 end */
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -570,8 +652,7 @@ function applyTheme(){
   document.documentElement.dataset.theme=resolved;
   const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content = resolved==='light' ? '#FBF4F2' : '#1D1A22';
 }
-window.setTheme=t=>{ theme=t; store.set('theme',t); applyTheme(); renderPage();
-  toast(t==='system'?"Matching your phone's setting":t==='light'?'Light mode on':'Dark mode on'); };
+window.setTheme=t=>{ theme=t; store.set('theme',t); applyTheme(); renderPage(); };
 try{ matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if(theme==='system') applyTheme(); }); }catch(e){}
 applyTheme();   // days between "running behind" reminder nags
 let db=null, unsubMeta=null, unsubEntries=null, syncStatus='off', pairRole='me';
@@ -768,6 +849,13 @@ function goalRowHTML(s){
   </div>`;
 }
 const ICO={
+  cal:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5.5" width="16" height="15" rx="2.5"/><path d="M4 10.5H20M8.5 3.5V7M15.5 3.5V7"/></svg>`,
+  dice:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01" stroke-width="2.6"/></svg>`,
+  bottle:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4v3l2 2.5V19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V8.5L10 6V3ZM8 12h8"/></svg>`,
+  more:`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:22px;height:22px"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg>`,
+  check:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.500 4.500L19 7.500"/></svg>`,
+  back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:22px;height:22px"><path d="M15 5l-7 7 7 7"/></svg>`,
+  spark:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.300" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" style="width:60px;height:60px;color:var(--champagne)"><path d="M12 3 L13.8 10.2 21 12 13.8 13.8 12 21 10.2 13.8 3 12 10.2 10.2 Z"/><path d="M19 3.500v3M17.500 5h3M5 17.500v3M3.500 19h3"/></svg>`,
   watch:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/></svg>`,
   pause:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>`,
   play:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M8 5l11 7-11 7Z"/></svg>`,
@@ -841,7 +929,25 @@ function homeTilesHTML(){
   }
   return `<div class="tiles">${nextTile}${streakTile}</div>${partner}`;
 }
+function zeroHomeHTML(){
+  const pa=esc(profile.partner||'your partner');
+  const steps=[[!!goal, goal?`Set your goal · ${goal} hrs a month`:'Set a monthly goal', 'goGoal()'], [false,'Log your last date','openDepForm()'], [!!sync,`Bring ${pa} in`,'goPair()']];
+  const done=steps.filter(x=>x[0]).length;
+  return `<div class="hero zero"><div class="oart" style="margin:0 0 4px">${OB_ART.welcome}</div>
+      <h3>Nothing on the books yet. That’s the fun part.</h3>
+      <div class="herosub">Start with a date you’ve already had. It takes about ten seconds.</div>
+      <button class="cta pink" id="timer-btn-zero" onclick="openDepForm()">${ICO.plus} Log your last date</button>
+      <div class="zsteps"><div class="tl" style="margin:18px 0 8px">Getting set up · ${done} of 3 done</div>
+        <div class="ztrack"><i style="width:${(done/3*100).toFixed(0)}%"></i></div>
+        ${steps.map(x=>x[0]?`<div class="zstep done"><span class="zck">${ICO.check}</span>${x[1]}</div>`
+                          :`<button class="zstep" onclick="${x[2]}"><span class="zck"></span>${x[1]}<span class="zgo">Do it →</span></button>`).join('')}</div>
+    </div>
+    <button class="cta ghostd" id="timer-btn" onclick="clockIn()">${ICO.watch} Or start a date right now</button>`;
+}
+window.goPair=()=>{ if(ui.tab!==4) ui.prevTab=ui.tab; ui.tab=4; renderAll();
+  setTimeout(()=>{ const c=$('#sync-card'); if(c) c.scrollIntoView({block:'center', behavior:'auto'}); },60); };
 function homePage(){
+  if(!entries.length && !timer) return zeroHomeHTML();
   return heroHTML()+homeTilesHTML()
     +`<div class="logbtn"><button class="cta ghostd" onclick="openDepForm()">${ICO.plus} Log a past date</button>
       ${ui.justSaved?`<div class="savedline">Saved ♥ — it’s on the books.</div>`:''}</div>`;
@@ -918,7 +1024,7 @@ window.openScrapSheet=()=>{
     <div class="eyebrow">Scrap the clock</div><h3>Call it off?</h3>
     <div class="sheetnote">${fmtMS(elapsedSecs())} on the clock gets discarded — nothing gets logged, no judgment. Life happens.</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep the clock</button>
-    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="scrapClock()">Scrap it</button></div>`);
+    <button class="cta danger" style="flex:1" onclick="scrapClock()">Scrap it</button></div>`);
 };
 window.scrapClock=()=>{
   closeSheet();
@@ -1115,7 +1221,7 @@ function planPage(){
         <input type="text" id="own-title" maxlength="60" placeholder="Dinner at that new ramen place"></div>
       <div class="fgroup"><label class="f" for="own-date">Which day?</label>
         <input type="date" id="own-date" value="${defBook}" min="${todayISO()}"></div>
-      <button class="cta pink" style="margin-top:0" onclick="bookOwn()">📅 Book it</button>
+      <button class="cta pink" style="margin-top:0" onclick="bookOwn()">${ICO.cal} Book it</button>
     </div>`;
   const ideaCard=`<div class="cardbox">
       <div class="pillgroup"><div class="pills">
@@ -1148,9 +1254,10 @@ function ideasBlock(){
       +grp('Setting','where',[['any','Any'],['in','Stay in'],['out','Go out']])
       +grp('Energy','vibe',[['any','Any'],['chill','Chill'],['adv','Adventurous']])
     : '';
-  return `<button class="cta pink" id="spin-btn" style="margin-top:4px" onclick="spin()">${currentIdea?'🎲 Spin again':'🎲 Spin the roulette'}</button>
-    <div class="spin-card ${currentIdea?'show':''}" id="spin-card">${currentIdea?spinCardHTML():''}</div>
-    <button class="linklike" style="margin:12px 0 0" onclick="ui.filtersOpen=!ui.filtersOpen;renderPage()">${ui.filtersOpen?'▾':'▸'} filters${active.length?' · '+active.join(' · '):''}</button>`
+  return `<div class="spin-card show ${currentIdea?'has':'ask'}" id="spin-card">${currentIdea?spinCardHTML()
+      :`${ICO.spark}<div class="spin-idea">Not sure what to do?</div><div class="spin-empty">Spin for an idea. Save the ones you like, book the one you love.</div>`}</div>
+    <button class="cta ${currentIdea?'ghostd':'pink'}" id="spin-btn" onclick="spin()">${ICO.dice} ${currentIdea?'Spin again':'Spin the roulette'}</button>
+    <button class="linklike" style="margin:12px 0 0" onclick="ui.filtersOpen=!ui.filtersOpen;renderPage()">${ui.filtersOpen?'Hide filters':'Filters'}${active.length?' · '+active.join(' · '):''}</button>`
     +filterRows
     +`<div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
       favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
@@ -1169,13 +1276,13 @@ function spinCardHTML(){
     ? `${esc(i.kindLabel||'Real place')}${i.mi!=null?' · '+i.mi.toFixed(1)+' mi away':''}${i.lat?` · <a href="https://www.google.com/maps/search/?api=1&query=${i.lat}%2C${i.lon}" target="_blank" rel="noopener">map ↗</a>`:''}`
     : `${'$'.repeat(i.c||1)} · ${i.w==='in'?'Stay in':'Go out'} · ${i.v==='adv'?'Adventurous':'Chill'}`;
   const links=[];
-  if(!favorites.includes(i.n)) links.push(`<button onclick="saveFav()">♥ save idea</button>`);
+  if(!favorites.includes(i.n)) links.push(`<button onclick="saveFav()">save idea</button>`);
   links.push(`<button onclick="logIdea()">we already did it — log it</button>`);
   if(i.place && ['Restaurant','Café','Bar'].includes(i.kindLabel))
-    links.push(`<a href="${otURL(i)}" target="_blank" rel="noopener">🍽 OpenTable ↗</a>`);
+    links.push(`<a href="${otURL(i)}" target="_blank" rel="noopener">OpenTable ↗</a>`);
   return `<div class="spin-idea">${esc(i.n)}</div>
     <div class="spin-meta">${meta}</div>
-    <button class="cta pink" style="margin-top:10px" onclick="bookIdea()">📅 Book it for later</button>
+    <button class="cta pink" style="margin-top:10px" onclick="bookIdea()">${ICO.cal} Book it for later</button>
     <div id="bookrow" style="width:100%"></div>
     <div class="minilinks" style="justify-content:center; flex-wrap:wrap; gap:14px">${links.join('')}</div>`;
 }
@@ -1228,7 +1335,7 @@ window.confirmBook=()=>{
 };
 window.openSitterSheet=id=>{
   const p=planById(id); if(!p) return;
-  const cal=`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">📆 Add to Google Calendar</a>`;
+  const cal=`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a>`;
   if(!(kidsOn()&&p.sitter)){
     openSheet(`
       <div class="eyebrow">Booked ♥ · ${esc(p.title)} · ${fmtDate(p.date)}</div>
@@ -1243,14 +1350,14 @@ window.openSitterSheet=id=>{
     <div class="sheetnote">A booked date isn't booked until they're covered. You can change this later on the Calendar tab.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="setSitter(${id},'needed');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Still need one</button>
-      <button class="cta pink" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">🍼 Sitter locked in</button>
+      <button class="cta pink" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">${ICO.bottle} Sitter locked in</button>
     </div>
     ${cal}
     <a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ↗</a>`);
 };
 
 window.setSitter=(id,v)=>{ const p=planById(id); if(!p) return; p.sitter=v; savePlans();
-  toast(v==='locked'?'Sitter locked in — date fully booked 🍼♥':'Marked as still needing a sitter'); renderAll(); };
+  toast(v==='locked'?'Sitter locked in — date fully booked ♥':'Marked as still needing a sitter'); renderAll(); };
 window.toggleSitter=id=>{ const p=planById(id); if(p) setSitter(id, p.sitter==='locked'?'needed':'locked'); };
 
 /* reservation (old style, with countdown + calendar) */
@@ -1275,7 +1382,7 @@ function reservationHTML(){
   return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s · ${fmtTime(reservation.time)} · ${resvCad().label}</div>
     <div class="countdown" id="countdown"></div>
     ${status}
-    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">📆 add to my calendar</a><button onclick="clearResv()">cancel reservation</button></div>`;
+    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">add to my calendar</a><button onclick="clearResv()">cancel reservation</button></div>`;
 }
 window.setResv=()=>{
   reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO(), cadence:$('#r-cad').value };
@@ -1480,10 +1587,10 @@ function calGridHTML(){
     const iso=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const resv=(!past[iso] && !fut[iso] && iso>=tISO && resvOccursOn(iso))?`<span class="cd">${CAL_MK.resv}</span>`:'';
     const marks=(past[iso]?`<span class="cd">${CAL_MK.logged}</span>`:'')+(fut[iso]?`<span class="cd">${fut[iso]==='need'?CAL_MK.sitter:CAL_MK.booked}</span>`:'')+resv;
-    cells+=`<div class="cal-cell ${iso===tISO?'today':''}" onclick="openDay('${iso}')" role="button" tabindex="0"><span class="cn2">${d}</span>${marks}</div>`;
+    cells+=`<button type="button" class="cal-cell ${iso===tISO?'today':iso<tISO?'past':''}" onclick="openDay('${iso}')" aria-label="${parseISO(iso).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}"><span class="cn2">${d}</span>${marks}</button>`;
   }
   return `    <div class="cardbox" id="cal-card">
-      <div class="cal-head"><button class="cal-nav" onclick="calNav(-1)">‹</button><span class="cal-title">${monthName}</span><button class="cal-nav" onclick="calNav(1)">›</button></div>
+      <div class="cal-head"><button class="cal-nav" onclick="calNav(-1)" aria-label="Previous month">${ICO.back}</button><span class="cal-title">${monthName}</span><button class="cal-nav" onclick="calNav(1)" aria-label="Next month" style="transform:scaleX(-1)">${ICO.back}</button></div>
       <div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
       <div class="cal-legend">
         <span>${CAL_MK.logged} Date logged</span>
@@ -1515,45 +1622,44 @@ window.openDay=iso=>{
       <div class="rm"><button class="cta ghostd" style="width:auto; margin-top:6px; padding:6px 12px; font-size:13px" onclick="closeSheet();editEntry(${e.id})">edit this entry</button></div></div>`;
   });
   dayPlans.forEach(p=>{
-    const sit=(kidsOn()&&p.sitter)?` · 🍼 ${p.sitter==='locked'?'covered':'no sitter yet'}`:'';
+    const sit=(kidsOn()&&p.sitter)?` · ${p.sitter==='locked'?'sitter covered':'no sitter yet'}`:'';
     body+=`<div class="recap" style="text-align:left"><div class="rt">${esc(p.title)}</div>
       <div class="rm">Booked ahead${sit}</div>
       <div class="row2" style="margin-top:8px">
-        ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">🍼 ${p.sitter==='locked'?'sitter: covered':'mark covered'}</button>`:''}
+        ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">${p.sitter==='locked'?'Sitter: covered':'Mark covered'}</button>`:''}
         ${iso<=t?`<button class="cta pink" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
         <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="askClearPlan(${p.id})">Cancel date</button>
       </div>
-      <a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">📆 Google Calendar</a></div>`;
+      <a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a></div>`;
   });
   if(resvOccursOn(iso)) body+=`<div class="sheetnote">♥ Standing reservation night — ${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}.</div>`;
   if(!body) body=`<div class="sheetnote">Nothing on the books this day.</div>`;
   const act = iso<=t
     ? `<button class="cta pink" onclick="closeSheet();logDay('${iso}')">Log a date for this day</button>`
-    : `<button class="cta pink" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;ui.planIntent='know';renderAll();window.scrollTo({top:0,behavior:'smooth'})">✦ Plan something for this day</button>`;
+    : `<button class="cta pink" onclick="closeSheet();ui.bookDate='${iso}';ui.tab=1;ui.planIntent='know';renderAll();window.scrollTo({top:0,behavior:'smooth'})">${ICO.cal} Plan something for this day</button>`;
   openSheet(`<div class="eyebrow">${wd}</div><h3>${when}</h3>${body}${act}
     <button class="cta ghostd" style="width:100%" onclick="closeSheet()">Close</button>`);
 };
 window.logDay=iso=>{
   dep={etype:'date', rating:0, planner:null, editingId:null, date:iso, _auto:true};
   ui.justSaved=false; ui.depOpen=true; renderAll();
-  setTimeout(()=>{ const f=$('#d-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
 function comingUpHTML(){
-  const t=todayISO();
-  const all=plansSorted();
-  const row=p=>{
-    const days=Math.round((parseISO(p.date)-parseISO(t))/DAY);
+  const t=todayISO(), all=plansSorted();
+  const card=p=>{
+    const days=Math.round((parseISO(p.date)-parseISO(t))/DAY), d=parseISO(p.date);
     const when = days<0?'overdue — log or clear it':(days===0?'tonight!':days+' day'+(days===1?'':'s')+' out');
-    const sit=(kidsOn()&&p.sitter)?`<button onclick="toggleSitter(${p.id})">🍼 ${p.sitter==='locked'?'covered':'no sitter yet'}</button> · `:'';
-    return `<div class="entry"><div style="flex:1">
-      <div class="t">${esc(p.title)}</div>
-      <div class="m">${fmtDate(p.date)} · ${when}</div>
-      <div class="links" style="text-align:left; margin-top:3px">${sit}<a href="${gcalOneOffURL(p)}" target="_blank" rel="noopener" style="color:inherit">📆 calendar</a>${days<=0?` · <button onclick="logPlan(${p.id})">log it</button>`:''} · <button onclick="askClearPlan(${p.id})">cancel date</button></div>
-    </div></div>`;
+    const sit=(kidsOn()&&p.sitter)?`<button class="chipbtn ${p.sitter==='locked'?'ok':'warn'}" onclick="toggleSitter(${p.id})">${ICO.bottle} ${p.sitter==='locked'?'Sitter covered':'No sitter yet'}</button>`:'';
+    return `<div class="cardbox upcard"><div class="uprow"><div class="dblock"><small>${d.toLocaleDateString(undefined,{month:'short'})}</small><b>${d.getDate()}</b></div>
+        <div class="upmid"><div class="upt clamp2">${esc(p.title)}</div><div class="ts">${d.toLocaleDateString(undefined,{weekday:'long'})} · ${when}</div></div></div>
+      <div class="upact">${sit}${days<=0?`<button class="chipbtn go" onclick="logPlan(${p.id})">Log it</button>`:''}
+        <a class="chipbtn" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">${ICO.cal} Add to calendar</a>
+        <button class="chipbtn quiet" onclick="askClearPlan(${p.id})">Cancel date</button></div></div>`;
   };
   return `<div class="sechead"><h2>Coming up</h2><span class="lead"></span></div>
-    ${all.length?`<div class="cardbox">${all.map(row).join('')}</div>`
-      :`<div class="cardbox"><div class="empty">Nothing booked ahead. Spin something on the Plan tab. <span class="hrt">♥</span></div></div>`}`;
+    ${all.length?all.map(card).join('')
+      :`<div class="emptybig" style="padding-top:8px">${OB_ART.welcome}<h3>Nothing booked ahead</h3><p>Pick something to look forward to.</p>
+         <button class="cta pink" onclick="ui.tab=1;ui.justSaved=false;renderAll();window.scrollTo({top:0})">Plan a date</button></div>`}`;
 }
 function calendarPage(){
   return calGridHTML()+comingUpHTML();
@@ -1562,27 +1668,42 @@ function historyPage(){
   return statementHTML();
 }
 function statementHTML(){
-  const rows=[
-    ...entries.map(e=>({sort:e.date, html:`
-      <div class="entry">${e.photo?`<img class="ethumb" src="${e.photo}" alt="" loading="lazy" style="${focusCSS(e)}" onclick="viewPhotoEntry(${e.id})">`:''}<div style="flex:1">
-        <div class="t">${esc(e.title)}</div>
-        <div class="m">${fmtDateY(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?(profile.me||'me'):(profile.partner||'partner'))}`:''}</div>
+  if(!entries.length) return `<div class="emptybig">${OB_ART.welcome}<h3>No dates logged yet</h3><p>Your first one goes here.</p>
+    <button class="cta pink" onclick="openDepForm()">Log your first date</button></div>`;
+  const all=[ ...entries.map(e=>({sort:e.date, e})), ...missedOccurrences().map(d=>({sort:toISO(d), missed:true})) ]
+    .sort((a,b)=>b.sort.localeCompare(a.sort)||(((b.e&&b.e.id)||0)-((a.e&&a.e.id)||0)));
+  const n=ui.histN||8, rows=all.slice(0,n), s=stats();
+  const rated=entries.filter(e=>isDate(e)&&e.rating>0), avg=rated.length?rated.reduce((a,e)=>a+e.rating,0)/rated.length:null;
+  const monthOf=iso=>parseISO(iso).toLocaleDateString(undefined,{month:'long', year:'numeric'});
+  let out=`<div class="sum"><div><b>${s.balance.toFixed(1)}</b><span>hrs · 30 days</span></div><div><b>${entries.filter(isDate).length}</b><span>date nights</span></div><div><b>${avg?avg.toFixed(1):'—'}</b><span>avg hearts</span></div></div>`, cur='';
+  rows.forEach(r=>{
+    const m=monthOf(r.sort);
+    if(m!==cur){ cur=m; const tot=entries.filter(e=>monthOf(e.date)===m).reduce((a,e)=>a+e.hours,0);
+      out+=`<div class="hmonth"><b>${m}</b><span>${tot.toFixed(1)} hrs</span></div>`; }
+    if(r.missed){ out+=`<div class="hmissed"><span>Standing night · no date logged</span><span>${fmtDate(r.sort)}</span></div>`; return; }
+    const e=r.e;
+    out+=`<div class="hcard">${e.photo?`<img class="ethumb" src="${e.photo}" alt="" loading="lazy" style="${focusCSS(e)}" onclick="viewPhotoEntry(${e.id})">`:`<div class="ethumb none">${ICO.heart}</div>`}
+      <div class="hmid"><div class="t clamp2">${esc(e.title)}</div>
+        <div class="m">${fmtDateY(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
         ${e.rating?`<div class="hearts-row">${heartRow(e.rating)}</div>`:''}
-        ${e.moment?`<div class="moment">“${esc(e.moment)}”</div>`:''}
-      </div>
-      <div>
-        <div class="amt dep">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</div>
-        <div class="links"><button onclick="editEntry(${e.id})">edit</button><button onclick="askDelEntry(${e.id})">delete</button></div>
-      </div></div>`})),
-    ...missedOccurrences().map(d=>{const iso=toISO(d); return {sort:iso, html:`
-      <div class="entry"><div style="flex:1">
-        <div class="t">Missed date night</div>
-        <div class="m">${fmtDateY(iso)} · no date logged</div></div>
-      <div class="amt" style="color:var(--dimmer)">—</div></div>`};})
-  ].sort((a,b)=>b.sort.localeCompare(a.sort));
-  return `    <div class="cardbox">${rows.length?rows.map(r=>r.html).join('')
-      :'<div class="empty">No dates logged yet — your first one goes here. <span class="hrt">♥</span></div>'}</div>`;
+        ${e.moment?`<div class="moment clamp2">“${esc(e.moment)}”</div>`:''}</div>
+      <div class="hright"><button class="hmore" aria-label="Edit or delete ${esc(e.title)}" onclick="openEntrySheet(${e.id})">${ICO.more}</button>
+        <div class="amt dep">+${isDate(e)?e.hours.toFixed(1)+'h':Math.round(e.hours*60)+'m'}</div></div></div>`;
+  });
+  if(all.length>n) out+=`<button class="cta ghostd" onclick="ui.histN=(ui.histN||8)+8;renderPage()">Load ${Math.min(8,all.length-n)} more · ${all.length-n} older</button>`;
+  else if(all.length>8) out+=`<p class="datanote" style="margin-top:16px">That’s everything, back to your first date.</p>`;
+  return out;
 }
+window.openEntrySheet=id=>{
+  const e=entries.find(x=>x.id===id); if(!e) return;
+  openSheet(`${e.photo?`<img class="ephoto" src="${e.photo}" alt="" style="${focusCSS(e)}" onclick="closeSheet();viewPhotoEntry(${e.id})">`:''}
+    <div class="eyebrow">${fmtDateY(e.date)} · +${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</div><h3>${esc(e.title)}</h3>
+    ${e.rating?`<div class="hearts-row" style="margin:-6px 0 8px">${heartRow(e.rating)}</div>`:''}
+    ${e.moment?`<div class="sheetnote" style="font-style:italic">“${esc(e.moment)}”</div>`:''}
+    <button class="cta ghostd" onclick="closeSheet();editEntry(${e.id})">Edit</button>
+    <button class="cta danger" onclick="askDelEntry(${e.id})">Delete</button>
+    <button class="cta ghostd" onclick="closeSheet()">Close</button>`);
+};
 
 /* ---------- SETTINGS ---------- */
 function syncSectionHTML(){
@@ -1651,7 +1772,7 @@ function backupHTML(){
 }
 window.replayWelcome=()=>{
   ['spot_home','spot_plan','spot_gear','spot_cal','spot_hist','spot_set'].forEach(k=>localStorage.removeItem('bookd.'+k));
-  showOnboard();
+  showOnboard(); ob.replay=true;   // a replay on a live account never re-asks the goal or adds a date
 };
 function settingsPage(){
   const themeBtn=(val,label,icon)=>`<button class="intent ${theme===val?'on':''}" style="padding:14px 8px" onclick="setTheme('${val}')"><span class="ii">${icon}</span>${label}</button>`;
@@ -1694,7 +1815,7 @@ function settingsPage(){
 }
 window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
   if(plans.length){ plans.forEach(p=>{ p.sitter = v ? (p.sitter||'needed') : null; }); savePlans(); }
-  toast(v?'Sitter tracking on':'Sitter tracking off'); renderAll(); };
+  renderAll(); };
 window.saveProfile=()=>{
   profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:profile.kids!==false };
   store.set('profile',profile); pushMeta();
@@ -1723,7 +1844,7 @@ window.askDelEntry=id=>{
     <div class="eyebrow">Delete this entry</div><h3>Delete "${esc(e.title)}"?</h3>
     <div class="sheetnote">It comes off the books and out of your hours — on both phones. <b>There is no undo.</b></div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep it</button>
-    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="closeSheet();delEntry(${id})">Delete it</button></div>`);
+    <button class="cta danger" style="flex:1" onclick="closeSheet();delEntry(${id})">Delete it</button></div>`);
 };
 window.openWipeSheet=()=>{
   openSheet(`
@@ -1732,7 +1853,7 @@ window.openWipeSheet=()=>{
       ?"This wipes <b>this phone only</b> and disconnects it. The app stays installed. Your shared history in the cloud — and your partner's phone — stay intact; reconnect with a fresh invite code to get everything back."
       :"This erases every date, your hours, your reservation and bookings — everything on this phone. The app stays installed; you just start fresh. <b>There is no undo.</b> Consider Back up first."}</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Never mind</button>
-    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="wipeAll()">Yes — clear it</button></div>`);
+    <button class="cta danger" style="flex:1" onclick="wipeAll()">Yes — clear it</button></div>`);
 };
 window.wipeAll=()=>{
   closeSheet();
@@ -1779,6 +1900,8 @@ function wireSettings(){
 function renderBanners(){
   const el=$('#banners'); el.innerHTML='';
   if(ui.tab!==0) return;   // banners live on Home only — the other tabs are for doing, not reminding
+  if(!sync && entries.length && !$('#onboard') && Date.now()>store.get('pairSnooze',0)) el.insertAdjacentHTML('beforeend',
+    `<div class="banner booked"><span><b>Two phones, same books.</b> Bring ${esc(profile.partner||'your partner')} in.</span><button onclick="goPair()">Invite</button><button class="bx" aria-label="Not now" onclick="store.set('pairSnooze',Date.now()+7*864e5);renderAll()">✕</button></div>`);
   const now=new Date(); now.setHours(0,0,0,0);
   if(ui.awayNote) el.insertAdjacentHTML('beforeend',
     `<div class="banner memory"><span>${ui.awayNote}</span><button onclick="dismissAway()">✕</button></div>`);
@@ -1788,7 +1911,7 @@ function renderBanners(){
   const resvISO = reservation ? toISO(nextOccurrence()) : null;
   const resvOpen = resvISO && resvISO!==todayISO() && !plans.some(p=>p.date===resvISO);   // held slot, nothing booked into it
   if(tonight) el.insertAdjacentHTML('beforeend',
-    `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}.${(kidsOn()&&tonight.sitter==='needed')?' 🍼 Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
+    `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}.${(kidsOn()&&tonight.sitter==='needed')?' Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
   else if(resvOpen && (!next || resvISO<next.date)){
     const rd=Math.round((parseISO(resvISO)-now)/DAY);
     const when=rd===1?'Tomorrow':WD[reservation.weekday];
@@ -1818,7 +1941,7 @@ window.askClearPlan=id=>{
     <div class="eyebrow">Cancel this date</div><h3>Cancel "${esc(p.title)}"?</h3>
     <div class="sheetnote">It comes off the books — no penalty, no judgment. You can always book it again.</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep it</button>
-    <button class="cta pink" style="flex:1" onclick="closeSheet();removePlan(${id})">Cancel the date</button></div>`);
+    <button class="cta danger" style="flex:1" onclick="closeSheet();removePlan(${id})">Cancel the date</button></div>`);
 };
 window.logPlan=id=>{
   const p=planById(id); if(!p) return;
@@ -2021,7 +2144,7 @@ window.enableNudges=async()=>{
     if(!token) return toast('Could not get a push address — try again in a moment');
     await window.fb.setDoc(metaRef(), {pushTokens:{[sync.role]:token}}, {merge:true});
     pushOn=true; store.set('pushOn',true);
-    toast('Nudges on — this phone gets the word 🔔');
+    toast('Nudges on — this phone gets the word');
     renderPage();
   }catch(e){ toast('Push setup hit a snag'+(e&&e.code?' ('+e.code+')':'')+' — try again'); }
 };
@@ -2038,7 +2161,7 @@ window.openFreeSeatSheet=()=>{
     <div class="eyebrow">Free a seat</div><h3>Free ${esc(name)}'s seat?</h3>
     <div class="sheetnote">Use this only when ${esc(name)} has a new phone (or lost the old one). Their old phone gets disconnected, and the seat opens for their next phone to connect with a fresh invite code. Your shared history stays safe.</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
-    <button class="cta pink" style="flex:1" onclick="freeSeat('${other}')">Free the seat</button></div>`);
+    <button class="cta danger" style="flex:1" onclick="freeSeat('${other}')">Free the seat</button></div>`);
 };
 window.freeSeat=other=>{
   closeSheet();
@@ -2051,7 +2174,7 @@ window.openDisconnectSheet=()=>{
     <div class="eyebrow">Disconnect</div><h3>Unplug this phone?</h3>
     <div class="sheetnote">Your shared history stays safe in the cloud — this phone just stops syncing. Reconnect anytime with a fresh invite code.</div>
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Stay connected</button>
-    <button class="cta pink" style="flex:1; background:var(--withdrawal)" onclick="disconnectVault()">Disconnect</button></div>`);
+    <button class="cta danger" style="flex:1" onclick="disconnectVault()">Disconnect</button></div>`);
 };
 window.disconnectVault=()=>{
   closeSheet();
@@ -2068,7 +2191,8 @@ function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.
 window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); setTimeout(flushRemote,0); };
 $('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
 $('#logwrap').addEventListener('click',e=>{ if(e.target.id==='logwrap') closeDepForm(); });
-document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if($('#sheetwrap').classList.contains('show')) closeSheet(); else if(ui.depOpen) closeDepForm(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.matches && e.target.matches('#onboard input')){ const b=$('#onboard .cta.pink'); if(b){ e.preventDefault(); b.click(); } return; }
+  if(e.key!=='Escape') return; if($('#sheetwrap').classList.contains('show')) closeSheet(); else if(ui.depOpen) closeDepForm(); });
 
 /* ---------- never redraw under someone who is typing ----------
    A partner's phone syncing (even just starting the clock) used to redraw the screen and wipe a half-typed form.
@@ -2131,7 +2255,7 @@ setInterval(()=>{
 },1000);
 
 /* ---------- opening sequence: the new-couple flow ---------- */
-const OB_PATH={ founder:['welcome','name','partner','anniv','kids','value','pair','notif'],
+const OB_PATH={ founder:['welcome','names','goal','lastdate','pair','notif'],
                 joiner:['welcome','jcode','jwho','notif'] };
 const OB_H='M12 21s-8-5.3-8-11a4.6 4.6 0 0 1 8-3.1A4.6 4.6 0 0 1 20 10c0 5.7-8 11-8 11z';
 const OB_ART={
@@ -2192,7 +2316,9 @@ window.obDone=()=>{
   store.set('onboarded',1); store.set('oriented',1);   // flow replaces the card tour; spotlights still teach in-app
   const o=$('#onboard'); if(o) o.remove();
   renderAll();
-  toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+' — on the books ♥':'Welcome to Book’d ♥');
+  const bal=stats().balance;
+  toast(bal>0 ? `Welcome${profile.me?', '+profile.me:''}. ${bal.toFixed(1)} hrs already on the books.` : ((profile.me&&profile.partner)?profile.me+' & '+profile.partner+' — on the books ♥':'Welcome to Book’d ♥'));
+  if(bal>0 && ui.tab===0) tweenBalance(0,bal);
 };
 function annivReact(iso){
   if(!iso) return '';
@@ -2245,10 +2371,38 @@ window.obPick=async role=>{
   if(sync) obGo('notif');
 };
 window.obNudges=async()=>{ await enableNudges(); obDone(); };
+function obPath(){ return OB_PATH[ob.mode].filter(x=>!(ob.replay && (x==='goal'||x==='lastdate'))); }
 function obBarHTML(){
-  const path=OB_PATH[ob.mode], i=path.indexOf(ob.step);
-  return `<div class="obar">${path.map((_,d)=>`<span class="${d<=i?'on':''}"></span>`).join('')}</div>`;
+  const path=obPath().filter(x=>x!=='welcome' && (x!=='notif'||sync)), i=path.indexOf(ob.step);
+  return `<button class="oback" onclick="obBack()" aria-label="Back to the previous step">${ICO.back}</button>
+    <div class="obar">${path.map((_,d)=>`<span class="${d<=i?'on':''}"></span>`).join('')}</div><span class="ocount">${i+1} of ${path.length}</span>`;
 }
+/* keep whatever is on screen before moving either way */
+function obGrab(){
+  const v=id=>{ const el=$('#'+id); return el?el.value.trim():null; };
+  let ch=false;
+  if(v('ob-name')!==null){ profile.me=v('ob-name'); ch=true; }
+  if(v('ob-partner')!==null){ profile.partner=v('ob-partner'); ch=true; }
+  if(ch) store.set('profile',profile);
+  if(v('ob-ltitle')!==null){ ob.first=ob.first||{}; ob.first.title=v('ob-ltitle'); ob.first.hours=v('ob-lhours'); ob.first.date=v('ob-ldate'); }
+}
+window.obBack=()=>{ obGrab(); const path=obPath(), i=path.indexOf(ob.step); ob.step=path[Math.max(0,i-1)]; obRender(); const el=$('#onboard'); if(el) el.scrollTop=0; };
+window.obNext=()=>{ const path=obPath(), i=path.indexOf(ob.step); obGo(path[Math.min(path.length-1,i+1)]); };
+window.obSaveNames=()=>{ obGrab();
+  if(!profile.me) return fieldError('ob-name','First name, please — it signs the passbook');
+  if(!profile.partner) return fieldError('ob-partner','Their first name goes on the account too');
+  obNext(); };
+window.obGoalPick=n=>{ ob.goal=n; document.querySelectorAll('.goalpick button').forEach(b=>b.classList.toggle('on', +b.dataset.v===n)); buzz(8); };
+window.obSaveGoal=()=>{ goal=ob.goal||12; store.set('goal',goal); pushMeta(); obNext(); };
+window.obLastSugg=b=>{ const i=$('#ob-ltitle'); if(i){ i.value=b.dataset.v; i.dispatchEvent(new Event('input',{bubbles:true})); } };
+window.obLogFirst=()=>{ obGrab(); const f=ob.first||{}, hrs=parseFloat(f.hours);
+  if(!f.title) return fieldError('ob-ltitle','Give it a name, or skip below');
+  if(!(hrs>0)) return fieldError('ob-lhours','About how many hours?');
+  if(!f.date) return fieldError('ob-ldate','Pick the date');
+  const rec={ id:ob.firstId||Date.now(), title:f.title, date:f.date, hours:hrs, cat:'Food & drink', rating:4, type:'date', planner:null, moment:null, by:sync?sync.role:null, photo:null, photoFocus:null };
+  entries=entries.filter(e=>e.id!==rec.id); entries.unshift(rec); ob.firstId=rec.id;   // going Back and changing it edits the same entry
+  entries.sort((a,b)=>String(b.date).localeCompare(String(a.date))||((b.id||0)-(a.id||0)));
+  store.set('entries',entries); pushEntry(rec); obNext(); };
 function obRender(){
   let o=$('#onboard'); if(!o){ o=document.createElement('div'); o.id='onboard'; o.className='onb'; document.body.appendChild(o); }
   const s=ob.step, me=esc(profile.me||''), pa=esc(profile.partner||'your partner');
@@ -2260,63 +2414,39 @@ function obRender(){
       <h1 style="text-align:center">Every date counts</h1>
       <p class="sub" style="text-align:center">Log your time together and watch it add up.</p>
       <div class="grow"></div>
-      <button class="cta pink" onclick="ob.mode='founder';obGo('name')">Get started</button>
+      <button class="cta pink" onclick="ob.mode='founder';obGo('names')">Get started</button>
       <button class="olink" style="align-self:center" onclick="ob.mode='joiner';obGo('jcode')">I have an invite code</button>`;
   }
-  if(s==='name'){
-    body=`<div class="grow"></div>
-      <div class="oart">${OB_ART.name}</div>
-      <h1>Who’s opening this account?</h1>
+  if(s==='names'){
+    body=`<div class="oart">${OB_ART.name}</div>
+      <h1>Who’s on the books?</h1>
       <p class="sub">First names only — nothing leaves your two phones.</p>
       <label class="f" for="ob-name">Your first name</label>
-      <input type="text" id="ob-name" maxlength="20" value="${me}" placeholder="First name" autocomplete="given-name">
+      <input type="text" id="ob-name" maxlength="20" value="${me}" placeholder="First name" autocomplete="given-name" autocapitalize="words" enterkeyhint="next">
+      <label class="f" for="ob-partner">Your partner’s first name</label>
+      <input type="text" id="ob-partner" maxlength="20" value="${esc(profile.partner||'')}" placeholder="First name" autocapitalize="words" enterkeyhint="done">
       <div class="grow"></div>
-      <button class="cta pink" onclick="obSaveName()">Next</button>`;
+      <button class="cta pink" onclick="obSaveNames()">Continue</button>`;
   }
-  if(s==='partner'){
-    body=`<div class="grow"></div>
-      <div class="oart">${OB_ART.partner}</div>
-      <h1>Nice to meet you, ${me}. Who’s the other account holder?</h1>
-      <label class="f" for="ob-partner">Their first name</label>
-      <input type="text" id="ob-partner" maxlength="20" value="${esc(profile.partner||'')}" placeholder="First name">
+  if(s==='goal'){
+    if(!ob.goal) ob.goal=goal||12;
+    body=`<h1>How much time together feels right each month?</h1>
+      <p class="sub">Most couples start around 12. It’s yours to set and change, and nothing happens if you miss it.</p>
+      <div class="goalpick">${[[8,'2 a week'],[12,'3 a week'],[16,'4 a week'],[24,'6 a week']].map(g=>`<button type="button" data-v="${g[0]}" class="${ob.goal===g[0]?'on':''}" onclick="obGoalPick(${g[0]})"><b>${g[0]}</b><small>hrs</small><small>${g[1]}</small></button>`).join('')}</div>
       <div class="grow"></div>
-      <button class="cta pink" onclick="obSavePartner()">Next</button>`;
+      <button class="cta pink" onclick="obSaveGoal()">Continue</button>`;
   }
-  if(s==='anniv'){
-    body=`<div class="grow"></div>
-      <div class="oart">${OB_ART.anniv}</div>
-      <h1>When did you two become you two?</h1>
-      <p class="sub">Optional — skip it if you like.</p>
-      <label class="f" for="ob-anniv">Together since (optional)</label>
-      <input type="date" id="ob-anniv" value="${esc(profile.anniv||'')}" onchange="obAnnivPick(this.value)">
-      <div id="ob-react">${profile.anniv?`<div class="oreact">${annivReact(profile.anniv)}</div>`:''}</div>
+  if(s==='lastdate'){
+    const f=ob.first||{}, sat=new Date(); sat.setDate(sat.getDate()-((sat.getDay()+1)%7||7));   // default guess: last Saturday
+    body=`<h1>What was the last date you two went on?</h1>
+      <p class="sub">Put it on the books now and you won’t start from zero.</p>
+      <div class="sugg">${['Dinner out','Coffee walk','Movie night in','Long walk'].map(t=>`<button type="button" class="pill" data-v="${t}" onclick="obLastSugg(this)">${t}</button>`).join('')}</div>
+      <input type="text" id="ob-ltitle" maxlength="60" value="${esc(f.title||'')}" placeholder="Dinner at that new ramen place" enterkeyhint="next">
+      <div class="grid2"><div><label class="f" for="ob-lhours">Hours, roughly</label><input type="number" inputmode="decimal" id="ob-lhours" min="0.1" max="24" step="0.1" value="${esc(f.hours||'2.5')}"></div>
+        <div><label class="f" for="ob-ldate">When?</label><input type="date" id="ob-ldate" max="${todayISO()}" value="${esc(f.date||toISO(sat))}"></div></div>
       <div class="grow"></div>
-      <button class="cta pink" onclick="obGo('kids')">Next</button>`;
-  }
-  if(s==='kids'){
-    body=`<div class="grow"></div>
-      <div class="oart">${OB_ART.kids}</div>
-      <h1>Kids to cover on date nights?</h1>
-      <p class="sub">If a sitter’s part of the equation, Book’d tracks who’s got the kids.</p>
-      <button class="ocardbtn" onclick="obKids(true)">🍼 Yes — track the sitter for us</button>
-      <button class="ocardbtn" onclick="obKids(false)">No kids to cover</button>
-      <div class="grow"></div>`;
-  }
-  if(s==='value'){
-    body=`<div class="grow"></div>
-      <h1>Why keep books on a relationship?</h1>
-      <div class="vs-card wo"><div class="vs-t">Without Book’d</div><ul>
-        <li>“We should go out more” — never booked</li>
-        <li>Date nights slip by, nobody notices</li>
-        <li>Quality time: untracked</li>
-        <li>Great moments, forgotten by spring</li></ul></div>
-      <div class="vs-card wi"><div class="vs-t">With Book’d</div><ul>
-        <li>Every date on the books</li>
-        <li>Time together you can see add up</li>
-        <li>A roulette full of date-night ideas</li>
-        <li>Two phones, same books</li></ul></div>
-      <div class="grow"></div>
-      <button class="cta pink" onclick="obGo('pair')">Continue</button>`;
+      <button class="cta pink" onclick="obLogFirst()">Put it on the books</button>
+      <button class="cta ghostd" onclick="obGrab();obNext()">Skip — I’ll log one later</button>`;
   }
   if(s==='pair'){
     let mine='';
@@ -2329,7 +2459,7 @@ function obRender(){
         </div>
         <p class="datanote" style="margin-top:10px">Works once · expires in 24 hours.</p>`;
     } else {
-      mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Getting your code…</p>':`<button class="cta pink" style="margin-top:0" onclick="obMint()">🎟 Get the invite code</button>`}</div>`;
+      mine=`<div id="ob-mint">${ob.minting?'<p class="sub" style="margin-bottom:4px">Getting your code…</p>':`<button class="cta pink" style="margin-top:0" onclick="obMint()">Get the invite code</button>`}</div>`;
     }
     body=`<div class="oart" style="margin-bottom:10px">${OB_ART.pair}</div>
       <h1>Bring ${pa} in</h1>
@@ -2340,7 +2470,8 @@ function obRender(){
         <input type="text" id="sync-code" placeholder="XXXX-XXXX" autocapitalize="characters" style="margin-bottom:10px">
         <button class="cta pink" style="margin-top:0" onclick="joinVault().then(()=>{ if(sync) obGo('notif'); })">Pair now</button></div>
       <div class="grow"></div>
-      <button class="olink" style="align-self:center" onclick="obGo('notif')">Later — I’ll do this from Settings</button>`;
+      ${ob.invite&&!ob.minting?`<button class="cta pink" onclick="obGo('notif')">I’ve sent it — continue</button>`
+                              :`<button class="cta ghostd" onclick="obGo('notif')">Later — I’ll do this from Settings</button>`}`;
   }
   if(s==='jcode'){
     body=`<div class="grow"></div>
@@ -2351,7 +2482,7 @@ function obRender(){
       <input type="text" id="ob-code" placeholder="XXXX-XXXX" autocapitalize="characters">
       <div class="grow"></div>
       <button class="cta pink" onclick="obJoinCode()">Connect this phone</button>
-      <button class="olink" style="align-self:center" onclick="ob.mode='founder';obGo('name')">No code? Open a new account instead</button>`;
+      <button class="olink" style="align-self:center" onclick="ob.mode='founder';obGo('names')">No code? Open a new account instead</button>`;
   }
   if(s==='jwho'){
     const jm=esc((ob.join&&ob.join.profile.me)||'Account holder 1'), jp=esc((ob.join&&ob.join.profile.partner)||'Account holder 2');
@@ -2366,7 +2497,7 @@ function obRender(){
   if(s==='notif'){
     const who = sync&&sync.role==='partner' ? esc(profile.me||'your partner') : esc(profile.partner||'your partner');
     body=`<div class="grow"></div>
-      <div class="mocknotif"><div class="mi">📖</div><div><div class="mt">Book’d</div><div class="mb">${who} just logged 2.5 hrs ♥</div></div><div class="mw">now</div></div>
+      <div class="mocknotif"><div class="mi" style="color:var(--rose)">${ICO.heart}</div><div><div class="mt">Book’d</div><div class="mb">${who} just logged 2.5 hrs ♥</div></div><div class="mw">now</div></div>
       <h1>Get notified when ${who} logs a date</h1>
       <p class="sub">New entries, bookings, gentle nudges — even with the app closed.</p>
       <div class="grow"></div>
