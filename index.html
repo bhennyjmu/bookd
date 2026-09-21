@@ -612,6 +612,11 @@ div.zstep{cursor:default; color:var(--dim)}
 .smid b{font-family:'Fraunces',serif; font-weight:700; font-size:16.5px; line-height:1.2}
 .samt{font-weight:700; font-size:14px; color:var(--deposit); white-space:nowrap}
 /* SLICE 5 end */
+/* ===== SLICE 6 — the tutorial can be skipped ===== */
+.spotrow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:4px}
+.spotrow .spotok{margin-top:0}
+.spotskip{background:none; border:0; color:var(--dim); font-family:'Karla',sans-serif; font-weight:700; font-size:13.5px; text-decoration:underline; text-underline-offset:3px; min-height:44px; padding:0 2px 0 12px; cursor:pointer; white-space:nowrap}
+/* SLICE 6 end */
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -2596,6 +2601,7 @@ window.replayTour=()=>{   // a replay replays everything: cards now, spotlights 
   ['spot_home','spot_plan','spot_cal','spot_set'].forEach(k=>localStorage.removeItem('bookd.'+k));
   showOrientation(0);
 };
+const SPOT_KEYS=['spot_home','spot_plan','spot_gear','spot_cal','spot_hist','spot_set'];
 function maybeSpot(){
   if(!store.get('oriented',false)) return;                    // the opening sequence comes first, always
   if($('#orient') || $('#spotwrap') || $('#onboard')) return;
@@ -2629,13 +2635,19 @@ function maybeSpot(){
   const below = r.bottom+150 < innerHeight;
   const tipPos = below ? `top:${r.bottom+16}px` : (r.top>150 ? `bottom:${innerHeight-r.top+16}px` : `top:${Math.min(r.top+80, innerHeight-170)}px`);
   w.innerHTML=`<div class="spot" style="left:${r.left-6}px; top:${r.top-6}px; width:${r.width+12}px; height:${Math.min(r.height+12, innerHeight-r.top)}px"></div>
-    <div class="spottip" style="left:50%; transform:translateX(-50%); ${tipPos}">${msg}<div class="spotok">Got it — tap anywhere</div></div>`;
-  w.onclick=()=>{ w.remove(); store.set(key,1); setTimeout(maybeSpot,450); };   // chain to the next stop on this tab, if any
+    <div class="spottip" style="left:50%; transform:translateX(-50%); ${tipPos}">${msg}<div class="spotrow"><div class="spotok">Got it — tap anywhere</div>${SPOT_KEYS.filter(k=>!seen(k)).length>1?`<button type="button" class="spotskip" id="spotskip">Skip the tour</button>`:''}</div></div>`;
+  w.onclick=e=>{
+    if(e.target.closest && e.target.closest('#spotskip')){   // skipping marks every stop as seen, so none of them come back
+      SPOT_KEYS.forEach(k=>store.set(k,1)); w.remove();
+      toast('Tour skipped — replay it any time from Settings'); return;
+    }
+    w.remove(); store.set(key,1); setTimeout(maybeSpot,450);   // chain to the next stop on this tab, if any
+  };
   document.body.appendChild(w);
 }
 
 /* ---------- boot ---------- */
-const APP_V=116;
+const APP_V=117;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
