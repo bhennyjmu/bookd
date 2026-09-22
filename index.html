@@ -197,6 +197,8 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .focusbox{position:relative; width:min(100%,240px); aspect-ratio:1; border-radius:12px; overflow:hidden; touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none}
 .focusbox:active{cursor:grabbing}
 .pthumb{width:100%; height:100%; object-fit:cover; display:block; pointer-events:none}
+.nudges{display:flex; gap:8px; margin-top:8px}
+.nb{width:44px; height:44px; border-radius:10px; border:1px solid rgba(var(--lineC),.2); background:var(--card); color:var(--cream); font-size:18px; cursor:pointer}
 .gridlines{position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,.55) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.55) 1px, transparent 1px); background-size:33.34% 33.34%; background-position:-1px -1px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
 .hearts-row{color:var(--rose); white-space:nowrap; line-height:1; margin-top:5px; display:flex; gap:2px}
 .hearts-row .hs{width:13px; height:13px; margin:0}
@@ -257,6 +259,8 @@ input[type=range]{width:100%; accent-color:var(--rose); margin:6px 0 12px}
 .tabbar .ico svg{width:22px; height:22px; display:block; margin:0 auto}
 .tabbar .lbl{font-family:'Karla',sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.02em; text-transform:uppercase}
 .tabbar button.on{color:var(--rose)}
+:root[data-theme="light"] .tabbar button{color:#5B525E}
+:root[data-theme="light"] .tabbar button.on{color:var(--rose)}
 .tabbar button.on .ico{transform:translateY(-1px)}
 
 footer{max-width:480px; margin:40px auto 0; padding:0 16px; text-align:center}
@@ -1103,7 +1107,8 @@ function depositFormHTML(){
       <input type="text" id="d-moment" maxlength="120" value="${esc(dep.moment||'')}" placeholder="The part you don't want to forget"></div>
     <div class="fgroup"><label class="f">Photo (optional)</label>
       ${(dep.photoPrev||(dep.photoUrl&&!dep.removePhoto))
-        ? `<div class="focusbox" onpointerdown="focusDown(event)" onpointermove="focusMove(event)" onpointerup="focusUp(event)" onpointercancel="focusUp(event)"><img class="pthumb" id="focus-img" src="${dep.photoPrev||dep.photoUrl}" alt="" draggable="false" style="object-position:${(dep.photoFocus||{x:50,y:35}).x}% ${(dep.photoFocus||{x:50,y:35}).y}%"><div class="gridlines"></div></div>
+        ? `<div class="focusbox" role="group" aria-label="Photo framing — drag the photo or use the arrow buttons" tabindex="0" onkeydown="focusKey(event)" onpointerdown="focusDown(event)" onpointermove="focusMove(event)" onpointerup="focusUp(event)" onpointercancel="focusUp(event)"><img class="pthumb" id="focus-img" src="${dep.photoPrev||dep.photoUrl}" alt="" draggable="false" style="object-position:${(dep.photoFocus||{x:50,y:35}).x}% ${(dep.photoFocus||{x:50,y:35}).y}%"><div class="gridlines"></div></div>
+           <div class="nudges" aria-label="Nudge the framing"><button type="button" class="nb" aria-label="Move left" onclick="nudgeFocus(-8,0)">←</button><button type="button" class="nb" aria-label="Move up" onclick="nudgeFocus(0,-8)">↑</button><button type="button" class="nb" aria-label="Move down" onclick="nudgeFocus(0,8)">↓</button><button type="button" class="nb" aria-label="Move right" onclick="nudgeFocus(8,0)">→</button></div>
            <p class="datanote" style="text-align:left; margin:8px 0 6px">Slide the photo until the part you want is centered — that's your thumbnail.</p>
            <button class="linklike" style="margin:0" onclick="dropPhoto()">remove photo</button>`
         : sync ? `<button class="cta ghostd" style="margin-top:0" onclick="pickPhoto()">Add a photo</button>`
@@ -1146,11 +1151,16 @@ window.focusMove=ev=>{ if(!focusDrag) return; const r=ev.currentTarget.getBoundi
   dep.photoFocus={x:Math.round(nx), y:Math.round(ny)};
   const im=$('#focus-img'); if(im) im.style.objectPosition=nx+'% '+ny+'%'; };
 window.focusUp=()=>{ focusDrag=null; };
+window.nudgeFocus=(dx,dy)=>{ grabDep(); const f=dep.photoFocus||{x:50,y:35};
+  dep.photoFocus={x:Math.max(0,Math.min(100,f.x+dx)), y:Math.max(0,Math.min(100,f.y+dy))};
+  const im=$('#focus-img'); if(im) im.style.objectPosition=dep.photoFocus.x+'% '+dep.photoFocus.y+'%'; };
+window.focusKey=ev=>{ const k={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]}[ev.key]; if(!k) return; ev.preventDefault(); nudgeFocus(k[0],k[1]); };
+window.kbClick=ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); ev.currentTarget.click(); } };
 const focusCSS=e=>{ const f=e.photoFocus||{x:50,y:35}; return `object-position:${f.x}% ${f.y}%`; };
 window.viewPhotoEntry=id=>{
   const e=entries.find(x=>x.id===id); if(!e||!e.photo) return;
   const who=attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:'';
-  openSheet(`<img class="ebig" src="${e.photo}" alt="">
+  openSheet(`<img class="ebig" src="${e.photo}" alt="Photo from ${esc(e.title)}">
     <div class="recap" style="text-align:left"><div class="rt">${esc(e.title)}</div>
       <div class="rm">${fmtDateY(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${who}</div>
       ${e.rating?`<div class="hearts-row">${heartRow(e.rating)}</div>`:''}
@@ -1183,7 +1193,7 @@ function deletePhoto(url){
   if(!ensureDb()) return;
   try{ window.fb.deleteObject(window.fb.sref(storageApp(), url)).catch(()=>{}); }catch(e){}
 }
-window.viewPhoto=url=>openSheet(`<img class="ebig" src="${url}" alt=""><button class="cta ghostd" onclick="closeSheet()">Close</button>`);
+window.viewPhoto=url=>openSheet(`<img class="ebig" src="${url}" alt="Date photo"><button class="cta ghostd" onclick="closeSheet()">Close</button>`);
 window.openDepositSheet=()=>{
   grabDep();
   const title=(dep.title||'').trim(), raw=parseFloat(dep.hours);
@@ -1295,7 +1305,7 @@ function ideasBlock(){
     <button class="linklike" style="margin:12px 0 0" onclick="ui.filtersOpen=!ui.filtersOpen;renderPage()">${ui.filtersOpen?'Hide filters':'Filters'}${active.length?' · '+active.join(' · '):''}</button>`
     +filterRows
     +`<div class="favs">${favorites.length?'<div class="eyebrow" style="margin-bottom:4px">Saved shortlist</div>'+
-      favorites.map((f,i)=>`<div class="fav" onclick="loadFav(${i})"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
+      favorites.map((f,i)=>`<div class="fav" role="button" tabindex="0" onclick="loadFav(${i})" onkeydown="kbClick(event)"><span>${esc(f)}</span><button aria-label="Remove" onclick="event.stopPropagation();unfav(${i})">✕</button></div>`).join(''):''}</div>`;
 }
 function otURL(i){
   const booked = plans.find(x=>x.title===i.n);
@@ -1486,7 +1496,7 @@ function placeListHTML(){
     : near.err ? `<div class="statusline">${esc(near.err)}</div>`
     : !near.coords ? `<div class="statusline">Set a location to load the map and real places.</div>`
     : !rows.length ? `<div class="statusline">Nothing within ${near.radiusMi} mi matches that. Widen the radius or clear the search.</div>`
-    : rows.map((p,i)=>`<div class="place ${near.sel===p.name?'sel':''}" onclick="selPlaceIdx(${i})">
+    : rows.map((p,i)=>`<div class="place ${near.sel===p.name?'sel':''}" role="button" tabindex="0" onclick="selPlaceIdx(${i})" onkeydown="kbClick(event)">
         <span class="pn">${esc(p.name)}</span><span class="pd">${esc(p.kind)} · ${(p.km*0.621371).toFixed(1)} mi</span>
       </div>`).join('');
 }
@@ -1662,7 +1672,7 @@ window.openDay=iso=>{
   const when=iso===t?'Today':parseISO(iso).toLocaleDateString(undefined,{month:'long', day:'numeric', year:'numeric'});
   let body='';
   dayEntries.forEach(e=>{
-    body+=`<div class="recap" style="text-align:left">${e.photo?`<img class="ephoto" src="${e.photo}" alt="" style="${focusCSS(e)}" onclick="closeSheet();viewPhotoEntry(${e.id})">`:''}<div class="rt">${esc(e.title)}</div>
+    body+=`<div class="recap" style="text-align:left">${e.photo?`<img class="ephoto" src="${e.photo}" alt="Photo from ${esc(e.title)}" style="${focusCSS(e)}" onclick="closeSheet();viewPhotoEntry(${e.id})">`:''}<div class="rt">${esc(e.title)}</div>
       <div class="rm">${isDate(e)?esc(e.cat):'Everyday moment'} · <span style="color:var(--deposit)">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>${attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
       ${e.rating?`<div class="hearts-row">${heartRow(e.rating)}</div>`:''}
       ${e.moment?`<div class="rm" style="font-style:italic">“${esc(e.moment)}”</div>`:''}
@@ -1729,7 +1739,7 @@ function statementHTML(){
       out+=`<div class="hmonth"><b>${m}</b><span>${tot.toFixed(1)} hrs</span></div>`; }
     if(r.missed){ out+=`<div class="hmissed"><span>Standing night · no date logged</span><span>${fmtDate(r.sort)}</span></div>`; return; }
     const e=r.e;
-    out+=`<div class="hcard" role="button" tabindex="0" onclick="openEntrySheet(${e.id})" aria-label="Open ${esc(e.title)}">${e.photo?`<img class="ethumb" src="${e.photo}" alt="" loading="lazy" style="${focusCSS(e)}">`:`<div class="ethumb none">${ICO.heart}</div>`}
+    out+=`<div class="hcard" role="button" tabindex="0" onclick="openEntrySheet(${e.id})" aria-label="Open ${esc(e.title)}">${e.photo?`<img class="ethumb" src="${e.photo}" alt="Photo from ${esc(e.title)}" loading="lazy" style="${focusCSS(e)}">`:`<div class="ethumb none">${ICO.heart}</div>`}
       <div class="hmid"><div class="t clamp2">${esc(e.title)}</div>
         <div class="m">${fmtDateY(e.date)} · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
         ${e.rating?`<div class="hearts-row">${heartRow(e.rating)}</div>`:''}
@@ -1755,7 +1765,7 @@ window.openStreakSheet=()=>{
   for(let i=0;i<show;i++, w-=7*DAY){
     const wk=dates.filter(e=>wkOf(e)===w).sort((a,b)=>b.date.localeCompare(a.date));
     rows+=`<div class="swk">${w===thisWk?'This week':w===thisWk-7*DAY?'Last week':'Week of '+fmtDate(toISO(new Date(w)))}</div>`
-      +wk.map(e=>`<button class="srow" onclick="openEntrySheet(${e.id})">${e.photo?`<img class="sthumb" src="${e.photo}" alt="" style="${focusCSS(e)}">`:`<span class="sthumb none">${ICO.heart}</span>`}
+      +wk.map(e=>`<button class="srow" onclick="openEntrySheet(${e.id})">${e.photo?`<img class="sthumb" src="${e.photo}" alt="Photo from ${esc(e.title)}" style="${focusCSS(e)}">`:`<span class="sthumb none">${ICO.heart}</span>`}
           <span class="smid"><b class="clamp2">${esc(e.title)}</b><span class="ts">${parseISO(e.date).toLocaleDateString(undefined,{weekday:'short'})} ${fmtDate(e.date)}</span></span>
           <span class="samt">+${e.hours.toFixed(1)}h</span></button>`).join('');
   }
@@ -1766,7 +1776,7 @@ window.openStreakSheet=()=>{
 };
 window.openEntrySheet=id=>{
   const e=entries.find(x=>x.id===id); if(!e) return;
-  openSheet(`${e.photo?`<img class="ephoto" src="${e.photo}" alt="" style="${focusCSS(e)}" onclick="closeSheet();viewPhotoEntry(${e.id})">`:''}
+  openSheet(`${e.photo?`<img class="ephoto" src="${e.photo}" alt="Photo from ${esc(e.title)}" style="${focusCSS(e)}" onclick="closeSheet();viewPhotoEntry(${e.id})">`:''}
     <div class="eyebrow">${parseISO(e.date).toLocaleDateString(undefined,{weekday:'long'})} · ${fmtDateY(e.date)}</div><h3>${esc(e.title)}</h3>
     <div class="sheetnote" style="margin:-6px 0 10px"><span style="color:var(--deposit); font-weight:700">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span> · ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?` · booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
     ${e.rating?`<div class="hearts-row" style="margin:-6px 0 8px">${heartRow(e.rating)}</div>`:''}
@@ -2259,8 +2269,16 @@ window.disconnectVault=()=>{
 window.fbReady=()=>{ if(sync) startSync(); };
 
 /* ---------- sheet & render ---------- */
-function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.add('show'); }
-window.closeSheet=()=>{ $('#sheetwrap').classList.remove('show'); setTimeout(flushRemote,0); };
+function openSheet(html){ $('#sheet').innerHTML=html; $('#sheetwrap').classList.add('show');
+  if(!(history.state&&history.state.sheet)) history.pushState({tab:ui.tab, sheet:1},''); }   // Back closes the sheet instead of the app
+function closeSheetRaw(){ $('#sheetwrap').classList.remove('show'); setTimeout(flushRemote,0); }
+window.closeSheet=()=>{ if(history.state&&history.state.sheet) history.back(); else closeSheetRaw(); };
+window.addEventListener('popstate',()=>{
+  if($('#sheetwrap').classList.contains('show')){ closeSheetRaw(); return; }
+  if(ui.depOpen && typeof _closeDepFormRaw==='function'){ _closeDepFormRaw(); return; }
+  const st=history.state||{}; const t=typeof st.tab==='number'?st.tab:0;
+  if(t!==ui.tab){ ui.tab=t; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); }
+});
 $('#sheetwrap').addEventListener('click',e=>{ if(e.target.id==='sheetwrap') closeSheet(); });
 $('#logwrap').addEventListener('click',e=>{ if(e.target.id==='logwrap') closeDepForm(); });
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches && e.target.matches('[role="button"]')){ e.preventDefault(); e.target.click(); return; }
@@ -2293,7 +2311,7 @@ function gearHTML(){
   return `<button class="hgear ${ui.tab===4?'on':''}" aria-label="Settings" title="Settings" onclick="openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>`;
 }
 /* Settings behaves like a screen pushed on top: the tab you came from stays lit, and Back returns to it */
-window.openSettings=()=>{ if(ui.tab===4) return closeSettings(); ui.prevTab=ui.tab; ui.tab=4; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); };
+window.openSettings=()=>{ if(ui.tab===4) return closeSettings(); ui.prevTab=ui.tab; ui.tab=4; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); history.pushState({tab:4},''); };
 window.closeSettings=()=>{ ui.tab=ui.prevTab||0; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); };
 function renderHeader(){
   const h=$('#hdr'); if(!h) return;
@@ -2317,7 +2335,8 @@ function renderTabbar(){
   document.querySelectorAll('.tabbar button').forEach(b=>{ const on=+b.dataset.t===lit; b.classList.toggle('on',on);
     if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
 }
-document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{ ui.tab=+b.dataset.t; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); });
+document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{ ui.tab=+b.dataset.t; ui.justSaved=false; renderAll(); window.scrollTo({top:0}); history.pushState({tab:ui.tab},''); });
+history.replaceState({tab:ui.tab},'');
 
 /* live second ticks: passbook cell + clock button */
 setInterval(()=>{
@@ -2662,8 +2681,13 @@ function maybeSpot(){
   document.body.appendChild(w);
 }
 
+
+/* Back button folds the log sheet before leaving the tab */
+const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
+window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
+window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=118;
+const APP_V=119;
 try{ $('#vstamp').textContent='v'+APP_V; }catch(e){}
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
