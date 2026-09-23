@@ -291,6 +291,8 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 .olater{background:none; border:0; color:var(--dimmer); font-family:'Karla'; font-size:15.5px; cursor:pointer; text-decoration:underline; padding:6px}
 .linklike{background:none; border:0; color:var(--dimmer); font-family:'Karla',sans-serif; font-weight:700; font-size:13px; letter-spacing:0; cursor:pointer; padding:4px 0; margin-bottom:10px; display:block}
 .linklike:hover{color:var(--rose)}
+.dellinkwrap{margin-top:18px; padding-top:12px; border-top:1px solid rgba(var(--lineC),.12); text-align:center}
+.dellink{background:none; border:0; min-height:44px; padding:0 12px; color:var(--withdrawal); font-family:'Karla',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
 .strip{display:flex; align-items:center; gap:14px; background:var(--card); border-radius:14px; padding:15px 16px; margin-top:14px}
 .strip .sk{display:flex; align-items:center; gap:9px; font-size:15.5px; white-space:nowrap}
 .strip .sk svg{width:19px; height:19px; flex-shrink:0}
@@ -1789,9 +1791,9 @@ window.openEntrySheet=id=>{
     <div class="sheetnote" style="margin:-6px 0 10px"><span style="color:var(--deposit); font-weight:700">+${isDate(e)?e.hours.toFixed(1)+' hrs':Math.round(e.hours*60)+' min'}</span>, ${isDate(e)?esc(e.cat):'Everyday moment'}${attr(e)?`, booked by ${esc(attr(e)==='me'?nameMe():namePa())}`:''}</div>
     ${e.rating?`<div class="hearts-row" style="margin:-6px 0 8px">${heartRow(e.rating)}</div>`:''}
     ${e.moment?`<div class="sheetnote" style="font-style:italic">“${esc(e.moment)}”</div>`:''}
-    <button class="cta ghostd" onclick="closeSheet();editEntry(${e.id})">Edit</button>
-    <button class="cta danger" onclick="askDelEntry(${e.id})">Delete</button>
-    <button class="cta ghostd" onclick="closeSheet()">Close</button>`);
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Close</button>
+      <button class="cta pink" style="flex:1" onclick="closeSheet();editEntry(${e.id})">${ICO.pen} Edit</button></div>
+    <div class="dellinkwrap"><button class="dellink" onclick="askDelEntry(${e.id})">Delete this entry</button></div>`);
 };
 
 /* ---------- SETTINGS ---------- */
@@ -2712,7 +2714,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=122;
+const APP_V=123;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
