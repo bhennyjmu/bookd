@@ -1481,7 +1481,7 @@ function placesBlock(){
   const ctlOpen = ui.placeCtl || !near.coords;   // location is required — stay open until one is set
   const ctlSummary = near.coords ? `${esc(near.coords.label||'location set')}, ${near.radiusMi} mi${near.query?', filtered':''}` : 'not set';
   const controls = !ctlOpen ? '' : `
-    <div class="fgroup"><label class="f" for="near-loc">Where (blank = use my location)</label>
+    <div class="fgroup"><label class="f" for="near-loc">Where</label>
       <div style="display:flex; gap:8px">
         <input type="text" id="near-loc" placeholder="Town or ZIP (blank uses GPS)" value="${esc(near.locText)}">
         <button class="cta pink" style="width:auto; margin-top:0; padding:11px 16px" onclick="setLoc()">Go</button>
@@ -2718,7 +2718,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=125;
+const APP_V=126;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
