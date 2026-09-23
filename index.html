@@ -547,6 +547,8 @@ button.cal-cell{background:none; border:0; color:var(--cream); font-family:'Karl
 .dblock b{font-family:'Fraunces',serif; font-weight:900; font-size:23px}
 .upmid{flex:1; min-width:0}
 .upt{font-family:'Fraunces',serif; font-weight:700; font-size:18px; line-height:1.2}
+.uptap{background:none; border:0; padding:0; margin:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; flex:1}
+.uptap:focus-visible{outline:2px solid var(--rose); outline-offset:3px; border-radius:6px}
 .upact{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
 .chipbtn{min-height:44px; padding:0 13px; border-radius:99px; border:1.5px solid rgba(var(--lineC),.14); background:none; color:var(--cream); font-family:'Karla',sans-serif; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; cursor:pointer; text-decoration:none}
 .chipbtn.ok{color:var(--deposit)} .chipbtn.warn{color:var(--champagne); border-color:var(--champagne)} .chipbtn.quiet{color:var(--dim)}
@@ -897,6 +899,7 @@ const ICO={
   check:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.500 4.500L19 7.500"/></svg>`,
   back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:22px;height:22px"><path d="M15 5l-7 7 7 7"/></svg>`,
   spark:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.300" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" style="width:60px;height:60px;color:var(--champagne)"><circle cx="12" cy="12" r="9"/><path d="M15.8 8.2l-2.3 5.3-5.3 2.3 2.3-5.3z"/></svg>`,
+  pen:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-4-4L4 16z"/><path d="M12.5 7.5l4 4"/></svg>`,
   chev:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`,
   ext:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px;vertical-align:-2px;margin-left:2px"><path d="M14 4h6v6M20 4l-9 9M18 13v6H5V6h6"/></svg>`,
   watch:`<svg class="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/></svg>`,
@@ -1691,6 +1694,7 @@ window.openDay=iso=>{
         ${iso<=t?`<button class="cta pink" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
         <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="askClearPlan(${p.id})">Cancel date</button>
       </div>
+      <button class="cta ghostd" style="width:100%; margin-top:8px; padding:9px" onclick="openEditPlan(${p.id})">${ICO.pen} Edit details</button>
       <a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a></div>`;
   });
   if(resvOccursOn(iso)) body+=`<div class="sheetnote">♥ Standing reservation night: ${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}.</div>`;
@@ -1712,8 +1716,8 @@ function comingUpHTML(){
     const when = days<0?'overdue, log or clear it':(days===0?'tonight!':days+' day'+(days===1?'':'s')+' out');
     const sit=(kidsOn()&&p.sitter)?`<button class="chipbtn ${p.sitter==='locked'?'ok':'warn'}" onclick="toggleSitter(${p.id})">${ICO.bottle} ${p.sitter==='locked'?'Sitter covered':'No sitter yet'}</button>`:'';
     return `<div class="cardbox upcard"><div class="uprow"><div class="dblock"><small>${d.toLocaleDateString(undefined,{month:'short'})}</small><b>${d.getDate()}</b></div>
-        <div class="upmid"><div class="upt clamp2">${esc(p.title)}</div><div class="ts">${d.toLocaleDateString(undefined,{weekday:'long'})} · ${when}</div></div></div>
-      <div class="upact">${sit}${days<=0?`<button class="chipbtn go" onclick="logPlan(${p.id})">Log it</button>`:''}
+        <button class="upmid uptap" onclick="openEditPlan(${p.id})" aria-label="Edit ${esc(p.title)}"><div class="upt clamp2">${esc(p.title)}</div><div class="ts">${d.toLocaleDateString(undefined,{weekday:'long'})} · ${when}</div></button></div>
+      <div class="upact"><button class="chipbtn" onclick="openEditPlan(${p.id})">${ICO.pen} Edit</button>${sit}${days<=0?`<button class="chipbtn go" onclick="logPlan(${p.id})">Log it</button>`:''}
         <a class="chipbtn" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">${ICO.cal} Add to calendar</a>
         <button class="chipbtn quiet" onclick="askClearPlan(${p.id})">Cancel date</button></div></div>`;
   };
@@ -2022,6 +2026,25 @@ function renderBanners(){
 window.goHome=()=>{ ui.tab=0; renderAll(); };
 window.dismissAway=()=>{ ui.awayNote=null; renderAll(); };
 window.removePlan=id=>{ plans=plans.filter(p=>p.id!==id); savePlans(); toast('Booking cleared'); renderAll(); };
+window.openEditPlan=id=>{
+  const p=planById(id); if(!p) return;
+  openSheet(`
+    <div class="eyebrow">Edit this booking</div><h3>${esc(p.title)}</h3>
+    <div class="fgroup"><label class="f" for="ep-title">What are you two doing?</label>
+      <input type="text" id="ep-title" maxlength="60" value="${esc(p.title)}"></div>
+    <div class="fgroup"><label class="f" for="ep-date">Which day?</label>
+      <input type="date" id="ep-date" value="${p.date}"></div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
+    <button class="cta pink" style="flex:1" onclick="savePlanEdit(${id})">Save</button></div>`);
+  setTimeout(()=>{ const f=$('#ep-title'); if(f){ f.focus({preventScroll:true}); f.setSelectionRange(f.value.length,f.value.length); } },60);
+};
+window.savePlanEdit=id=>{
+  const p=planById(id); if(!p) return;
+  const title=$('#ep-title').value.trim(); if(!title) return fieldError('ep-title','Give it a name');
+  const date=$('#ep-date').value; if(!date) return fieldError('ep-date','Pick a day');
+  p.title=title; p.date=date; savePlans();
+  closeSheet(); renderAll(); toast('Booking updated ♥');
+};
 window.askClearPlan=id=>{
   const p=planById(id); if(!p) return;
   openSheet(`
@@ -2689,7 +2712,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=121;
+const APP_V=122;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
