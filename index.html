@@ -550,6 +550,11 @@ button.cal-cell{background:none; border:0; color:var(--cream); font-family:'Karl
 .upmid{flex:1; min-width:0}
 .upt{font-family:'Fraunces',serif; font-weight:700; font-size:18px; line-height:1.2}
 .upact{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+.upedit{flex-shrink:0; margin:-8px -10px 0 0}
+.uplinks{display:flex; gap:20px; flex-wrap:wrap; margin-top:6px}
+.uplink{background:none; border:0; min-height:44px; padding:0; color:var(--dim); font-family:'Karla',sans-serif; font-weight:700; font-size:14px; text-decoration:underline; text-underline-offset:3px; display:inline-flex; align-items:center; gap:6px; cursor:pointer}
+.uplink .ci{width:16px; height:16px}
+.uplink.danger{color:var(--withdrawal)}
 .chipbtn{min-height:44px; padding:0 13px; border-radius:99px; border:1.5px solid rgba(var(--lineC),.14); background:none; color:var(--cream); font-family:'Karla',sans-serif; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; cursor:pointer; text-decoration:none}
 .chipbtn.ok{color:var(--deposit)} .chipbtn.warn{color:var(--champagne); border-color:var(--champagne)} .chipbtn.quiet{color:var(--dim)}
 .chipbtn.go{background:var(--rose); border-color:var(--rose); color:var(--plum)}
@@ -1716,10 +1721,11 @@ function comingUpHTML(){
     const when = days<0?'overdue, log or clear it':(days===0?'tonight!':days+' day'+(days===1?'':'s')+' out');
     const sit=(kidsOn()&&p.sitter)?`<button class="chipbtn ${p.sitter==='locked'?'ok':'warn'}" onclick="toggleSitter(${p.id})">${ICO.bottle} ${p.sitter==='locked'?'Sitter covered':'No sitter yet'}</button>`:'';
     return `<div class="cardbox upcard"><div class="uprow"><div class="dblock"><small>${d.toLocaleDateString(undefined,{month:'short'})}</small><b>${d.getDate()}</b></div>
-        <div class="upmid"><div class="upt clamp2">${esc(p.title)}</div><div class="ts">${d.toLocaleDateString(undefined,{weekday:'long'})} · ${when}</div></div></div>
-      <div class="upact"><button class="chipbtn" onclick="openEditPlan(${p.id})">${ICO.pen} Edit</button>${sit}${days<=0?`<button class="chipbtn go" onclick="logPlan(${p.id})">Log it</button>`:''}
-        <a class="chipbtn" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">${ICO.cal} Add to calendar</a>
-        <button class="chipbtn quiet" onclick="askClearPlan(${p.id})">Cancel date</button></div></div>`;
+        <div class="upmid"><div class="upt clamp2">${esc(p.title)}</div><div class="ts">${d.toLocaleDateString(undefined,{weekday:'long'})} · ${when}</div></div>
+        <button class="hmore upedit" aria-label="Edit ${esc(p.title)}" title="Edit" onclick="openEditPlan(${p.id})">${ICO.pen}</button></div>
+      ${(sit||days<=0)?`<div class="upact">${sit}${days<=0?`<button class="chipbtn go" onclick="logPlan(${p.id})">Log it</button>`:''}</div>`:''}
+      <div class="uplinks"><a class="uplink" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">${ICO.cal} Add to calendar</a>
+        <button class="uplink danger" onclick="askClearPlan(${p.id})">Cancel date</button></div></div>`;
   };
   return `<div class="sechead"><h2>Coming up</h2><span class="lead"></span></div>
     ${all.length?all.map(card).join('')
@@ -2712,7 +2718,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=124;
+const APP_V=125;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
