@@ -307,9 +307,6 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
 .intent .ii svg{width:22px; height:22px; display:inline-block}
 .intent.on{border-color:var(--rose); color:var(--cream); background:rgba(242,125,152,.08)}
 .intent.on .ii{color:var(--rose)}
-.bestline{border-top:1px solid rgba(var(--lineC),.12); margin-top:16px; padding-top:12px; font-size:13.5px; color:var(--dim)}
-.bestline b{color:var(--champagne)}
-.bestline .hs{color:var(--rose); vertical-align:-1px}
 .resv-status{font-size:13.5px; line-height:1.5; color:var(--dim); margin-top:8px}
 .resv-status button{background:none; border:0; color:var(--rose); text-decoration:underline; cursor:pointer; font-size:13.5px; font-family:'Karla'; padding:0}
 .changelink{background:none; border:0; color:var(--rose); text-decoration:underline; cursor:pointer; font-family:'Karla',sans-serif; font-size:13px; padding:0 0 0 6px}
@@ -1286,9 +1283,6 @@ function planPage(){
         <button class="pill ${ui.planMode==='places'?'on':''}" onclick="setMode('places')">Places near me</button>
       </div></div>
       ${ui.planMode==='ideas'?ideasBlock():placesBlock()}
-      ${(()=>{ const r=entries.filter(e=>isDate(e)&&e.rating>0); if(!r.length) return '';
-        const avg=r.reduce((a,e)=>a+e.rating,0)/r.length;
-        return `<div class="bestline">Your dates average <b>${avg.toFixed(1)}</b> ${heartSVG(false)} across ${r.length} rated date${r.length===1?'':'s'}</div>`; })()}
     </div>`;
   return `    <div class="intent-tabs">
       <button class="intent ${ui.planIntent!=='know'?'on':''}" onclick="ui.planIntent='idea';renderPage();if(ui.planMode==='places')mountMap()"><span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15.8 8.2l-2.3 5.3-5.3 2.3 2.3-5.3z"/></svg></span>Give me an idea</button>
@@ -2718,7 +2712,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=126;
+const APP_V=127;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
