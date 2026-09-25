@@ -517,7 +517,7 @@ input.bad{border-color:var(--withdrawal)!important}
 .sum div{background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:12px 6px; text-align:center; min-width:0}
 .sum b{display:block; font-family:'Fraunces',serif; font-weight:900; font-size:21px; line-height:1.1}
 .sum span{font-size:12px; color:var(--dim)}
-.hmonth{position:sticky; top:0; z-index:5; background:var(--plum); display:flex; justify-content:space-between; align-items:baseline; padding:14px 2px 6px; margin-top:6px}
+.hmonth{position:sticky; top:env(safe-area-inset-top); z-index:5; background:var(--plum); display:flex; justify-content:space-between; align-items:baseline; padding:14px 2px 6px; margin-top:6px}
 .hmonth b{font-family:'Fraunces',serif; font-size:18px}
 .hmonth span{font-size:13.5px; font-weight:700; color:var(--dim)}
 .hcard{display:flex; gap:12px; align-items:flex-start; background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:12px 4px 12px 12px; margin-top:8px}
@@ -631,6 +631,9 @@ div.zstep{cursor:default; color:var(--dim)}
 /* SLICE 7 — kids question asked once at the first booking (no new styles) */
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* SLICE 1 (v127): status-bar strip */
+body::before{content:""; position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top); background:var(--plum); z-index:45; pointer-events:none}
+#mapbox{isolation:isolate}
 </style>
 <script>try{const t=JSON.parse(localStorage.getItem('bookd.theme')||'"system"');document.documentElement.dataset.theme=(t==='system')?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;}catch(e){}</script>
 </head>
@@ -2712,7 +2715,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=127;
+const APP_V=128;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
