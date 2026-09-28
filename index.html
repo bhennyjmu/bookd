@@ -356,7 +356,7 @@ footer p{font-family:'Karla',sans-serif; font-size:11.5px; letter-spacing:.1em; 
    ===================================================================== */
 *{-webkit-tap-highlight-color:transparent}
 body{font-size:16.5px}
-button:active,.cal-cell:active,.fav:active,.place:active,.tile:active,.pcard:active{opacity:.6}
+button:active,.cal-cell:active,.fav:active,.place:active,.tile:active{opacity:.6}
 .cta:active{opacity:.9}
 
 /* header: who you are, where you are, and a real gear */
@@ -415,9 +415,6 @@ div.tile{cursor:default}
 .tflex{display:flex; align-items:center; gap:6px}
 .ts{color:var(--dim); font-size:13.5px; margin-top:2px; font-weight:400}
 .clamp2{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere}
-.pcard{display:flex; gap:12px; align-items:center; width:100%; text-align:left; background:var(--card); border:1px solid rgba(var(--lineC),.09); border-radius:22px; padding:12px 14px; margin-top:10px; min-height:60px; color:var(--cream); font-family:'Karla',sans-serif; font-size:14.5px; cursor:pointer}
-.pini{width:34px; height:34px; border-radius:50%; background:var(--rose); color:var(--plum); display:grid; place-items:center; font-weight:700; flex-shrink:0}
-.ptxt{min-width:0}
 .logwrap .cta{margin-top:10px}
 
 /* cards, headings, fields */
@@ -971,14 +968,7 @@ function homeTilesHTML(){
   }
   const streakTile=`<button class="tile" onclick="openStreakSheet()"><div class="tl">Streak</div><div class="tv tflex">${ICO.flame}${s.streak>0?s.streak+' week'+(s.streak===1?'':'s'):'Starts here'}</div>
     <div class="ts">${s.streak>0?'See the dates behind it':'One date this week begins it'}</div></button>`;
-  let partner='';
-  if(sync){
-    const pe=entries.filter(e=>e.by&&e.by!==sync.role).sort((a,b)=>b.date.localeCompare(a.date)||((b.id||0)-(a.id||0)))[0];
-    if(pe){ const nm=pe.by==='me'?nameMe():namePa();
-      partner=`<button class="pcard" onclick="openEntrySheet(${pe.id})"><span class="pini">${esc(nm.charAt(0).toUpperCase())}</span>
-        <span class="ptxt"><b>${esc(nm)}</b> logged ${esc(pe.title)} (${isDate(pe)?pe.hours.toFixed(1)+' hrs':Math.round(pe.hours*60)+' min'})<br><span class="ts">${fmtDate(pe.date)}</span></span></button>`; }
-  }
-  return `<div class="tiles">${nextTile}${streakTile}</div>${partner}`;
+  return `<div class="tiles">${nextTile}${streakTile}</div>`;
 }
 function zeroHomeHTML(){
   const pa=esc(profile.partner||'your partner');
@@ -2715,7 +2705,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=128;
+const APP_V=129;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
