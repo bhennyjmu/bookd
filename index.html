@@ -1657,7 +1657,8 @@ function calGridHTML(){
     </div>`;
 }
 window.calNav=d=>{ ui.calMonth=new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth()+d, 1); renderPage(); };
-window.planResvNight=iso=>{ ui.bookDate=iso; ui.tab=1; ui.planIntent='know'; renderAll(); window.scrollTo({top:0,behavior:'smooth'}); };
+window.planResvNight=iso=>{ ui.bookDate=iso; if(ui.tab!==1) history.pushState({tab:1},''); ui.tab=1; ui.planIntent='know'; ui.justSaved=false; renderAll();
+  setTimeout(()=>{ const d=$('#own-date'); if(d) d.value=iso; const f=$('#own-title'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } else window.scrollTo({top:0,behavior:'smooth'}); toast(fmtDate(iso)+' picked. Name the plan, then Book it'); },80); };
 function resvOccursOn(iso){
   if(!reservation) return false;
   const diff=Math.round((parseISO(iso)-firstOccurrence())/DAY);
@@ -2705,7 +2706,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=129;
+const APP_V=130;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
