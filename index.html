@@ -1219,9 +1219,13 @@ window.openDepositSheet=()=>{
   if(!title) return fieldError('d-title','Give it a name');
   if(!dep.date) return fieldError('d-date','Pick the date');
   if(!(raw>0)) return fieldError('d-hours', dep.etype==='small'?'How many minutes?':'How many hours?');
+  // SLICE 1 (v133): limits
+  if(dep.etype==='small' && raw>600) return fieldError('d-hours','That’s over 10 hours. Log it as a date night instead');
+  if(dep.etype!=='small' && raw>24) return fieldError('d-hours','That’s more than a day. Check the hours');
+  if(dep.date>todayISO()) return fieldError('d-date','That date hasn’t happened yet. Book it on the Plan tab');
   const small=dep.etype==='small';
   const meta = small?Math.round(raw)+' min':raw+' hrs';
-  const rate = dep.rating>0?'♥'.repeat(dep.rating):'no rating yet (saves as 4♥)';
+  const rate = dep.rating>0?'♥'.repeat(dep.rating):(dep.etype==='small'?'no rating':'no rating yet (saves as 4♥)');
   const note = (dep.moment||'').trim()?'“'+esc(dep.moment.trim())+'”'
     :'It lands in History and updates your balance.';
   openSheet(`
@@ -1458,13 +1462,21 @@ function reservationHTML(){
   return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}, ${resvCad().label}</div>
     <div class="countdown" id="countdown"></div>
     ${status}
-    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">add to my calendar</a><button onclick="clearResv()">cancel reservation</button></div>`;
+    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">add to my calendar</a><button onclick="askClearResv()">cancel reservation</button></div>`;
 }
 window.setResv=()=>{
   reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO(), cadence:$('#r-cad').value };
   store.set('reservation',reservation); pushMeta(); toast('Standing date booked: '+resvCad().label); renderAll();
 };
 window.clearResv=()=>{ reservation=null; store.set('reservation',null); pushMeta(); renderAll(); };
+/* SLICE 1 (v133): every destructive action gets a confirmation sheet */
+window.askClearResv=()=>{ if(!reservation) return;
+  openSheet(`
+    <div class="eyebrow">Cancel standing date</div><h3>Cancel your standing date?</h3>
+    <div class="sheetnote">Your ${WD[reservation.weekday]}s at ${fmtTime(reservation.time)} slot comes off the books${sync?' on both phones':''}. Dates you've already logged stay put. You can set a new one any time.</div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep it</button>
+    <button class="cta danger" style="flex:1" onclick="closeSheet();clearResv();toast('Standing date cancelled')">Cancel it</button></div>`);
+};
 function nextOccurrence(){
   const [h,m]=reservation.time.split(':').map(Number);
   const step=resvCad().step, n=new Date();
@@ -1922,6 +1934,8 @@ window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
   if(plans.length){ plans.forEach(p=>{ p.sitter = v ? (p.sitter||'needed') : null; }); savePlans(); }
   renderAll(); };
 window.saveProfile=()=>{
+  if(!$('#p-me').value.trim()) return fieldError('p-me','First name, please. It labels who booked each date');   // SLICE 1 (v133)
+  if(!$('#p-pa').value.trim()) return fieldError('p-pa','Their first name goes on the account too');
   profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:kidsAsk()?'ask':profile.kids!==false };
   store.set('profile',profile); pushMeta();
   toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+', on the books ♥':'Saved');
@@ -1929,7 +1943,8 @@ window.saveProfile=()=>{
 };
 window.saveGoal=()=>{
   const v=parseFloat($('#g-goal').value);
-  if(!(v>0)) return toast('Give the goal a number');
+  if(!(v>0)) return fieldError('g-goal','Give the goal a number');   // SLICE 1 (v133): next to the field, with a ceiling
+  if(v>200) return fieldError('g-goal','Try a goal under 200 hours');
   goal=v; store.set('goal',goal); pushMeta(); toast('Goal set: '+v+' hrs a month'); renderAll();
 };
 window.clearGoal=()=>{ goal=null; store.set('goal',null); pushMeta(); toast('Goal cleared'); renderAll(); };
@@ -2531,6 +2546,8 @@ window.obLastSugg=b=>{ const i=$('#ob-ltitle'); if(i){ i.value=b.dataset.v; i.di
 window.obLogFirst=()=>{ obGrab(); const f=ob.first||{}, hrs=parseFloat(f.hours);
   if(!f.title) return fieldError('ob-ltitle','Give it a name, or skip below');
   if(!(hrs>0)) return fieldError('ob-lhours','About how many hours?');
+  if(hrs>24) return fieldError('ob-lhours','That’s more than a day. Check the hours');   // SLICE 1 (v133)
+  if(f.date && f.date>todayISO()) return fieldError('ob-ldate','That date hasn’t happened yet');
   if(!f.date) return fieldError('ob-ldate','Pick the date');
   const rec={ id:ob.firstId||Date.now(), title:f.title, date:f.date, hours:hrs, cat:'Food & drink', rating:4, type:'date', planner:null, moment:null, by:sync?sync.role:null, photo:null, photoFocus:null };
   entries=entries.filter(e=>e.id!==rec.id); entries.unshift(rec); ob.firstId=rec.id;   // going Back and changing it edits the same entry
@@ -2726,7 +2743,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=133;
+const APP_V=134;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
