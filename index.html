@@ -664,10 +664,15 @@ const store = {
   get(k, fb){ try{ const v=localStorage.getItem('bookd.'+k); return v===null?fb:JSON.parse(v); }catch(e){ return fb; } },
   set(k, v){ try{ localStorage.setItem('bookd.'+k, JSON.stringify(v)); }catch(e){} }
 };
-let entries    = store.get('entries', []);
+/* SLICE 1 (v134): skip damaged rows (no date, or no hours) instead of letting one break every screen */
+const okDate=d=>typeof d==='string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+const cleanEntries=a=>(Array.isArray(a)?a:[]).filter(e=>e && okDate(e.date) && typeof e.hours==='number' && Number.isFinite(e.hours) && e.hours>=0);
+const cleanPlans=a=>(Array.isArray(a)?a:[]).filter(p=>p && okDate(p.date) && typeof p.title==='string');
+let entries    = cleanEntries(store.get('entries', []));
 let reservation= store.get('reservation', null);
 let plans      = store.get('plans', null);   // future bookings — a LIST now; two spouses, many dates
 if(!Array.isArray(plans)){ const old=store.get('planned',null); plans=old?[{id:Date.now(), ...old}]:[]; store.set('plans',plans); }
+plans=cleanPlans(plans);
 let favorites  = store.get('favorites', []);
 let lastSpin   = store.get('lastSpin', null);
 let timer      = store.get('timer', null);   // {startedAt, elapsed, running, date, title}
@@ -1978,9 +1983,11 @@ window.openWipeSheet=()=>{
 window.wipeAll=()=>{
   closeSheet();
   const hadSync=!!sync;
+  // SLICE 1 (v134): give the seat back on the way out, same as Disconnect, so this phone can rejoin
+  if(hadSync && db){ window.fb.setDoc(metaRef(), {devices:{[sync.role]:null}}, {merge:true}).catch(()=>{}); }
   if(hadSync) stopSync();
   sync=null;
-  Object.keys(localStorage).filter(k=>k.startsWith('bookd.')).forEach(k=>localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k=>k.startsWith('bookd.') && k!=='bookd.deviceId').forEach(k=>localStorage.removeItem(k));   // SLICE 1 (v134): the phone's own ID survives
   entries=[]; reservation=null; plans=[]; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
   renderAll(); toast(hadSync?'History cleared on this phone. Your shared copy is untouched':'History cleared. Fresh books');
@@ -2007,7 +2014,7 @@ function wireSettings(){
         <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
         <button class="cta pink" style="flex:1" id="do-restore">Restore it</button></div>`);
       $('#do-restore').onclick=()=>{ closeSheet();
-        entries=d.entries; reservation=d.reservation||null; plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:[]); favorites=d.favorites||[]; goal=d.goal||null; profile=d.profile||{me:'',partner:'',anniv:''};
+        entries=cleanEntries(d.entries); reservation=d.reservation||null; plans=cleanPlans(Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:[])); favorites=d.favorites||[]; goal=d.goal||null; profile=d.profile||{me:'',partner:'',anniv:''};
         store.set('entries',entries); store.set('reservation',reservation); store.set('plans',plans); store.set('favorites',favorites); store.set('goal',goal); store.set('profile',profile);
         if(sync&&db){ pushMeta(); const b=window.fb.writeBatch(db); entries.forEach(r=>b.set(entryRef(r.id), r)); b.commit().catch(()=>{}); }
         renderAll(); toast('History restored'); };
@@ -2144,7 +2151,7 @@ function startSync(){
       }
       const prevIds=new Set(plans.map(p=>p.id));
       profile=d.profile||profile; reservation=d.reservation??null;
-      plans=Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans);
+      plans=cleanPlans(Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans));
       goal=d.goal??null; favorites=d.favorites||[];
       const myPace=d.nudgePace&&d.nudgePace[sync.role];
       if(myPace>0){ nudgeEvery=myPace; store.set('nudgeEvery',nudgeEvery); }
@@ -2174,7 +2181,7 @@ function startSync(){
         }
       });
     }
-    entries=snap.docs.map(d=>d.data())
+    entries=cleanEntries(snap.docs.map(d=>d.data()))
       .sort((a,b)=>String(b.date).localeCompare(String(a.date))||((b.id||0)-(a.id||0)));
     store.set('entries',entries);
     renderFromRemote();
@@ -2743,7 +2750,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=134;
+const APP_V=135;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
