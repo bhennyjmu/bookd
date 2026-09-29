@@ -2572,13 +2572,23 @@ window.obSaveNames=()=>{ obGrab();
 window.obGoalPick=n=>{ ob.goal=n; document.querySelectorAll('.goalpick button').forEach(b=>b.classList.toggle('on', +b.dataset.v===n)); buzz(8); };
 window.obSaveGoal=()=>{ goal=ob.goal||12; store.set('goal',goal); pushMeta(); obNext(); };
 window.obLastSugg=b=>{ const i=$('#ob-ltitle'); if(i){ i.value=b.dataset.v; i.dispatchEvent(new Event('input',{bubbles:true})); } };
+/* SLICE 1 (v137): pick a category from the date's name; first matching group wins */
+const CAT_WORDS=[
+  ['Movies & shows', /movie|film|cinema|netflix|show|theater|theatre|series|tv\b/i],
+  ['Music & culture', /concert|music|gig|band|museum|gallery|art\b|opera|ballet|book ?store|record/i],
+  ['Active', /climb|bowl|golf|dance|gym|yoga|run\b|running|swim|tennis|pickleball|skat|bike|cycling|kayak/i],
+  ['Outdoors', /walk|hike|trail|park|picnic|beach|lake|garden|sunset|sunrise|stargaz|camp/i],
+  ['At home', /at home|home\b|board game|game night|puzzle|cook(ed|ing)? (at|together)|fort|spa night/i],
+  ['Food & drink', /dinner|lunch|brunch|breakfast|restaurant|ramen|pizza|sushi|taco|coffee|cafe|café|bar\b|drinks|wine|beer|cocktail|bakery|dessert|ice cream|takeout/i]
+];
+const guessCat=t=>{ const hit=CAT_WORDS.find(([,re])=>re.test(t||'')); return hit?hit[0]:'Something new'; };
 window.obLogFirst=()=>{ obGrab(); const f=ob.first||{}, hrs=parseFloat(f.hours);
   if(!f.title) return fieldError('ob-ltitle','Give it a name, or skip below');
   if(!(hrs>0)) return fieldError('ob-lhours','About how many hours?');
   if(hrs>24) return fieldError('ob-lhours','That’s more than a day. Check the hours');   // SLICE 1 (v133)
   if(f.date && f.date>todayISO()) return fieldError('ob-ldate','That date hasn’t happened yet');
   if(!f.date) return fieldError('ob-ldate','Pick the date');
-  const rec={ id:ob.firstId||Date.now(), title:f.title, date:f.date, hours:hrs, cat:'Food & drink', rating:4, type:'date', planner:null, moment:null, by:sync?sync.role:null, photo:null, photoFocus:null };
+  const rec={ id:ob.firstId||Date.now(), title:f.title, date:f.date, hours:hrs, cat:guessCat(f.title), rating:4, type:'date', planner:null, moment:null, by:sync?sync.role:null, photo:null, photoFocus:null };
   entries=entries.filter(e=>e.id!==rec.id); entries.unshift(rec); ob.firstId=rec.id;   // going Back and changing it edits the same entry
   entries.sort((a,b)=>String(b.date).localeCompare(String(a.date))||((b.id||0)-(a.id||0)));
   store.set('entries',entries); pushEntry(rec); obNext(); };
@@ -2772,7 +2782,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=137;
+const APP_V=138;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
