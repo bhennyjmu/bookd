@@ -1056,7 +1056,7 @@ window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.start
 window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); pushClock(); renderAll(); };
 window.clockOut=()=>{
   if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); }
-  dep={etype:'date', rating:0, planner:null, editingId:null};   // fresh form; prefill logic reads the clock
+  dep={etype:'date', rating:0, planner:null, editingId:null, fromClock:true};   // fresh form; prefill logic reads the clock
   ui.justSaved=false; ui.depOpen=true;
   renderAll(); buzz(18);
 };
@@ -1230,9 +1230,12 @@ window.commitDeposit=()=>{
   const crossed = wasUnderGoal && stats().balance>=goal;
   if(dep.removePhoto && dep.photoUrl) deletePhoto(dep.photoUrl);
   if(dep.photoBlob) uploadPhoto(record.id, dep.photoBlob);
-  const pix=plans.findIndex(p=>p.title===record.title);
+  // SLICE 1 (v131): only the booking this date came from, or one with the same name on the same day
+  const pix = dep.fromPlanId!=null ? plans.findIndex(p=>p.id===dep.fromPlanId)
+            : wasEdit ? -1 : plans.findIndex(p=>p.title===record.title && p.date===record.date);
   if(pix>-1){ plans.splice(pix,1); savePlans(); }
-  if(!(timer && timer.running && record.date!==timer.date)){ timer=null; store.set('timer',null); pushClock(); }
+  // SLICE 1 (v131): the clock ends only when this date came from it; edits never touch it
+  if(timer && !wasEdit && (dep.fromClock || (!timer.running && record.date===timer.date))){ timer=null; store.set('timer',null); pushClock(); }
   dep={etype:'date',rating:0,planner:null,editingId:null};
   ui.justSaved=!wasEdit; ui.tab=wasEdit?tabBefore:0; ui.depOpen=false;   // a new date lands you on Home to watch it add up; an edit leaves you where you were
   renderAll(); buzz(18);
@@ -2049,8 +2052,8 @@ window.askClearPlan=id=>{
 };
 window.logPlan=id=>{
   const p=planById(id); if(!p) return;
-  plans=plans.filter(x=>x.id!==id); savePlans();
-  dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true};
+  // SLICE 1 (v131): the booking stays until the date is saved; commitDeposit removes it then
+  dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true, fromPlanId:id};
   ui.justSaved=false; ui.depOpen=true; renderAll();
 };
 
@@ -2706,7 +2709,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=131;
+const APP_V=132;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
