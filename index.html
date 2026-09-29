@@ -946,10 +946,10 @@ function heroHTML(){
       <div class="cardbox minibal">${ringHTML(s.balance,64,12,'')}<div><div class="mb-n">${s.balance.toFixed(1)} <span>${goal?'of '+goal+' hrs':'hrs, last 30 days'}</span></div><div class="herosub" style="margin:2px 0 0">Tonight gets added when you end the date.</div></div></div>`;
   }
   const foot = goal
-    ? ((s.balance>=goal?'Goal met this month':(goal-s.balance).toFixed(1)+' hrs to go this month')+(lastTxt?'. '+lastTxt.charAt(0).toUpperCase()+lastTxt.slice(1):''))
+    ? ((s.balance>=goal?'Goal met. Nice work, you two':Math.max(0,goal-(+s.balance.toFixed(1))).toFixed(1)+' hrs to go')+(lastTxt?'. '+lastTxt.charAt(0).toUpperCase()+lastTxt.slice(1):''))
     : (lastTxt ? lastTxt.charAt(0).toUpperCase()+lastTxt.slice(1) : 'No date nights on the books yet');
   return `<div class="hero">
-      ${ringHTML(s.balance,190,9,`<div class="ringnum ${s.balance>=100?'long':''} ${s.balance<0?'neg':''}">${s.balance.toFixed(1)}</div><div class="ringsub">${goal?`of ${goal} hrs together`:'hrs together, 30 days'}</div>`)}
+      ${ringHTML(s.balance,190,9,`<div class="ringnum ${s.balance>=100?'long':''} ${s.balance<0?'neg':''}">${s.balance.toFixed(1)}</div><div class="ringsub">${goal?`of ${goal} hrs · last 30 days`:'hrs together, 30 days'}</div>`)}
       <div class="herosub">${foot}</div>
       ${goal?'':`<button class="gset" onclick="goGoal()">Set a monthly goal ${ICO.chev}</button>`}
       ${clockButtonsHTML()}
@@ -1237,7 +1237,7 @@ window.commitDeposit=()=>{
   ui.justSaved=!wasEdit; ui.tab=wasEdit?tabBefore:0; ui.depOpen=false;   // a new date lands you on Home to watch it add up; an edit leaves you where you were
   renderAll(); buzz(18);
   if(ui.tab===0) tweenBalance(balBefore, stats().balance);
-  if(firstEver) setTimeout(()=>celebrate('first'),1000); else if(crossed) setTimeout(()=>celebrate('goal'),1000);
+  if(firstEver) setTimeout(()=>celebrate('first'),1000); else if(crossed && !(Date.now()-(store.get('goalCheeredAt',0)||0) < 30*DAY)){ store.set('goalCheeredAt',Date.now()); setTimeout(()=>celebrate('goal'),1000); }   // SLICE 1 (v130): once per 30 days
 };
 function tweenBalance(from,to){
   if(from===to || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1252,7 +1252,7 @@ function celebrate(kind){
   const bal=stats().balance, hearts=[8,20,33,47,58,70,82,91,14,40,64,76].map((l,i)=>`<span class="rise" style="left:${l}%;animation-delay:${(i*.07).toFixed(2)}s"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}" fill="currentColor"/></svg></span>`).join('');
   openSheet(`<div class="celeb">${hearts}
     <div class="eyebrow">${kind==='first'?'First one':'Goal met'}</div>
-    <h3>${kind==='first'?'Your first date is on the books.':goal+' hrs together this month'}</h3>
+    <h3>${kind==='first'?'Your first date is on the books.':goal+' hrs together in 30 days'}</h3>
     <div class="bigc">${bal.toFixed(1)}</div>
     <div class="sheetnote">${kind==='first'?'hours together, and counting.':'You two made the time.'}</div>
     <button class="cta pink" onclick="closeSheet()">Lovely</button></div>`);
@@ -1734,7 +1734,7 @@ function statementHTML(){
   const n=ui.histN||8, rows=all.slice(0,n), s=stats();
   const rated=entries.filter(e=>isDate(e)&&e.rating>0), avg=rated.length?rated.reduce((a,e)=>a+e.rating,0)/rated.length:null;
   const monthOf=iso=>parseISO(iso).toLocaleDateString(undefined,{month:'long', year:'numeric'});
-  let out=`<div class="sum"><div><b>${s.balance.toFixed(1)}</b><span>hrs, 30 days</span></div><div><b>${entries.filter(isDate).length}</b><span>date nights</span></div><div><b>${avg?avg.toFixed(1):'-'}</b><span>avg hearts</span></div></div>`, cur='';
+  let out=`<div class="sum"><div><b>${s.balance.toFixed(1)}</b><span>hrs, 30 days</span></div><div><b>${entries.filter(e=>isDate(e)&&parseISO(e.date)>=new Date(parseISO(todayISO()).getTime()-30*DAY)).length}</b><span>dates, 30 days</span></div><div><b>${avg?avg.toFixed(1):'-'}</b><span>avg hearts</span></div></div>`, cur='';
   rows.forEach(r=>{
     const m=monthOf(r.sort);
     if(m!==cur){ cur=m; const tot=entries.filter(e=>monthOf(e.date)===m).reduce((a,e)=>a+e.hours,0);
@@ -1889,7 +1889,7 @@ function settingsPage(){
     </div>
     ${syncSectionHTML()}
     <div class="sechead"><h2>Goal</h2><span class="lead"></span></div>
-    <p class="secsub">Set a monthly target. Home shows your progress toward it: a gentle nudge, not a grade.</p>
+    <p class="secsub">Set a target for your time together. Home counts your last 30 days, so it never resets to zero. A gentle nudge, not a grade.</p>
     <div class="cardbox">
       <div class="fgroup"><label class="f" for="g-goal">Monthly hours goal</label>
         <input type="number" id="g-goal" min="1" max="200" step="0.5" value="${goal??''}" placeholder="15"></div>
@@ -2706,7 +2706,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=130;
+const APP_V=131;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
