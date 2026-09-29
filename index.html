@@ -1116,13 +1116,14 @@ function depositFormHTML(){
         : sync ? `<button class="cta ghostd" style="margin-top:0" onclick="pickPhoto()">Add a photo</button>`
                : `<p class="datanote" style="text-align:left; margin:0">Photos turn on once you're connected with your partner (Settings).</p>`}
       <input type="file" id="d-photo" accept="image/*" hidden onchange="photoChosen(this)"></div>
-    <div class="fgroup"><label class="f">Who booked it?${sync?' (whoever planned it — you\'re pre-credited)':''}</label>
+    <div class="fgroup"><label class="f">Who booked it?${sync?' Tap whoever planned it':''}</label>
       <div class="pills">
         <button class="pill gold ${(dep.planner==='me'||(!dep.planner&&sync&&sync.role==='me'))?'on':''}" onclick="grabDep();dep.planner='me';renderPage()">${esc(nameMe())}</button>
         <button class="pill gold ${(dep.planner==='partner'||(!dep.planner&&sync&&sync.role==='partner'))?'on':''}" onclick="grabDep();dep.planner='partner';renderPage()">${esc(namePa())}</button>
       </div></div>
     <button class="cta pink" onclick="openDepositSheet()">${dep.editingId?'Update this date':'Save this date'}</button>
-    ${dep.editingId?`<button class="cta ghostd" onclick="cancelEdit()">Cancel edit</button>`:`<button class="cta ghostd" onclick="closeDepForm()">Close · keeps your draft</button>`}`;
+    ${dep.editingId?`<button class="cta ghostd" onclick="cancelEdit()">Cancel edit</button>`:`<button class="cta ghostd" onclick="closeDepForm()">Close · keeps your draft</button>
+       <div class="dellinkwrap"><button class="dellink" onclick="askDiscardDraft()">Discard this draft</button></div>`}`;
 }
 function grabDep(){
   if($('#d-title')) dep.title=$('#d-title').value;
@@ -1132,6 +1133,22 @@ function grabDep(){
   if($('#d-moment')) dep.moment=$('#d-moment').value;
 }
 window.grabDep=grabDep;
+/* SLICE 1 (v132): throw away a new-date draft, after a confirmation */
+window.askDiscardDraft=()=>{
+  const extra=[dep.fromPlanId!=null&&planById(dep.fromPlanId)?'The booking stays on your calendar.':null,
+               timer&&!timer.running?'The clock stays paused on Home.':null].filter(Boolean).join(' ');
+  openSheet(`
+    <div class="eyebrow">Discard draft</div><h3>Throw away this draft?</h3>
+    <div class="sheetnote">What you've filled in here goes away and nothing gets logged.${extra?' '+extra:''}</div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Keep it</button>
+    <button class="cta danger" style="flex:1" onclick="discardDraft()">Discard it</button></div>`);
+};
+window.discardDraft=()=>{
+  closeSheet();
+  dep={etype:'date', rating:0, planner:null, editingId:null};
+  ui.showDraftNote=false; ui.depOpen=false; renderDep();
+  toast('Draft discarded');
+};
 window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; ui.depOpen=false; renderPage(); toast('Edit cancelled'); };
 /* ---------- photos: one picture per date, shrunk on the phone, kept in Storage ---------- */
 function shrinkImage(file, max=1280, q=.82){
@@ -2709,7 +2726,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=132;
+const APP_V=133;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
