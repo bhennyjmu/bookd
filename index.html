@@ -842,7 +842,7 @@ const near={ ncat:'food', radiusMi:5, query:'', locText:'', coords:null, results
 let dep={ etype:'date', rating:0, planner:null, editingId:null };
 let currentIdea=null, tickInt=null, cdTimer=null;
 
-/* ---------- ledger math ---------- */
+/* ---------- ledger math ---------- */ /* SLICE 1 (v135): wording pass applied */
 const elapsedSecs=()=>!timer?0:Math.floor((timer.elapsed||0)+(timer.running?(Date.now()-timer.startedAt)/1000:0));
 function stats(){
   const now=new Date(); now.setHours(0,0,0,0);
@@ -1232,7 +1232,7 @@ window.openDepositSheet=()=>{
   const meta = small?Math.round(raw)+' min':raw+' hrs';
   const rate = dep.rating>0?'♥'.repeat(dep.rating):(dep.etype==='small'?'no rating':'no rating yet (saves as 4♥)');
   const note = (dep.moment||'').trim()?'“'+esc(dep.moment.trim())+'”'
-    :'It lands in History and updates your balance.';
+    :'It lands in History and counts toward your time together.';
   openSheet(`
     <div class="eyebrow">One more look</div><h3>Put this on the books?</h3>
     <div class="recap"><div class="rt">${esc(title)}</div><div class="rm">${meta} · ${rate}</div></div>
@@ -1312,7 +1312,7 @@ function planPage(){
     </div>
     ${ui.planIntent==='know'?knowCard:ideaCard}
     <div class="sechead"><h2>Standing reservation</h2><span class="lead"></span></div>
-    ${reservation?'':`<p class="secsub">Different from booking one date: this is the recurring slot you two hold for each other: weekly, every other week, or monthly, your call. Let a whole cycle pass with no date and it simply shows on the statement as a missed night. No penalty, just honesty.</p>`}
+    ${reservation?'':`<p class="secsub">Different from booking one date: this is the recurring slot you two hold for each other: weekly, every other week, or monthly, your call. Let a whole cycle pass with no date and it simply shows in History as a missed night. No penalty, just honesty.</p>`}
     <div class="cardbox" id="resv-body">${reservationHTML()}</div>`;
 }
 window.setMode=m=>{ ui.planMode=m; renderPage(); if(m==='places') mountMap(); };
@@ -1906,7 +1906,7 @@ function settingsPage(){
       ${themeBtn('light','Light',sun)}${themeBtn('dark','Dark',moon)}${themeBtn('system','System',mon)}
     </div>
     <p class="datanote" style="margin-top:0; margin-bottom:24px">"System" is the default: Book'd matches your phone's own setting, so most people never have to touch this.</p>
-    <div class="sechead" style="margin-top:0"><h2>Account holders</h2><span class="lead"></span></div>
+    <div class="sechead" style="margin-top:0"><h2>Who’s on the books</h2><span class="lead"></span></div>
     <p class="secsub">First names only. They label who booked each date. Everything stays on this phone until you sync with your partner below.</p>
     <div class="cardbox">
       <div class="grid2 fgroup">
@@ -1940,7 +1940,7 @@ window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
   renderAll(); };
 window.saveProfile=()=>{
   if(!$('#p-me').value.trim()) return fieldError('p-me','First name, please. It labels who booked each date');   // SLICE 1 (v133)
-  if(!$('#p-pa').value.trim()) return fieldError('p-pa','Their first name goes on the account too');
+  if(!$('#p-pa').value.trim()) return fieldError('p-pa','Their first name, please. It labels their dates too');
   profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:kidsAsk()?'ask':profile.kids!==false };
   store.set('profile',profile); pushMeta();
   toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+', on the books ♥':'Saved');
@@ -2487,7 +2487,7 @@ window.obAnnivPick=v=>{ profile.anniv=v||''; store.set('profile',profile);
   const r=$('#ob-react'); if(r) r.innerHTML=v?`<div class="oreact">${annivReact(v)}</div>`:''; };
 window.obSaveName=()=>{ const v=$('#ob-name').value.trim(); if(!v) return toast('First name, please. It labels who booked each date');
   profile.me=v; store.set('profile',profile); obGo('partner'); };
-window.obSavePartner=()=>{ const v=$('#ob-partner').value.trim(); if(!v) return toast('Their first name goes on the account too');
+window.obSavePartner=()=>{ const v=$('#ob-partner').value.trim(); if(!v) return toast('Their first name, please. It labels their dates too');
   profile.partner=v; store.set('profile',profile); obGo('anniv'); };
 window.obKids=v=>{ profile.kids=v; store.set('profile',profile); obGo('value'); };
 window.obMint=async()=>{
@@ -2544,7 +2544,7 @@ window.obBack=()=>{ obGrab(); const path=obPath(), i=path.indexOf(ob.step); ob.s
 window.obNext=()=>{ const path=obPath(), i=path.indexOf(ob.step); obGo(path[Math.min(path.length-1,i+1)]); };
 window.obSaveNames=()=>{ obGrab();
   if(!profile.me) return fieldError('ob-name','First name, please. It labels who booked each date');
-  if(!profile.partner) return fieldError('ob-partner','Their first name goes on the account too');
+  if(!profile.partner) return fieldError('ob-partner','Their first name, please. It labels their dates too');
   if(!ob.replay && profile.kids===undefined){ profile.kids='ask'; store.set('profile',profile); }
   obNext(); };
 window.obGoalPick=n=>{ ob.goal=n; document.querySelectorAll('.goalpick button').forEach(b=>b.classList.toggle('on', +b.dataset.v===n)); buzz(8); };
@@ -2582,7 +2582,7 @@ function obRender(){
   if(s==='names'){
     body=`<div class="oart">${OB_ART.name}</div>
       <h1>Who’s on the books?</h1>
-      <p class="sub">First names only. Nothing leaves your two phones.</p>
+      <p class="sub">First names only. Just for the two of you.</p>
       <label class="f" for="ob-name">Your first name</label>
       <input type="text" id="ob-name" maxlength="20" value="${me}" placeholder="First name" autocomplete="given-name" autocapitalize="words" enterkeyhint="next">
       <label class="f" for="ob-partner">Your partner’s first name</label>
@@ -2644,7 +2644,7 @@ function obRender(){
       <input type="text" id="ob-code" placeholder="XXXX-XXXX" autocapitalize="characters">
       <div class="grow"></div>
       <button class="cta pink" onclick="obJoinCode()">Connect this phone</button>
-      <button class="olink" style="align-self:center" onclick="ob.mode='founder';obGo('names')">No code? Open a new account instead</button>`;
+      <button class="olink" style="align-self:center" onclick="ob.mode='founder';obGo('names')">No code? Start your own books instead</button>`;
   }
   if(s==='jwho'){
     const jm=esc((ob.join&&ob.join.profile.me)||'Account holder 1'), jp=esc((ob.join&&ob.join.profile.partner)||'Account holder 2');
@@ -2750,7 +2750,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=135;
+const APP_V=136;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
