@@ -627,6 +627,10 @@ div.zstep{cursor:default; color:var(--dim)}
 /* SLICE 6 end */
 /* SLICE 7 — kids question asked once at the first booking (no new styles) */
 .toast.show{opacity:1}
+/* SLICE 1 (v136) */
+.ih{width:.95em; height:.95em; vertical-align:-.12em; fill:currentColor; display:inline-block}
+.recap .ih,.banner .ih,.resv-status .ih,.sheetnote .ih{fill:var(--rose)}
+.toast{top:calc(env(safe-area-inset-top) + 12px); bottom:auto}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 /* SLICE 1 (v127): status-bar strip */
 body::before{content:""; position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top); background:var(--plum); z-index:45; pointer-events:none}
@@ -737,6 +741,21 @@ const CAL_MK={
 const heartRow=r=>{ r=Math.max(0,Math.min(5,r||0)); return heartSVG(false).repeat(r)+heartSVG(true).repeat(5-r); };
 const fmtMS=s=>{ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
   return h>0 ? h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0') : m+':'+String(sec).padStart(2,'0'); };
+/* SLICE 1 (v136): iPhone turns a text ♥ into an emoji we can't colour. Swap every one the app shows for a drawn heart. */
+const IH_SVG=`<svg class="ih" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}"/></svg>`;
+function swapHearts(root){
+  if(!root) return;
+  if(root.nodeType===3){ root=root.parentNode; if(!root) return; }
+  if(root.nodeType!==1 || root.closest('script,style,textarea')) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode:n=>n.nodeValue.includes('♥')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT });
+  const hits=[]; while(w.nextNode()) hits.push(w.currentNode);
+  hits.forEach(n=>{ const frag=document.createDocumentFragment();
+    n.nodeValue.split('♥').forEach((part,i)=>{ if(i){ const t=document.createElement('template'); t.innerHTML=IH_SVG; frag.appendChild(t.content.firstChild); } if(part) frag.appendChild(document.createTextNode(part)); });
+    n.parentNode.replaceChild(frag,n); });
+}
+new MutationObserver(ms=>ms.forEach(m=>{ if(m.type==='characterData') swapHearts(m.target); else m.addedNodes.forEach(swapHearts); }))
+  .observe(document.documentElement,{childList:true, subtree:true, characterData:true});
+document.addEventListener('DOMContentLoaded',()=>swapHearts(document.body));
 const toastQ=[]; let toastBusy=false;
 function toast(msg){ toastQ.push(String(msg)); if(toastQ.length>3) toastQ.splice(0,toastQ.length-3); if(!toastBusy) nextToast(); }
 function nextToast(){ const t=$('#toast'), m=toastQ.shift(); if(m==null||!t){ toastBusy=false; return; }
@@ -1047,7 +1066,8 @@ function renderDep(){
   const w=$('#logwrap'), sh=$('#logsheet'); if(!w||!sh) return;
   document.body.style.overflow = ui.depOpen ? 'hidden' : '';
   if(!ui.depOpen){ ui.showDraftNote=false; w.classList.remove('show'); return; }
-  const y=sh.scrollTop, cr=sh.querySelector('.catrow'), cx=cr?cr.scrollLeft:0;
+  const wasOpen=w.classList.contains('show');   // SLICE 1 (v136): a fresh open starts at the top
+  const y=wasOpen?sh.scrollTop:0, cr=sh.querySelector('.catrow'), cx=wasOpen&&cr?cr.scrollLeft:0;
   sh.innerHTML=logSheetHTML(); sh.scrollTop=y;
   const cr2=sh.querySelector('.catrow'); if(cr2) cr2.scrollLeft=cx;
   w.classList.add('show');
@@ -1349,7 +1369,7 @@ function spinCardHTML(){
     ? `${esc(i.kindLabel||'Real place')}${i.mi!=null?', '+i.mi.toFixed(1)+' mi away':''}${i.lat?` · <a href="https://www.google.com/maps/search/?api=1&query=${i.lat}%2C${i.lon}" target="_blank" rel="noopener">Map ${ICO.ext}</a>`:''}`
     : `${'$'.repeat(i.c||1)} · ${i.w==='in'?'Stay in':'Go out'}, ${i.v==='adv'?'Adventurous':'Chill'}`;
   const links=[];
-  if(!favorites.includes(i.n)) links.push(`<button onclick="saveFav()">save idea</button>`);
+  if(!favorites.includes(i.n)) links.push(`<button onclick="saveFav()">Save idea</button>`);
   links.push(`<button onclick="logIdea()">We already did it, log it</button>`);
   if(i.place && ['Restaurant','Café','Bar'].includes(i.kindLabel))
     links.push(`<a href="${otURL(i)}" target="_blank" rel="noopener">OpenTable ${ICO.ext}</a>`);
@@ -1420,7 +1440,7 @@ window.openSitterSheet=id=>{
       </div>`);
     return;
   }
-  const cal=`<a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a>`;
+  const cal=`<a class="cta ghost" style="text-decoration:none" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a>`;
   if(!(kidsOn()&&p.sitter)){
     openSheet(`
       <div class="eyebrow">Booked ♥ ${esc(p.title)}, ${fmtDate(p.date)}</div>
@@ -1438,7 +1458,7 @@ window.openSitterSheet=id=>{
       <button class="cta pink" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">${ICO.bottle} Sitter locked in</button>
     </div>
     ${cal}
-    <a class="cta ghost" style="display:block; text-align:center; text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ${ICO.ext}</a>`);
+    <a class="cta ghost" style="text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ${ICO.ext}</a>`);
 };
 
 window.setSitter=(id,v)=>{ const p=planById(id); if(!p) return; p.sitter=v; savePlans();
@@ -1467,7 +1487,7 @@ function reservationHTML(){
   return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}, ${resvCad().label}</div>
     <div class="countdown" id="countdown"></div>
     ${status}
-    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">add to my calendar</a><button onclick="askClearResv()">cancel reservation</button></div>`;
+    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">Add to my calendar</a><button onclick="askClearResv()">Cancel reservation</button></div>`;
 }
 window.setResv=()=>{
   reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO(), cadence:$('#r-cad').value };
@@ -1518,7 +1538,7 @@ function placesBlock(){
     [['food','Restaurants'],['cafe','Cafés & sweets'],['bar','Bars'],['park','Parks & nature'],['fun','Activities'],['culture','Culture']]
       .map(([v,t])=>`<button class="pill ${near.ncat===v?'on':''}" onclick="setNcat('${v}')">${t}</button>`).join('')
     +`</div></div>
-    <button class="linklike" style="margin:10px 0 0" onclick="ui.placeCtl=!ui.placeCtl;renderPage()">${ctlOpen?'▾':'▸'} location &amp; search: ${ctlSummary}</button>
+    <button class="linklike" style="margin:10px 0 0" onclick="ui.placeCtl=!ui.placeCtl;renderPage()"><span style="display:inline-block; vertical-align:middle; transform:rotate(${ctlOpen?90:0}deg)">${ICO.chev}</span> location &amp; search: ${ctlSummary}</button>
     ${controls}
     <div id="placelist">${placeListHTML()}</div>
     <div class="spin-card ${currentIdea&&currentIdea.place?'show':''}" id="spin-card">${currentIdea&&currentIdea.place?spinCardHTML():''}</div>`;
@@ -1546,6 +1566,7 @@ window.selPlace=name=>{
     currentIdea={ n:p.name, place:true, cat:catMap[near.ncat], kindLabel:p.kind, mi:p.km*0.621371, lat:p.lat, lon:p.lon, w:'out' };
   }
   renderPage(); mapDraw(false);
+  setTimeout(()=>{ const c=$('#spin-card'); if(c&&c.classList.contains('show')) c.scrollIntoView({behavior:'smooth', block:'center'}); },60);   // SLICE 1 (v136)
 };
 
 const NEAR_TAGS={
@@ -1623,6 +1644,7 @@ window.setLoc=async()=>{
           {timeout:10000, maximumAge:600000});
       });
     }
+    renderPage();   // SLICE 1 (v136): redraw so the label shows the new location
     mountMap(); fetchNear();
   }catch(err){ near.busy=false; near.err=err.message; updatePlaceList(); }
 };
@@ -1725,7 +1747,7 @@ window.openDay=iso=>{
         <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="askClearPlan(${p.id})">Cancel date</button>
       </div>
       <button class="cta ghostd" style="width:100%; margin-top:8px; padding:9px" onclick="openEditPlan(${p.id})">${ICO.pen} Edit details</button>
-      <a class="cta ghost" style="display:block; text-align:center; text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a></div>`;
+      <a class="cta ghost" style="text-decoration:none; margin-top:8px; padding:9px" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a></div>`;
   });
   if(resvOccursOn(iso)) body+=`<div class="sheetnote">♥ Standing reservation night: ${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}.</div>`;
   if(!body) body=`<div class="sheetnote">Nothing on the books this day.</div>`;
@@ -1910,7 +1932,7 @@ function settingsPage(){
     <p class="secsub">First names only. They label who booked each date. Everything stays on this phone until you sync with your partner below.</p>
     <div class="cardbox">
       <div class="grid2 fgroup">
-        <div><label class="f" for="p-me">You</label><input type="text" id="p-me" maxlength="20" value="${esc(profile.me)}" placeholder="Brad"></div>
+        <div><label class="f" for="p-me">You</label><input type="text" id="p-me" maxlength="20" value="${esc(profile.me)}" placeholder="First name"></div>
         <div><label class="f" for="p-pa">Your partner</label><input type="text" id="p-pa" maxlength="20" value="${esc(profile.partner)}" placeholder="First name"></div>
       </div>
       <div class="fgroup"><label class="f" for="p-anniv">Anniversary (optional)</label>
@@ -2750,7 +2772,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=136;
+const APP_V=137;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
