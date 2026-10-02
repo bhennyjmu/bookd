@@ -1053,6 +1053,14 @@ function suggHTML(){
   if(top.length<3) top=['Dinner out','Coffee walk','Movie night in','Long walk'];
   return `<div class="sugg" aria-label="Suggestions from your history">${top.map(t=>`<button type="button" class="pill" data-v="${esc(t)}" onclick="pickSugg(this)">${esc(t)}</button>`).join('')}</div>`;
 }
+/* SLICE 3 (v139): the category follows the name as it's typed, until one is tapped */
+document.addEventListener('input',e=>{
+  if(e.target.id!=='d-title' || dep.catPicked || dep.editingId) return;
+  const t=e.target.value.trim(), c=t?guessCat(t):(dep.cat||'Food & drink');
+  const row=document.querySelector('#logsheet .catrow'); if(!row) return;
+  row.querySelectorAll('.pill').forEach(b=>b.classList.toggle('on', b.textContent===c));
+  const on=row.querySelector('.pill.on'); if(on) row.scrollLeft=Math.max(0, on.offsetLeft-row.offsetLeft-16);
+});
 window.pickSugg=b=>{ const i=$('#d-title'); if(i){ i.value=b.dataset.v; i.dispatchEvent(new Event('input',{bubbles:true})); buzz(8); } };
 function logSheetHTML(){
   const clocked = elapsedSecs()>0 && !(timer&&timer.running) && !dep.editingId;
@@ -1079,9 +1087,23 @@ window.clockIn=()=>{
 };
 window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); pushClock(); renderAll(); };
 window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); pushClock(); renderAll(); };
+/* SLICE 2 (v139): a "Log a past date" draft waits here while the timed date is being logged */
+let parkedDep=null;
+function freshDep(){
+  if(parkedDep){ const d=parkedDep; parkedDep=null; d._draft=true; return d; }
+  return {etype:'date', rating:0, planner:null, editingId:null};
+}
 window.clockOut=()=>{
+  const wasRunning=!!(timer&&timer.running);
   if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); }
-  dep={etype:'date', rating:0, planner:null, editingId:null, fromClock:true};   // fresh form; prefill logic reads the clock
+  if(dep.fromClock && !dep.editingId){   // SLICE 2 (v139): pick the timed date's draft back up
+    if(wasRunning){ delete dep.hours; dep._auto=false; }   // the clock ran again, so the hours come from it again
+    ui.showDraftNote=!!dep._draft; dep._draft=false;
+  } else {
+    if(!dep.editingId && ((dep.title||'').trim() || dep._draft)) parkedDep=dep;   // keep a past-date draft for later
+    dep={etype:'date', rating:0, planner:null, editingId:null, fromClock:true};   // fresh form; prefill logic reads the clock
+    ui.showDraftNote=false;
+  }
   ui.justSaved=false; ui.depOpen=true;
   renderAll(); buzz(18);
 };
@@ -1095,7 +1117,7 @@ window.openScrapSheet=()=>{
 window.scrapClock=()=>{
   closeSheet();
   timer=null; store.set('timer',null); pushClock();
-  dep={etype:'date', rating:0, planner:null, editingId:null};
+  if(dep.fromClock) dep=freshDep();   // SLICE 2 (v139): only the timed date's draft goes; a past-date draft stays
   ui.depOpen=false;
   toast('Clock scrapped. Hope everything’s okay ♥');
   renderAll();
@@ -1111,7 +1133,8 @@ function depositFormHTML(){
   const defHours = dep.hours!=null?dep.hours:(clocked ? (small?mins:Math.max(0.1,Math.round(mins/6)/10)) : '');
   const defDate = dep.date || (timer&&timer.date) || todayISO();
   const cats=['Food & drink','Movies & shows','Outdoors','At home','Music & culture','Active','Something new'];
-  const defCat = dep.cat || 'Food & drink';
+  // SLICE 3 (v139): until a category is tapped, guess it from the name
+  const defCat = (!dep.catPicked && !dep.editingId && String(defTitle).trim()) ? guessCat(defTitle) : (dep.cat || 'Food & drink');
   return `<div class="fgroup"><label class="f">Type</label>
       <div class="pills">
         <button class="pill ${!small?'on':''}" onclick="grabDep();dep.etype='date';renderPage()">Date night</button>
@@ -1126,7 +1149,7 @@ function depositFormHTML(){
     </div>
     <div class="fgroup stack">
       <div><label class="f">Category</label>
-        <div class="pills catrow">${cats.map(c=>`<button type="button" class="pill ${c===defCat?'on':''}" onclick="grabDep();dep.cat='${c}';renderDep()">${c}</button>`).join('')}</div></div>
+        <div class="pills catrow">${cats.map(c=>`<button type="button" class="pill ${c===defCat?'on':''}" onclick="grabDep();dep.cat='${c}';dep.catPicked=true;renderDep()">${c}</button>`).join('')}</div></div>
       <div><label class="f">How was it?</label>
         <div class="hearts">${[1,2,3,4,5].map(i=>`<button title="${i} of 5" class="${dep.rating>=i?'on':''}" onclick="grabDep();dep.rating=${i};renderPage()">${heartSVG(false)}</button>`).join('')}</div></div>
     </div>
@@ -1152,6 +1175,7 @@ function depositFormHTML(){
 }
 function grabDep(){
   if($('#d-title')) dep.title=$('#d-title').value;
+  if(!dep.catPicked && !dep.editingId && (dep.title||'').trim()) dep.cat=guessCat(dep.title);   // SLICE 3 (v139)
   if($('#d-date')) dep.date=$('#d-date').value;
   if($('#d-cat')) dep.cat=$('#d-cat').value;
   if($('#d-hours')) dep.hours=$('#d-hours').value;
@@ -1170,7 +1194,7 @@ window.askDiscardDraft=()=>{
 };
 window.discardDraft=()=>{
   closeSheet();
-  dep={etype:'date', rating:0, planner:null, editingId:null};
+  dep = dep.fromClock ? freshDep() : {etype:'date', rating:0, planner:null, editingId:null};   // SLICE 2 (v139)
   ui.showDraftNote=false; ui.depOpen=false; renderDep();
   toast('Draft discarded');
 };
@@ -1282,7 +1306,7 @@ window.commitDeposit=()=>{
   if(pix>-1){ plans.splice(pix,1); savePlans(); }
   // SLICE 1 (v131): the clock ends only when this date came from it; edits never touch it
   if(timer && !wasEdit && (dep.fromClock || (!timer.running && record.date===timer.date))){ timer=null; store.set('timer',null); pushClock(); }
-  dep={etype:'date',rating:0,planner:null,editingId:null};
+  dep=freshDep();   // SLICE 2 (v139): a set-aside past-date draft comes back
   ui.justSaved=!wasEdit; ui.tab=wasEdit?tabBefore:0; ui.depOpen=false;   // a new date lands you on Home to watch it add up; an edit leaves you where you were
   renderAll(); buzz(18);
   if(ui.tab===0) tweenBalance(balBefore, stats().balance);
@@ -1400,7 +1424,7 @@ window.loadFav=i=>{
 };
 window.logIdea=()=>{
   if(!currentIdea) return;
-  dep={etype:'date', rating:0, planner:null, editingId:null, title:currentIdea.n, cat:currentIdea.cat||(currentIdea.w==='in'?'At home':'Something new'), _auto:true};
+  dep={etype:'date', rating:0, planner:null, editingId:null, title:currentIdea.n, cat:currentIdea.cat||(currentIdea.w==='in'?'At home':'Something new'), catPicked:true, _auto:true};
   ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-hours'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
 };
@@ -2114,7 +2138,7 @@ window.askClearPlan=id=>{
 window.logPlan=id=>{
   const p=planById(id); if(!p) return;
   // SLICE 1 (v131): the booking stays until the date is saved; commitDeposit removes it then
-  dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, cat:'Something new', _auto:true, fromPlanId:id};
+  dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, _auto:true, fromPlanId:id};   // SLICE 3 (v139): category guessed from the name
   ui.justSaved=false; ui.depOpen=true; renderAll();
 };
 
@@ -2149,6 +2173,7 @@ const entryRef=id=>window.fb.doc(db,'couples',sync.cid,'entries',String(id));
 const metaPayload=()=>({profile, reservation, plans, goal, favorites, lastBy:sync?sync.role:null, updatedAt:Date.now()});
 function startSync(){
   if(!sync||!ensureDb()) return;
+  flushPending();   // SLICE 1 (v139): send anything saved before sync was ready, before the shared copy loads
   syncStatus='connecting';
   const oldSeen=seenAt;
   let firstMeta=true, firstEntries=true;
@@ -2203,16 +2228,35 @@ function startSync(){
         }
       });
     }
-    entries=cleanEntries(snap.docs.map(d=>d.data()))
+    const got=snap.docs.map(d=>d.data());   // SLICE 1 (v139): a just-sent queued date stays until the shared copy has it
+    if(flying.size){ const have=new Set(got.map(e=>e.id)); flying.forEach(id=>{ if(have.has(id)) flying.delete(id); else { const r=entries.find(e=>e.id===id); if(r) got.push(r); } }); }
+    entries=cleanEntries(got)
       .sort((a,b)=>String(b.date).localeCompare(String(a.date))||((b.id||0)-(a.id||0)));
     store.set('entries',entries);
     renderFromRemote();
   }, ()=>{ syncStatus='error'; renderFromRemote(); });
 }
 function stopSync(){ if(unsubMeta)unsubMeta(); if(unsubEntries)unsubEntries(); unsubMeta=unsubEntries=null; syncStatus='off'; }
-function pushMeta(){ if(sync&&db) window.fb.setDoc(metaRef(), metaPayload(), {merge:true}).catch(()=>{}); }
-function pushEntry(r){ if(sync&&db) window.fb.setDoc(entryRef(r.id), r).catch(()=>{}); }
-function pushDelete(id){ if(sync&&db) window.fb.deleteDoc(entryRef(id)).catch(()=>{}); }
+/* SLICE 1 (v139): changes made before the sync code has loaded wait here, then go up as soon as it's ready */
+const pend={ up:store.get('pendUp',[])||[], del:store.get('pendDel',[])||[], meta:!!store.get('pendMeta',false), clock:!!store.get('pendClock',false) };
+const flying=new Set();   // queued dates just sent: kept on screen until the shared copy shows them
+function savePend(){ store.set('pendUp',pend.up); store.set('pendDel',pend.del); store.set('pendMeta',pend.meta); store.set('pendClock',pend.clock); }
+function flushPending(){
+  if(!sync||!db) return;
+  if(!pend.up.length && !pend.del.length && !pend.meta && !pend.clock) return;
+  const up=pend.up, del=pend.del, meta=pend.meta, clock=pend.clock;
+  pend.up=[]; pend.del=[]; pend.meta=false; pend.clock=false; savePend();
+  if(meta) window.fb.setDoc(metaRef(), metaPayload(), {merge:true}).catch(()=>{});
+  up.forEach(id=>{ const r=entries.find(e=>e.id===id); if(r){ flying.add(r.id); window.fb.setDoc(entryRef(r.id), r).catch(()=>{}); } });
+  del.forEach(id=>window.fb.deleteDoc(entryRef(id)).catch(()=>{}));
+  if(clock) pushClock();
+}
+function pushMeta(){ if(sync&&db) window.fb.setDoc(metaRef(), metaPayload(), {merge:true}).catch(()=>{});
+  else if(sync){ pend.meta=true; savePend(); } }
+function pushEntry(r){ if(sync&&db) window.fb.setDoc(entryRef(r.id), r).catch(()=>{});
+  else if(sync){ pend.del=pend.del.filter(x=>x!==r.id); if(!pend.up.includes(r.id)) pend.up.push(r.id); savePend(); } }
+function pushDelete(id){ if(sync&&db) window.fb.deleteDoc(entryRef(id)).catch(()=>{});
+  else if(sync){ pend.up=pend.up.filter(x=>x!==id); if(!pend.del.includes(id)) pend.del.push(id); savePend(); } }
 window.setPairRole=r=>{ pairRole=r; renderPage(); };
 window.setNudgeEvery=n=>{ nudgeEvery=n; store.set('nudgeEvery',n);
   if(sync&&db) window.fb.setDoc(metaRef(), {nudgePace:{[sync.role]:n}}, {merge:true}).catch(()=>{});
@@ -2294,7 +2338,8 @@ window.inviteCopy=d=>{ (navigator.clipboard?navigator.clipboard.writeText(d):Pro
   .then(()=>toast('Invite copied')).catch(()=>toast(d)); };
 window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join me on Book'd. Open Settings, then Join with this code: "+d}).catch(()=>{}); else inviteCopy(d); };
 function pushClock(){   // file the clock's flight plan with the vault so the night watchman can see it
-  if(!sync||!db) return;
+  if(!sync) return;
+  if(!db){ pend.clock=true; savePend(); return; }   // SLICE 1 (v139)
   const c = timer ? {running:!!timer.running, since: Date.now()-elapsedSecs()*1000, by:sync.role, nagged:false} : null;
   window.fb.setDoc(metaRef(), {clock:c}, {merge:true}).catch(()=>{});
 }
@@ -2782,7 +2827,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=139;
+const APP_V=140;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
