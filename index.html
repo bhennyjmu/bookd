@@ -1742,7 +1742,7 @@ window.openDay=iso=>{
     body+=`<div class="recap" style="text-align:left"><div class="rt">${esc(p.title)}</div>
       <div class="rm">Booked ahead${sit}</div>
       <div class="row2" style="margin-top:8px">
-        ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">${p.sitter==='locked'?'Sitter: covered':'Mark covered'}</button>`:''}
+        ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">${p.sitter==='locked'?'Undo sitter':'Sitter covered'}</button><!-- SLICE 1 (v138) -->`:''}
         ${iso<=t?`<button class="cta pink" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
         <button class="cta danger" style="flex:1; margin-top:0; padding:9px" onclick="askClearPlan(${p.id})">Cancel date</button>
       </div>
@@ -2782,7 +2782,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=138;
+const APP_V=139;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
