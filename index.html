@@ -1088,9 +1088,11 @@ window.clockIn=()=>{
 window.clockPause=()=>{ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); pushClock(); renderAll(); };
 window.clockResume=()=>{ timer.startedAt=Date.now(); timer.running=true; store.set('timer',timer); pushClock(); renderAll(); };
 /* SLICE 2 (v139): a "Log a past date" draft waits here while the timed date is being logged */
-let parkedDep=null;
+/* SLICE 1 (v140): drafts set aside wait in a short stack; the newest comes back first */
+let parked=[];
+function parkDraft(){ if(!dep.editingId && ((dep.title||'').trim() || dep._draft)){ parked.push(dep); if(parked.length>3) parked.shift(); } }
 function freshDep(){
-  if(parkedDep){ const d=parkedDep; parkedDep=null; d._draft=true; return d; }
+  if(parked.length){ const d=parked.pop(); d._draft=true; return d; }
   return {etype:'date', rating:0, planner:null, editingId:null};
 }
 window.clockOut=()=>{
@@ -1100,7 +1102,7 @@ window.clockOut=()=>{
     if(wasRunning){ delete dep.hours; dep._auto=false; }   // the clock ran again, so the hours come from it again
     ui.showDraftNote=!!dep._draft; dep._draft=false;
   } else {
-    if(!dep.editingId && ((dep.title||'').trim() || dep._draft)) parkedDep=dep;   // keep a past-date draft for later
+    parkDraft();   // keep a past-date draft for later (SLICE 1 (v140))
     dep={etype:'date', rating:0, planner:null, editingId:null, fromClock:true};   // fresh form; prefill logic reads the clock
     ui.showDraftNote=false;
   }
@@ -1117,6 +1119,7 @@ window.openScrapSheet=()=>{
 window.scrapClock=()=>{
   closeSheet();
   timer=null; store.set('timer',null); pushClock();
+  parked=parked.filter(d=>!d.fromClock);   // SLICE 1 (v140): a set-aside timed-date draft goes with the clock
   if(dep.fromClock) dep=freshDep();   // SLICE 2 (v139): only the timed date's draft goes; a past-date draft stays
   ui.depOpen=false;
   toast('Clock scrapped. Hope everything’s okay ♥');
@@ -1194,11 +1197,11 @@ window.askDiscardDraft=()=>{
 };
 window.discardDraft=()=>{
   closeSheet();
-  dep = dep.fromClock ? freshDep() : {etype:'date', rating:0, planner:null, editingId:null};   // SLICE 2 (v139)
+  dep = freshDep();   // SLICE 1 (v140): discarding this draft brings back one that was set aside
   ui.showDraftNote=false; ui.depOpen=false; renderDep();
   toast('Draft discarded');
 };
-window.cancelEdit=()=>{ dep={etype:'date',rating:0,planner:null,editingId:null}; ui.justSaved=false; ui.depOpen=false; renderPage(); toast('Edit cancelled'); };
+window.cancelEdit=()=>{ dep=freshDep(); /* SLICE 1 (v140) */ ui.justSaved=false; ui.depOpen=false; renderPage(); toast('Edit cancelled'); };
 /* ---------- photos: one picture per date, shrunk on the phone, kept in Storage ---------- */
 function shrinkImage(file, max=1280, q=.82){
   return new Promise((res,rej)=>{
@@ -1424,6 +1427,7 @@ window.loadFav=i=>{
 };
 window.logIdea=()=>{
   if(!currentIdea) return;
+  parkDraft();   // SLICE 1 (v140)
   dep={etype:'date', rating:0, planner:null, editingId:null, title:currentIdea.n, cat:currentIdea.cat||(currentIdea.w==='in'?'At home':'Something new'), catPicked:true, _auto:true};
   ui.justSaved=false; ui.depOpen=true; renderAll();
   setTimeout(()=>{ const f=$('#d-hours'); if(f){ f.scrollIntoView({behavior:'smooth', block:'center'}); f.focus({preventScroll:true}); } },80);
@@ -2001,6 +2005,7 @@ window.saveGoal=()=>{
 window.clearGoal=()=>{ goal=null; store.set('goal',null); pushMeta(); toast('Goal cleared'); renderAll(); };
 window.editEntry=id=>{
   const e=entries.find(x=>x.id===id); if(!e) return;
+  parkDraft();   // SLICE 1 (v140): a half-filled draft waits while this edit happens
   dep={ etype:isDate(e)?'date':'small', rating:e.rating||0, planner:e.planner||null, editingId:id,
     title:e.title, date:e.date, cat:e.cat, moment:e.moment||'',
     hours: isDate(e)?e.hours:Math.round(e.hours*60), photoUrl:e.photo||null, photoFocus:e.photoFocus||null, _auto:true };
@@ -2137,6 +2142,8 @@ window.askClearPlan=id=>{
 };
 window.logPlan=id=>{
   const p=planById(id); if(!p) return;
+  if(dep.fromPlanId===id && !dep.editingId){ ui.showDraftNote=!!dep._draft; dep._draft=false; ui.justSaved=false; ui.depOpen=true; renderAll(); return; }   // SLICE 1 (v140): same booking, same draft
+  parkDraft();   // SLICE 1 (v140)
   // SLICE 1 (v131): the booking stays until the date is saved; commitDeposit removes it then
   dep={etype:'date', rating:0, planner:null, editingId:null, title:p.title, date:p.date, _auto:true, fromPlanId:id};   // SLICE 3 (v139): category guessed from the name
   ui.justSaved=false; ui.depOpen=true; renderAll();
@@ -2827,7 +2834,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=140;
+const APP_V=141;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
