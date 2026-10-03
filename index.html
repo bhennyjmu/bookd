@@ -687,7 +687,7 @@ let profile    = store.get('profile', {me:'', partner:'', anniv:''});   // first
 const nameMe=()=>profile.me||'Me', namePa=()=>profile.partner||'My partner';
 const kidsOn=()=>profile.kids!==false && profile.kids!=='ask';   // on unless switched off; 'ask' = new couple, not asked yet, so stay quiet
 const kidsAsk=()=>profile.kids==='ask';
-const plansSorted=()=>[...plans].sort((a,b)=>a.date.localeCompare(b.date));
+const plansSorted=()=>[...plans].sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'99').localeCompare(b.time||'99'));
 const todayPlan=()=>plans.find(p=>p.date===todayISO());
 const nextPlan=()=>plansSorted().find(p=>p.date>todayISO());
 const overduePlan=()=>plansSorted().find(p=>p.date<todayISO());
@@ -732,6 +732,14 @@ const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()
 const isDate=e=>(e.type||'date')==='date';
 const attr=e=>e.planner||e.by||null;   // credit: the who-booked-it pills win; else whoever logged it
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
+const okTime=t=>typeof t==='string'&&/^\d{2}:\d{2}$/.test(t);
+const atTime=p=>okTime(p&&p.time)?' at '+fmtTime(p.time):'';   // ' at 7:30 PM', or nothing for a plan with no set time
+const defTimeFor=iso=>(reservation&&okTime(reservation.time)&&resvOccursOn(iso))?reservation.time:'';   // standing date night fills its own time
+function timeField(id,val,dateId){ return `<div class="fgroup"><label class="f" for="${id}">What time? (optional)</label>
+    <div style="display:flex; gap:8px; align-items:center"><input type="time" id="${id}" value="${val||''}" style="flex:1" oninput="this.dataset.touched=1">
+    <button type="button" class="cta ghostd" style="width:auto; margin-top:0; padding:10px 12px; font-size:13px; white-space:nowrap" onclick="const t=$('#${id}'); t.value=''; t.dataset.touched=1">No set time</button></div></div>`; }
+window.syncDefTime=(dId,tId)=>{ const d=$('#'+dId), t=$('#'+tId); if(d&&t&&!t.dataset.touched) t.value=defTimeFor(d.value); };
+const pickTime=id=>{ const t=$('#'+id); return t&&okTime(t.value)?t.value:null; };
 const HEART_D='M12 21s-8-5.3-8-11a4.6 4.6 0 0 1 8-3.1A4.6 4.6 0 0 1 20 10c0 5.7-8 11-8 11z';
 const heartSVG=off=>`<svg class="hs${off?' off':''}" viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}" fill="currentColor"/></svg>`;
 const CAL_MK={
@@ -1345,7 +1353,8 @@ function planPage(){
       <div class="fgroup"><label class="f" for="own-title">What are you two doing?</label>
         <input type="text" id="own-title" maxlength="60" placeholder="Dinner at that new ramen place"></div>
       <div class="fgroup"><label class="f" for="own-date">Which day?</label>
-        <input type="date" id="own-date" value="${defBook}" min="${todayISO()}"></div>
+        <input type="date" id="own-date" value="${defBook}" min="${todayISO()}" onchange="syncDefTime('own-date','own-time')"></div>
+      ${timeField('own-time',defTimeFor(defBook))}
       <button class="cta pink" style="margin-top:0" onclick="bookOwn()">${ICO.cal} Book it</button>
     </div>`;
   const ideaCard=`<div class="cardbox">
@@ -1437,21 +1446,23 @@ window.logIdea=()=>{
 window.bookIdea=()=>{
   if(!currentIdea || $('#book-date')) return;
   const def = ui.bookDate || (reservation?toISO(nextOccurrence()):toISO(new Date(Date.now()+DAY)));
-  $('#bookrow').innerHTML=`<div style="display:flex; gap:8px; width:100%; margin-top:10px">
-    <input type="date" id="book-date" value="${def}" min="${todayISO()}">
-    <button class="cta pink" style="margin-top:0; width:auto; padding:11px 18px" onclick="confirmBook()">Book</button></div>`;
+  $('#bookrow').innerHTML=`<div style="width:100%; margin-top:10px">
+    <div class="fgroup"><label class="f" for="book-date">Which day?</label>
+      <input type="date" id="book-date" value="${def}" min="${todayISO()}" onchange="syncDefTime('book-date','book-time')"></div>
+    ${timeField('book-time',defTimeFor(def))}
+    <button class="cta pink" style="margin-top:0" onclick="confirmBook()">Book</button></div>`;
 };
 window.bookOwn=()=>{
   const title=$('#own-title').value.trim(); if(!title) return fieldError('own-title','What’s the plan? Give it a name');
   const date=$('#own-date').value; if(!date) return fieldError('own-date','Pick a day');
-  const plan={ id:Date.now(), title, date, sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
+  const plan={ id:Date.now(), title, date, time:pickTime('own-time'), sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
   plans.push(plan); savePlans(); ui.bookDate=null;
   renderAll();
   openSitterSheet(plan.id);
 };
 window.confirmBook=()=>{
   const date=$('#book-date').value; if(!date) return fieldError('book-date','Pick a day');
-  const plan={ id:Date.now(), title:currentIdea.n, date, sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
+  const plan={ id:Date.now(), title:currentIdea.n, date, time:pickTime('book-time'), sitter:kidsOn()?'needed':null, by:sync?sync.role:null };
   plans.push(plan); savePlans(); ui.bookDate=null;
   renderAll();
   openSitterSheet(plan.id);
@@ -1461,7 +1472,7 @@ window.openSitterSheet=id=>{
   const p=planById(id); if(!p) return;
   if(kidsAsk()){
     openSheet(`
-      <div class="eyebrow">Booked ♥ ${esc(p.title)}, ${fmtDate(p.date)}</div>
+      <div class="eyebrow">Booked ♥ ${esc(p.title)}, ${fmtDate(p.date)}${atTime(p)}</div>
       <h3>Kids to cover on date nights?</h3>
       <div class="sheetnote">If a sitter’s part of the equation, Book’d tracks who’s got the kids for each date. We’ll only ask this once. You can change it in Settings.</div>
       <div class="row2">
@@ -1473,14 +1484,14 @@ window.openSitterSheet=id=>{
   const cal=`<a class="cta ghost" style="text-decoration:none" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">Add to Google Calendar</a>`;
   if(!(kidsOn()&&p.sitter)){
     openSheet(`
-      <div class="eyebrow">Booked ♥ ${esc(p.title)}, ${fmtDate(p.date)}</div>
+      <div class="eyebrow">Booked ♥ ${esc(p.title)}, ${fmtDate(p.date)}${atTime(p)}</div>
       <h3>On the books.</h3>
       ${cal}
       <button class="cta pink" onclick="closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Done</button>`);
     return;
   }
   openSheet(`
-    <div class="eyebrow">Booked ♥ ${esc(p.title)}, ${fmtDate(p.date)}</div>
+    <div class="eyebrow">Booked ♥ ${esc(p.title)}, ${fmtDate(p.date)}${atTime(p)}</div>
     <h3>Who's got the kids that night?</h3>
     <div class="sheetnote">A booked date isn't booked until they're covered. You can change this later on the Calendar tab.</div>
     <div class="row2">
@@ -1770,7 +1781,7 @@ window.openDay=iso=>{
   dayPlans.forEach(p=>{
     const sit=(kidsOn()&&p.sitter)?`, ${p.sitter==='locked'?'sitter covered':'no sitter yet'}`:'';
     body+=`<div class="recap" style="text-align:left"><div class="rt">${esc(p.title)}</div>
-      <div class="rm">Booked ahead${sit}</div>
+      <div class="rm">Booked ahead${okTime(p.time)?', '+fmtTime(p.time):''}${sit}</div>
       <div class="row2" style="margin-top:8px">
         ${(kidsOn()&&p.sitter)?`<button class="cta ghostd" style="flex:1; margin-top:0; padding:9px" onclick="toggleSitter(${p.id});openDay('${iso}')">${p.sitter==='locked'?'Undo sitter':'Sitter covered'}</button><!-- SLICE 1 (v138) -->`:''}
         ${iso<=t?`<button class="cta pink" style="flex:1; margin-top:0; padding:9px" onclick="closeSheet();logPlan(${p.id})">Log it</button>`:''}
@@ -1798,7 +1809,7 @@ function comingUpHTML(){
     const when = days<0?'overdue, log or clear it':(days===0?'tonight!':days+' day'+(days===1?'':'s')+' out');
     const sit=(kidsOn()&&p.sitter)?`<button class="chipbtn ${p.sitter==='locked'?'ok':'warn'}" onclick="toggleSitter(${p.id})">${ICO.bottle} ${p.sitter==='locked'?'Sitter covered':'No sitter yet'}</button>`:'';
     return `<div class="cardbox upcard"><div class="uprow"><div class="dblock"><small>${d.toLocaleDateString(undefined,{month:'short'})}</small><b>${d.getDate()}</b></div>
-        <div class="upmid"><div class="upt clamp2">${esc(p.title)}</div><div class="ts">${d.toLocaleDateString(undefined,{weekday:'long'})} · ${when}</div></div>
+        <div class="upmid"><div class="upt clamp2">${esc(p.title)}</div><div class="ts">${d.toLocaleDateString(undefined,{weekday:'long'})}${atTime(p)} · ${when}</div></div>
         <button class="hmore upedit" aria-label="Edit ${esc(p.title)}" title="Edit" onclick="openEditPlan(${p.id})">${ICO.pen}</button></div>
       ${(sit||days<=0)?`<div class="upact">${sit}${days<=0?`<button class="chipbtn go" onclick="logPlan(${p.id})">Log it</button>`:''}</div>`:''}
       <div class="uplinks"><a class="uplink" href="${gcalOneOffURL(p)}" target="_blank" rel="noopener">${ICO.cal} Add to calendar</a>
@@ -2091,7 +2102,7 @@ function renderBanners(){
   const resvISO = reservation ? toISO(nextOccurrence()) : null;
   const resvOpen = resvISO && resvISO!==todayISO() && !plans.some(p=>p.date===resvISO);   // held slot, nothing booked into it
   if(tonight) el.insertAdjacentHTML('beforeend',
-    `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}.${(kidsOn()&&tonight.sitter==='needed')?' Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
+    `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}${atTime(tonight)}.${(kidsOn()&&tonight.sitter==='needed')?' Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
   else if(resvOpen && (!next || resvISO<next.date)){
     const rd=Math.round((parseISO(resvISO)-now)/DAY);
     const when=rd===1?'Tomorrow':WD[reservation.weekday];
@@ -2123,6 +2134,7 @@ window.openEditPlan=id=>{
       <input type="text" id="ep-title" maxlength="60" value="${esc(p.title)}"></div>
     <div class="fgroup"><label class="f" for="ep-date">Which day?</label>
       <input type="date" id="ep-date" value="${p.date}"></div>
+    ${timeField('ep-time',okTime(p.time)?p.time:'')}
     <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
     <button class="cta pink" style="flex:1" onclick="savePlanEdit(${id})">Save</button></div>`);
   setTimeout(()=>{ const f=$('#ep-title'); if(f){ f.focus({preventScroll:true}); f.setSelectionRange(f.value.length,f.value.length); } },60);
@@ -2131,7 +2143,7 @@ window.savePlanEdit=id=>{
   const p=planById(id); if(!p) return;
   const title=$('#ep-title').value.trim(); if(!title) return fieldError('ep-title','Give it a name');
   const date=$('#ep-date').value; if(!date) return fieldError('ep-date','Pick a day');
-  p.title=title; p.date=date; savePlans();
+  p.title=title; p.date=date; p.time=pickTime('ep-time'); savePlans();
   closeSheet(); renderAll(); toast('Booking updated ♥');
 };
 window.askClearPlan=id=>{
@@ -2160,7 +2172,13 @@ function gcalWeeklyURL(){
     +'&details='+encodeURIComponent("Standing reservation, booked in Book'd");
 }
 function gcalOneOffURL(p){
-  const d1=p.date.replace(/-/g,''), d2=toISO(new Date(parseISO(p.date).getTime()+DAY)).replace(/-/g,'');
+  let d1=p.date.replace(/-/g,''), d2=toISO(new Date(parseISO(p.date).getTime()+DAY)).replace(/-/g,'');
+  if(okTime(p.time)){   // floating local time: Google shows it in the phone's own time zone
+    const [y,mo,da]=p.date.split('-').map(Number), [h,mi]=p.time.split(':').map(Number);
+    const st=new Date(y,mo-1,da,h,mi), en=new Date(st.getTime()+2*3600000), pad=n=>String(n).padStart(2,'0');
+    const f=x=>x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+'T'+pad(x.getHours())+pad(x.getMinutes())+'00';
+    d1=f(st); d2=f(en);
+  }
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(p.title+' ♥')
     +'&dates='+d1+'/'+d2+'&details='+encodeURIComponent("Date booked in Book'd");
 }
@@ -2218,7 +2236,7 @@ function startSync(){
         noteAway(); firstMeta=false;
       } else {
         plans.filter(p=>!prevIds.has(p.id) && p.by && p.by!==sync.role).forEach(p=>
-          toast(partnerName()+' booked '+p.title+' for '+fmtDate(p.date)+' ♥'));
+          toast(partnerName()+' booked '+p.title+' for '+fmtDate(p.date)+atTime(p)+' ♥'));
       }
       renderFromRemote();
     } else if(firstMeta && d===undefined){ firstMeta=false; }
@@ -2836,7 +2854,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=143;
+const APP_V=144;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
