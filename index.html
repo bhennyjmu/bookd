@@ -1528,8 +1528,46 @@ function reservationHTML(){
   return `<div style="font-weight:700; font-size:16px">${WD[reservation.weekday]}s at ${fmtTime(reservation.time)}, ${resvCad().label}</div>
     <div class="countdown" id="countdown"></div>
     ${status}
-    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">Add to my calendar</a><button onclick="askClearResv()">Cancel reservation</button></div>`;
+    <div class="minilinks"><a href="${gcalWeeklyURL()}" target="_blank" rel="noopener">Add to my calendar</a><button onclick="openEditResv()">Edit</button><button onclick="askClearResv()">Cancel reservation</button></div>`;
 }
+const resvLabel=r=>`${WD[r.weekday]}s at ${fmtTime(r.time)}, ${CADENCE[r.cadence||'weekly'].label}`;
+// A new day or rhythm starts fresh from today; a time-only change keeps the same nights
+function draftResv(){
+  const r={ weekday:+$('#er-day').value, time:$('#er-time').value, cadence:$('#er-cad').value };
+  r.since=(r.weekday!==reservation.weekday || r.cadence!==(reservation.cadence||'weekly')) ? todayISO() : reservation.since;
+  return r;
+}
+window.previewResv=()=>{ const el=$('#er-next'); if(!el) return;
+  const r=draftResv(); if(!okTime(r.time)){ el.textContent=''; return; }
+  const keep=reservation; reservation=r; let d; try{ d=nextOccurrence(); } finally{ reservation=keep; }
+  el.textContent='Next one: '+d.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'})+' at '+fmtTime(r.time);
+};
+window.openEditResv=()=>{ if(!reservation) return;
+  const cad=reservation.cadence||'weekly';
+  openSheet(`
+    <div class="eyebrow">Edit standing date</div><h3>${resvLabel(reservation)}</h3>
+    <div class="grid2">
+      <div><label class="f" for="er-day">On</label>
+        <select id="er-day" onchange="previewResv()">${WD.map((d,i)=>`<option value="${i}" ${i===reservation.weekday?'selected':''}>${d}</option>`).join('')}</select></div>
+      <div><label class="f" for="er-time">At</label><input type="time" id="er-time" value="${reservation.time}" oninput="previewResv()"></div>
+    </div>
+    <div class="fgroup" style="margin-top:14px"><label class="f" for="er-cad">How often?</label>
+      <select id="er-cad" onchange="previewResv()">
+        <option value="weekly" ${cad==='weekly'?'selected':''}>Every week</option>
+        <option value="biweekly" ${cad==='biweekly'?'selected':''}>Every other week</option>
+        <option value="monthly" ${cad==='monthly'?'selected':''}>Once a month (every 4 weeks)</option>
+      </select></div>
+    <div class="sheetnote" id="er-next"></div>
+    <div class="row2"><button class="cta ghostd" style="flex:1" onclick="closeSheet()">Cancel</button>
+    <button class="cta pink" style="flex:1" onclick="saveResvEdit()">Save</button></div>`);
+  previewResv();
+};
+window.saveResvEdit=()=>{ if(!reservation) return;
+  const r=draftResv(); if(!okTime(r.time)) return fieldError('er-time','Pick a time');
+  if(r.weekday===reservation.weekday && r.time===reservation.time && r.cadence===(reservation.cadence||'weekly')){ closeSheet(); return; }
+  reservation=r; store.set('reservation',reservation); pushMeta();
+  closeSheet(); renderAll(); toast('Standing date updated: '+resvLabel(reservation));
+};
 window.setResv=()=>{
   reservation={ weekday:+$('#r-day').value, time:$('#r-time').value, since:todayISO(), cadence:$('#r-cad').value };
   store.set('reservation',reservation); pushMeta(); toast('Standing date booked: '+resvCad().label); renderAll();
@@ -2854,7 +2892,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=144;
+const APP_V=145;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
