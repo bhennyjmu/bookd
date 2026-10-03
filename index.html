@@ -688,7 +688,7 @@ const nameMe=()=>profile.me||'Me', namePa=()=>profile.partner||'My partner';
 const kidsOn=()=>profile.kids!==false && profile.kids!=='ask';   // on unless switched off; 'ask' = new couple, not asked yet, so stay quiet
 const kidsAsk=()=>profile.kids==='ask';
 const plansSorted=()=>[...plans].sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'99').localeCompare(b.time||'99'));
-const todayPlan=()=>plans.find(p=>p.date===todayISO());
+const todayPlan=()=>plansSorted().find(p=>p.date===todayISO());   // two plans today: the earliest one leads
 const nextPlan=()=>plansSorted().find(p=>p.date>todayISO());
 const overduePlan=()=>plansSorted().find(p=>p.date<todayISO());
 const planById=id=>plans.find(p=>p.id===id);
@@ -996,7 +996,7 @@ function homeTilesHTML(){
     const days=Math.round((parseISO(next.date)-now)/DAY);
     const wd=parseISO(next.date).toLocaleDateString(undefined,{weekday:'short'});
     nextTile=`<button class="tile" onclick="openDay('${next.date}')" aria-label="Next up: ${esc(next.title)}. Open the details."><div class="tl">Next up</div><div class="tv clamp2">${esc(next.title)}</div>
-      <div class="ts">${wd} ${fmtDate(next.date)}, ${days} day${days===1?'':'s'} to go${(kidsOn()&&next.sitter==='needed')?', no sitter yet':''}</div></button>`;
+      <div class="ts">${wd} ${fmtDate(next.date)}${atTime(next)}, ${days} day${days===1?'':'s'} to go${(kidsOn()&&next.sitter==='needed')?', no sitter yet':''}</div></button>`;
   } else {
     nextTile=`<button class="tile" onclick="ui.tab=1;ui.justSaved=false;renderAll();window.scrollTo({top:0})"><div class="tl">Next up</div><div class="tv">Nothing yet</div><div class="ts">Plan something</div></button>`;
   }
@@ -2892,7 +2892,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=145;
+const APP_V=146;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
