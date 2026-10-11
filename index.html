@@ -1941,7 +1941,9 @@ function syncSectionHTML(){
         <input type="text" id="sync-code" placeholder="XXXX-XXXX" autocapitalize="characters"></div>
       <button class="cta pink" style="margin-top:0" onclick="joinVault()">Join with this code</button>
     </div>`;
-  const statusLine = syncStatus==='live' ? '<span style="color:var(--deposit)">● Live: two phones, same books</span>'
+  const waiting = syncStatus==='live' && partnerHere===false;
+  const statusLine = waiting ? '<span style="color:var(--champagne)">● Waiting for '+esc(partnerName())+' to connect</span>'
+    : syncStatus==='live' ? '<span style="color:var(--deposit)">● Live: two phones, same books</span>'
     : syncStatus==='connecting' ? '<span style="color:var(--champagne)">● Connecting…</span>'
     : syncStatus==='error' ? '<span style="color:var(--withdrawal)">● Connection trouble, will retry</span>'
     : '<span style="color:var(--dimmer)">● Waiting for the sync engine…</span>';
@@ -1953,6 +1955,11 @@ function syncSectionHTML(){
       <label class="f" style="margin-top:18px">Partner invite</label>
       <button class="cta pink" style="margin-top:0" onclick="mintInvite()">Invite my partner</button>
       <p class="datanote" style="margin-top:8px">Your invite code works once and expires in 24 hours.</p>
+      ${waiting?`<div class="divline">or, if ${esc(partnerName())} already sent you one</div>
+      <div class="fgroup"><label class="f" for="sync-code">Their invite code</label>
+        <input type="text" id="sync-code" placeholder="XXXX-XXXX" autocapitalize="characters" autocomplete="off"></div>
+      <button class="cta ghostd" style="width:100%; margin-top:0" onclick="joinVault()">Join with this code</button>
+      <p class="datanote" style="margin-top:8px">Your dates on this phone come along.</p>`:''}
 
       <label class="f" style="margin-top:18px">Nudges</label>
       ${pushOn
@@ -2092,7 +2099,7 @@ window.wipeAll=()=>{
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.') && k!=='bookd.deviceId').forEach(k=>localStorage.removeItem(k));   // SLICE 1 (v134): the phone's own ID survives
   entries=[]; reservation=null; plans=[]; timer=null; favorites=[]; lastSpin=null; currentIdea=null; goal=null; profile={me:'',partner:'',anniv:''};
   dep={etype:'date',rating:0,planner:null,editingId:null};
-  renderAll(); toast(hadSync?'History cleared on this phone. Your shared copy is untouched':'History cleared. Fresh books');
+  ui.tab=0; renderAll(); toast(hadSync?'History cleared on this phone. Your shared copy is untouched':'History cleared. Fresh books');
   setTimeout(()=>showOnboard(), 1200);   // fresh books = the full opening sequence
 };
 function wireSettings(){
@@ -2261,6 +2268,8 @@ function startSync(){
         toast('Another phone took this seat. Disconnected');
         renderAll(); return;
       }
+      const wasHere=partnerHere;
+      partnerHere=!!(d.devices&&d.devices[sync.role==='me'?'partner':'me']);
       const prevIds=new Set(plans.map(p=>p.id));
       profile=d.profile||profile; reservation=d.reservation??null;
       plans=cleanPlans(Array.isArray(d.plans)?d.plans:(d.planned?[{id:1, ...d.planned}]:plans));
@@ -2269,6 +2278,7 @@ function startSync(){
       if(myPace>0){ nudgeEvery=myPace; store.set('nudgeEvery',nudgeEvery); }
       store.set('profile',profile); store.set('reservation',reservation); store.set('plans',plans);
       store.set('goal',goal); store.set('favorites',favorites);
+      if(wasHere===false && partnerHere) toast(partnerName()+' is connected. Same books on both phones ♥');
       if(firstMeta){
         away.book = plans.filter(p=>p.by && p.by!==sync.role && (p.id||0)>oldSeen).length;
         noteAway(); firstMeta=false;
@@ -2301,7 +2311,8 @@ function startSync(){
     renderFromRemote();
   }, ()=>{ syncStatus='error'; renderFromRemote(); });
 }
-function stopSync(){ if(unsubMeta)unsubMeta(); if(unsubEntries)unsubEntries(); unsubMeta=unsubEntries=null; syncStatus='off'; }
+let partnerHere=null;   // v147: true once the other seat has a phone in it; null = not known yet
+function stopSync(){ if(unsubMeta)unsubMeta(); if(unsubEntries)unsubEntries(); unsubMeta=unsubEntries=null; syncStatus='off'; partnerHere=null; }
 /* SLICE 1 (v139): changes made before the sync code has loaded wait here, then go up as soon as it's ready */
 const pend={ up:store.get('pendUp',[])||[], del:store.get('pendDel',[])||[], meta:!!store.get('pendMeta',false), clock:!!store.get('pendClock',false) };
 const flying=new Set();   // queued dates just sent: kept on screen until the shared copy shows them
@@ -2340,36 +2351,80 @@ window.openVault=async()=>{
     await b.commit();
   }catch(e){ sync=null; store.set('sync',null); return toast('Could not connect. Check your connection and try again'); }
   startSync();
-  toast('Sharing is on ♥');
+  toast('Your books are ready to share');
   renderAll();
 };
-window.joinVault=async()=>{
-  if(!ensureDb()) return toast('Sync engine still loading. Try again in a moment');
-  let cid=($('#sync-code')?$('#sync-code').value:'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(cid.length>=6 && cid.length<=12){
-    let t=null;   // short code = disposable invite ticket → resolve, then burn
-    try{ t=await window.fb.getDoc(window.fb.doc(db,'tickets',cid)); }catch(e){}
-    if(!t||!t.exists()||!t.data().cid) return toast('That invite is expired or wrong. Ask your partner for a fresh one');
-    const ticketId=cid; cid=t.data().cid;
-    window.fb.deleteDoc(window.fb.doc(db,'tickets',ticketId)).catch(()=>{});
-  } else if(cid.length<16) return toast('That code looks short. Check it and try again');
+/* v147: one front door for every way of joining. Look the code up, work out which seat is open,
+   and only use the invite up once this phone is really in. */
+async function lookupCode(raw){
+  const code=String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!code){ toast('Type the invite code first'); return null; }
+  if(navigator.onLine===false){ toast('This phone looks offline. Connect and try again'); return null; }
+  let cid=code, ticketId=null;
+  if(code.length>=6 && code.length<=12){   // short code = disposable invite ticket
+    let t=null;
+    try{ t=await window.fb.getDoc(window.fb.doc(db,'tickets',code)); }catch(e){}
+    if(!t||!t.exists()||!t.data().cid){ toast('That invite is expired or wrong. Ask your partner for a fresh one'); return null; }
+    ticketId=code; cid=t.data().cid;
+  } else if(code.length<16){ toast('That code looks short. Check it and try again'); return null; }
+  if(sync && sync.cid===cid){ toast("That is your own code. It goes in your partner's phone"); return null; }
   let snap=null;
   try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
-  if(!snap||!snap.exists()) return toast("Couldn't find a match for that code. Double-check it");
+  if(!snap||!snap.exists()){ toast("Couldn't find a match for that code. Double-check it"); return null; }
   const d=snap.data()||{};
-  const seat=d.devices&&d.devices[pairRole];
-  if(seat && seat!==deviceId){
+  return {cid, ticketId, profile:d.profile||{}, devices:d.devices||{}};
+}
+/* which seat is this phone's? its own if it already holds one, else the only empty one. null = both empty, ask. */
+function openSeat(dev){
+  const r=['me','partner'], mine=r.find(x=>dev[x]===deviceId); if(mine) return mine;
+  const free=r.filter(x=>!dev[x]);
+  return free.length===1 ? free[0] : free.length ? null : 'full';
+}
+function seatFullSheet(){
+  openSheet(`
+    <div class="eyebrow">Both seats taken</div><h3>Two phones are already connected</h3>
+    <div class="sheetnote">Each partner connects one phone at a time. Replacing a phone? Disconnect from the old one first, or have your partner free your seat from their phone's Settings. Your invite code still works after that.</div>
+    <button class="cta pink" onclick="closeSheet()">Understood</button>`);
+}
+let joinPend=null;
+window.joinVault=async inputId=>{
+  if(!ensureDb()){ toast('Sync engine still loading. Try again in a moment'); return false; }
+  if(sync && partnerHere){ toast('This phone is already paired. Disconnect in Settings first'); return false; }
+  const el=$('#'+(inputId||'sync-code'));
+  const j=await lookupCode(el?el.value:''); if(!j) return false;
+  const seat=openSeat(j.devices);
+  if(seat==='full'){ seatFullSheet(); return false; }
+  if(!seat){   // nobody is connected to those books right now, so ask
+    joinPend=j;
     openSheet(`
-      <div class="eyebrow">Seat taken</div><h3>That seat is held by another phone</h3>
-      <div class="sheetnote">Each partner signs in on one phone at a time, and an occupied seat can't be taken from outside. Replacing your own phone? Disconnect from the old phone first, or have your partner free your seat from their phone's Settings.</div>
-      <button class="cta pink" onclick="closeSheet()">Understood</button>`);
-    return;
+      <div class="eyebrow">Found it</div><h3>Which one is you?</h3>
+      <div class="sheetnote">Everything you log will be signed with this name.</div>
+      <button class="cta pink" onclick="joinAs('me')">${esc(j.profile.me||'Partner 1')}</button>
+      <button class="cta pink" onclick="joinAs('partner')">${esc(j.profile.partner||'Partner 2')}</button>
+      <button class="cta ghostd" onclick="closeSheet()">Cancel</button>`);
+    return false;
   }
-  finishJoin(cid);
+  return finishJoin(j.cid, seat, j);
 };
-window.finishJoin=async cid=>{
-  sync={cid, role:pairRole}; store.set('sync',sync);
-  try{ await window.fb.setDoc(window.fb.doc(db,'couples',cid), {devices:{[pairRole]:deviceId}}, {merge:true}); }catch(e){}
+window.joinAs=async role=>{
+  closeSheet(); const j=joinPend; joinPend=null; if(!j) return;
+  const ok=await finishJoin(j.cid, role, j);
+  if(ok && $('#onboard') && ob.step==='pair') obGo('notif');
+};
+window.finishJoin=async (cid, role, j)=>{
+  role=role||pairRole; j=j||{};
+  try{ await window.fb.setDoc(window.fb.doc(db,'couples',cid), {devices:{[role]:deviceId}}, {merge:true}); }
+  catch(e){ toast('Could not connect. Check your connection and try again'); return false; }
+  if(sync && sync.cid!==cid){   // this phone had started books of its own: leave those, bring its dates along
+    const old=sync.role;
+    window.fb.setDoc(metaRef(), {devices:{[old]:null}}, {merge:true}).catch(()=>{});
+    stopSync();
+    if(old!==role){ entries.forEach(e=>{ if(e.by===old) e.by=role; }); store.set('entries',entries); }
+  }
+  pairRole=role;
+  if(j.profile && (j.profile.me||j.profile.partner)){ profile={...profile, ...j.profile}; store.set('profile',profile); }
+  sync={cid, role}; store.set('sync',sync);
+  if(j.ticketId) window.fb.deleteDoc(window.fb.doc(db,'tickets',j.ticketId)).catch(()=>{});   // invite used up only now
   try{
     const localOnly=[...entries];
     const b=window.fb.writeBatch(db);
@@ -2377,8 +2432,9 @@ window.finishJoin=async cid=>{
     await b.commit();
   }catch(e){}
   startSync();
-  toast('Connected. Same books on both phones ♥');
+  toast('Connected as '+(role==='me'?nameMe():namePa())+'. Same books on both phones ♥');
   renderAll();
+  return true;
 };
 function inviteCodeGen(){ const chars='ABCDEFGHJKMNPQRSTVWXYZ23456789'; const a=new Uint32Array(8);
   crypto.getRandomValues(a); let s=''; for(let i=0;i<8;i++) s+=chars[a[i]%chars.length]; return s; }
@@ -2392,7 +2448,7 @@ window.mintInvite=async()=>{
   const disp=code.slice(0,4)+'-'+code.slice(4);
   openSheet(`
     <div class="eyebrow">Invite ready: valid 24 hours, one use</div><h3 class="mono" style="letter-spacing:.1em">${disp}</h3>
-    <div class="sheetnote">Send this to your partner. On their phone: Settings → tap their name pill → enter this code → Join. It works once and expires in 24 hours.</div>
+    <div class="sheetnote">Send this to your partner. On their phone: open Book’d, tap “I have an invite code” and type it in. If they are already set up, it goes in Settings under Sync with your partner. It works once and expires in 24 hours.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="inviteCopy('${disp}')">Copy</button>
       <button class="cta pink" style="flex:1" onclick="inviteShare('${disp}')">Share</button>
@@ -2401,7 +2457,7 @@ window.mintInvite=async()=>{
 };
 window.inviteCopy=d=>{ (navigator.clipboard?navigator.clipboard.writeText(d):Promise.reject())
   .then(()=>toast('Invite copied')).catch(()=>toast(d)); };
-window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join me on Book'd. Open Settings, then Join with this code: "+d}).catch(()=>{}); else inviteCopy(d); };
+window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join me on Book'd: https://bhennyjmu.github.io/bookd/ Tap \"I have an invite code\" and enter "+d}).catch(()=>{}); else inviteCopy(d); };
 function pushClock(){   // file the clock's flight plan with the vault so the night watchman can see it
   if(!sync) return;
   if(!db){ pend.clock=true; savePend(); return; }   // SLICE 1 (v139)
@@ -2520,9 +2576,10 @@ function renderHeader(){
   const hr=new Date().getHours(), greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
   const title=[who?`${greet}, ${esc(who)}`:greet, 'Plan a date', 'Calendar', 'Your dates'][ui.tab];
   const names=(profile.me&&profile.partner)?` for ${esc(profile.me)} &amp; ${esc(profile.partner)}`:'';
-  const lab=!sync?'Not paired yet':syncStatus==='live'?'Synced':syncStatus==='error'?'Sync problem':'Connecting';
+  const waitingP=sync&&syncStatus==='live'&&partnerHere===false;
+  const lab=!sync?'Not paired yet':waitingP?'Waiting for your partner':syncStatus==='live'?'Synced':syncStatus==='error'?'Sync problem':'Connecting';
   h.innerHTML=`<div class="hbar"><div class="hleft">
-      <div class="hsmall"><span class="hdot ${sync?esc(syncStatus):'solo'}" role="img" aria-label="${lab}" title="${lab}"></span><span class="hnm">Book’d${names}</span></div>
+      <div class="hsmall"><span class="hdot ${sync?(waitingP?'connecting':esc(syncStatus)):'solo'}" role="img" aria-label="${lab}" title="${lab}"></span><span class="hnm">Book’d${names}</span></div>
       <div class="htitle">${title}</div></div>${gearHTML()}</div>`;
 }
 function renderAll(){ renderHeader(); renderBanners(); renderPage(); renderTabbar(); setTimeout(maybeSpot,350); }
@@ -2636,25 +2693,17 @@ window.obMint=async()=>{
 };
 window.obJoinCode=async()=>{
   if(!window.fb||!ensureDb()) return toast('Sync engine still loading. Try again in a moment');
-  let code=($('#ob-code').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''), cid=code;
-  if(code.length>=6 && code.length<=12){
-    let t=null; try{ t=await window.fb.getDoc(window.fb.doc(db,'tickets',code)); }catch(e){}
-    if(!t||!t.exists()||!t.data().cid) return toast('That invite is expired or wrong. Ask your partner for a fresh one');
-    cid=t.data().cid; window.fb.deleteDoc(window.fb.doc(db,'tickets',code)).catch(()=>{});
-  } else if(code.length<16) return toast('That code looks short. Check it and try again');
-  let snap=null; try{ snap=await window.fb.getDoc(window.fb.doc(db,'couples',cid)); }catch(e){}
-  if(!snap||!snap.exists()) return toast("Couldn't find a match for that code. Double-check it");
-  const d=snap.data()||{};
-  ob.join={cid, profile:d.profile||{}, devices:d.devices||{}};
+  const j=await lookupCode($('#ob-code').value); if(!j) return;
+  const seat=openSeat(j.devices);
+  if(seat==='full') return seatFullSheet();
+  ob.join=j;
+  if(seat) return obPick(seat);   // only one seat is open, so no need to ask
   obGo('jwho');
 };
 window.obPick=async role=>{
   const seat=ob.join.devices&&ob.join.devices[role];
   if(seat && seat!==deviceId) return toast('That seat is already held by another phone. Sure that one’s you?');
-  pairRole=role;
-  profile={...profile, ...ob.join.profile}; store.set('profile',profile);
-  await finishJoin(ob.join.cid);
-  if(sync) obGo('notif');
+  if(await finishJoin(ob.join.cid, role, ob.join)) obGo('notif');
 };
 window.obNudges=async()=>{ await enableNudges(); obDone(); };
 function obPath(){ return OB_PATH[ob.mode].filter(x=>!(ob.replay && (x==='goal'||x==='lastdate'))); }
@@ -2771,8 +2820,8 @@ function obRender(){
       <div class="opanel mine"><div class="pt">Invite ${pa}</div>${mine}</div>
       <div class="odiv">or</div>
       <div class="opanel theirs"><div class="pt">${pa} sent me a code</div>
-        <input type="text" id="sync-code" placeholder="XXXX-XXXX" autocapitalize="characters" style="margin-bottom:10px">
-        <button class="cta pink" style="margin-top:0" onclick="joinVault().then(()=>{ if(sync) obGo('notif'); })">Pair now</button></div>
+        <input type="text" id="ob-pair-code" aria-label="Invite code" placeholder="XXXX-XXXX" autocapitalize="characters" autocomplete="off" style="margin-bottom:10px">
+        <button class="cta pink" style="margin-top:0" onclick="joinVault('ob-pair-code').then(ok=>{ if(ok) obGo('notif'); })">Pair now</button></div>
       <div class="grow"></div>
       ${ob.invite&&!ob.minting?`<button class="cta pink" onclick="obGo('notif')">I’ve sent it, continue</button>`
                               :`<button class="cta ghostd" onclick="obGo('notif')">Later, I’ll do this from Settings</button>`}`;
@@ -2892,7 +2941,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=146;
+const APP_V=147;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
