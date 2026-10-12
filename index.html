@@ -1496,14 +1496,14 @@ window.openSitterSheet=id=>{
     <div class="sheetnote">A booked date isn't booked until they're covered. You can change this later on the Calendar tab.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="setSitter(${id},'needed');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">Still need one</button>
-      <button class="cta pink" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">${ICO.bottle} Sitter locked in</button>
+      <button class="cta pink" style="flex:1" onclick="setSitter(${id},'locked');closeSheet();window.scrollTo({top:0,behavior:'smooth'})">${ICO.bottle} Sitter covered</button><!-- SLICE 1 (v148) -->
     </div>
     ${cal}
     <a class="cta ghost" style="text-decoration:none" href="https://www.care.com/" target="_blank" rel="noopener">Find one on Care.com ${ICO.ext}</a>`);
 };
 
 window.setSitter=(id,v)=>{ const p=planById(id); if(!p) return; p.sitter=v; savePlans();
-  toast(v==='locked'?'Sitter locked in. Date fully booked ♥':'Marked as still needing a sitter'); renderAll(); };
+  toast(v==='locked'?'Sitter covered. Date fully booked ♥':'Marked as still needing a sitter'); renderAll(); };
 window.toggleSitter=id=>{ const p=planById(id); if(p) setSitter(id, p.sitter==='locked'?'needed':'locked'); };
 
 /* reservation (old style, with countdown + calendar) */
@@ -2147,7 +2147,7 @@ function renderBanners(){
   const resvISO = reservation ? toISO(nextOccurrence()) : null;
   const resvOpen = resvISO && resvISO!==todayISO() && !plans.some(p=>p.date===resvISO);   // held slot, nothing booked into it
   if(tonight) el.insertAdjacentHTML('beforeend',
-    `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}${atTime(tonight)}.${(kidsOn()&&tonight.sitter==='needed')?' Still no sitter!':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
+    `<div class="banner tonight"><span>Tonight: ${esc(tonight.title)}${atTime(tonight)}.${(kidsOn()&&tonight.sitter==='needed')?' No sitter yet.':' It\'s on the books.'}</span><button onclick="goHome()">Clock in</button></div>`);
   else if(resvOpen && (!next || resvISO<next.date)){
     const rd=Math.round((parseISO(resvISO)-now)/DAY);
     const when=rd===1?'Tomorrow':WD[reservation.weekday];
@@ -2941,7 +2941,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=148;
+const APP_V=149;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
