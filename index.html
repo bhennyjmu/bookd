@@ -2356,8 +2356,21 @@ window.openVault=async()=>{
 };
 /* v147: one front door for every way of joining. Look the code up, work out which seat is open,
    and only use the invite up once this phone is really in. */
+/* SLICE 1 (v149): a pasted invite text ("Join me on Book'd ... enter 2KKB-S8EZ") is cut down to its code */
+function pickCode(raw){
+  const t=String(raw||'');
+  if(!/\s/.test(t.trim())) return t;
+  const m=t.toUpperCase().match(/(?:^|[^A-Z0-9])([A-HJKMNP-TV-Z2-9]{4}-?[A-HJKMNP-TV-Z2-9]{4})(?![A-Z0-9])\s*$/);
+  return m?m[1]:t;
+}
+document.addEventListener('input',e=>{
+  const el=e.target;
+  if(!el||['sync-code','ob-pair-code','ob-code'].indexOf(el.id)<0) return;
+  const c=pickCode(el.value);
+  if(c!==el.value) el.value=c;
+});
 async function lookupCode(raw){
-  const code=String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const code=pickCode(raw).toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!code){ toast('Type the invite code first'); return null; }
   if(navigator.onLine===false){ toast('This phone looks offline. Connect and try again'); return null; }
   let cid=code, ticketId=null;
@@ -2447,7 +2460,7 @@ window.mintInvite=async()=>{
   }catch(e){ return toast('Could not create the invite. Check your connection'); }
   const disp=code.slice(0,4)+'-'+code.slice(4);
   openSheet(`
-    <div class="eyebrow">Invite ready: valid 24 hours, one use</div><h3 class="mono" style="letter-spacing:.1em">${disp}</h3>
+    <div class="eyebrow">Invite ready: valid 24 hours, one use</div><h3 class="mono" style="letter-spacing:.1em;cursor:pointer" role="button" tabindex="0" aria-label="Copy invite code ${disp}" onclick="inviteCopy('${disp}')">${disp}</h3>
     <div class="sheetnote">Send this to your partner. On their phone: open Book’d, tap “I have an invite code” and type it in. If they are already set up, it goes in Settings under Sync with your partner. It works once and expires in 24 hours.</div>
     <div class="row2">
       <button class="cta ghostd" style="flex:1" onclick="inviteCopy('${disp}')">Copy</button>
@@ -2457,7 +2470,7 @@ window.mintInvite=async()=>{
 };
 window.inviteCopy=d=>{ (navigator.clipboard?navigator.clipboard.writeText(d):Promise.reject())
   .then(()=>toast('Invite copied')).catch(()=>toast(d)); };
-window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join me on Book'd: https://bhennyjmu.github.io/bookd/ Tap \"I have an invite code\" and enter "+d}).catch(()=>{}); else inviteCopy(d); };
+window.inviteShare=d=>{ if(navigator.share) navigator.share({text:"Join me on Book'd. Open the app, tap \"I have an invite code\" and enter "+d}).catch(()=>{}); else inviteCopy(d); };
 function pushClock(){   // file the clock's flight plan with the vault so the night watchman can see it
   if(!sync) return;
   if(!db){ pend.clock=true; savePend(); return; }   // SLICE 1 (v139)
@@ -2805,7 +2818,7 @@ function obRender(){
     let mine='';
     if(ob.invite){
       const tiles=ob.invite.split('').map(ch=>ch==='-'?'<b class="dash">-</b>':`<b>${ch}</b>`).join('');
-      mine=`<div class="codetiles">${tiles}</div>
+      mine=`<div class="codetiles" style="cursor:pointer" role="button" tabindex="0" aria-label="Copy invite code ${ob.invite}" onclick="inviteCopy('${ob.invite}')">${tiles}</div>
         <div class="row2" style="margin-top:0">
           <button class="cta ghostd" style="flex:1; margin-top:0" onclick="inviteCopy('${ob.invite}')">Copy</button>
           <button class="cta pink" style="flex:1; margin-top:0" onclick="inviteShare('${ob.invite}')">Share</button>
@@ -2941,7 +2954,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=149;
+const APP_V=150;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
