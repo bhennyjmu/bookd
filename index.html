@@ -1314,8 +1314,11 @@ window.commitDeposit=()=>{
   if(dep.removePhoto && dep.photoUrl) deletePhoto(dep.photoUrl);
   if(dep.photoBlob) uploadPhoto(record.id, dep.photoBlob);
   // SLICE 1 (v131): only the booking this date came from, or one with the same name on the same day
-  const pix = dep.fromPlanId!=null ? plans.findIndex(p=>p.id===dep.fromPlanId)
+  // v151: a date logged under another name still closes that day's booking, when it is the only one that day
+  const sameDay = plans.filter(p=>p.date===record.date);
+  let pix = dep.fromPlanId!=null ? plans.findIndex(p=>p.id===dep.fromPlanId)
             : wasEdit ? -1 : plans.findIndex(p=>p.title===record.title && p.date===record.date);
+  if(pix<0 && dep.fromPlanId==null && !wasEdit && !small && sameDay.length===1) pix=plans.indexOf(sameDay[0]);
   if(pix>-1){ plans.splice(pix,1); savePlans(); }
   // SLICE 1 (v131): the clock ends only when this date came from it; edits never touch it
   if(timer && !wasEdit && (dep.fromClock || (!timer.running && record.date===timer.date))){ timer=null; store.set('timer',null); pushClock(); }
@@ -2954,7 +2957,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=150;
+const APP_V=151;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
