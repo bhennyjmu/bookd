@@ -2285,6 +2285,7 @@ function startSync(){
       if(firstMeta){
         away.book = plans.filter(p=>p.by && p.by!==sync.role && (p.id||0)>oldSeen).length;
         noteAway(); firstMeta=false;
+        reassertPush(d);
       } else {
         plans.filter(p=>!prevIds.has(p.id) && p.by && p.by!==sync.role).forEach(p=>
           toast(partnerName()+' booked '+p.title+' for '+fmtDate(p.date)+atTime(p)+' ♥'));
@@ -2433,7 +2434,7 @@ window.finishJoin=async (cid, role, j)=>{
   catch(e){ toast('Could not connect. Check your connection and try again'); return false; }
   if(sync && sync.cid!==cid){   // this phone had started books of its own: leave those, bring its dates along
     const old=sync.role;
-    window.fb.setDoc(metaRef(), {devices:{[old]:null}}, {merge:true}).catch(()=>{});
+    window.fb.setDoc(metaRef(), {devices:{[old]:null}, pushTokens:{[old]:null}}, {merge:true}).catch(()=>{});   // take the push address along too
     stopSync();
     if(old!==role){ entries.forEach(e=>{ if(e.by===old) e.by=role; }); store.set('entries',entries); }
   }
@@ -2480,6 +2481,20 @@ function pushClock(){   // file the clock's flight plan with the vault so the ni
   const c = timer ? {running:!!timer.running, since: Date.now()-elapsedSecs()*1000, by:sync.role, nagged:false} : null;
   window.fb.setDoc(metaRef(), {clock:c}, {merge:true}).catch(()=>{});
 }
+async function pushToken(){
+  const reg=await navigator.serviceWorker.ready;
+  const app=window.fb.getApps().length?window.fb.getApp():window.fb.initializeApp(FIREBASE_CONFIG);
+  return window.fb.getToken(window.fb.getMessaging(app),{vapidKey:VAPID_KEY, serviceWorkerRegistration:reg});
+}
+// Nudges on here but this book has no (or an old) push address for this phone: file it again, quietly.
+// Heals phones that switched books before v152, when the address stayed behind on the old book
+async function reassertPush(d){
+  if(!pushOn||!sync||typeof Notification==='undefined'||Notification.permission!=='granted') return;
+  try{
+    const token=await pushToken();
+    if(token && token!==(d.pushTokens&&d.pushTokens[sync.role])) await window.fb.setDoc(metaRef(), {pushTokens:{[sync.role]:token}}, {merge:true});
+  }catch(e){}
+}
 window.enableNudges=async()=>{
   if(!sync||!ensureDb()) return toast('Connect with your partner first');
   if(typeof Notification==='undefined') return toast('Add Book\'d to your Home Screen first. Nudges need the installed app');
@@ -2487,10 +2502,7 @@ window.enableNudges=async()=>{
   try{ perm=await Notification.requestPermission(); }catch(e){}
   if(perm!=='granted') return toast('Notifications are blocked. Allow Book\'d in your phone\'s notification settings');
   try{
-    const reg=await navigator.serviceWorker.ready;
-    const app=window.fb.getApps().length?window.fb.getApp():window.fb.initializeApp(FIREBASE_CONFIG);
-    const messaging=window.fb.getMessaging(app);
-    const token=await window.fb.getToken(messaging,{vapidKey:VAPID_KEY, serviceWorkerRegistration:reg});
+    const token=await pushToken();
     if(!token) return toast('Could not get a push address. Try again in a moment');
     await window.fb.setDoc(metaRef(), {pushTokens:{[sync.role]:token}}, {merge:true});
     pushOn=true; store.set('pushOn',true);
@@ -2528,7 +2540,7 @@ window.openDisconnectSheet=()=>{
 };
 window.disconnectVault=()=>{
   closeSheet();
-  if(db&&sync) window.fb.setDoc(metaRef(), {devices:{[sync.role]:null}}, {merge:true}).catch(()=>{});  // give the seat back on the way out
+  if(db&&sync) window.fb.setDoc(metaRef(), {devices:{[sync.role]:null}, pushTokens:{[sync.role]:null}}, {merge:true}).catch(()=>{});  // give the seat (and push address) back on the way out
   stopSync();
   sync=null; store.set('sync',null);
   toast('Disconnected. Your shared history is untouched');
@@ -2957,7 +2969,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=151;
+const APP_V=152;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
