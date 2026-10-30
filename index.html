@@ -729,6 +729,7 @@ const parseISO=s=>{const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1
 const fmtDate=s=>parseISO(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
 const fmtDateY=s=>parseISO(s).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
 const monday=d=>{const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x;};
+const prevWk=w=>monday(w-3*DAY).getTime();   // the Monday before; a fixed 7*DAY jump misses midnight when the clocks change
 const isDate=e=>(e.type||'date')==='date';
 const attr=e=>e.planner||e.by||null;   // credit: the who-booked-it pills win; else whoever logged it
 const fmtTime=t=>{const [h,m]=t.split(':').map(Number); const am=h<12; const hh=((h+11)%12)+1; return hh+':'+String(m).padStart(2,'0')+(am?' AM':' PM');};
@@ -881,8 +882,8 @@ function stats(){
   const rated=recent.filter(e=>isDate(e)&&e.rating>0);
   const weeks=new Set(entries.filter(isDate).map(e=>monday(parseISO(e.date)).getTime()));
   let streak=0, w=monday(new Date()).getTime();
-  if(!weeks.has(w)) w-=7*DAY;
-  while(weeks.has(w)){ streak++; w-=7*DAY; }
+  if(!weeks.has(w)) w=prevWk(w);
+  while(weeks.has(w)){ streak++; w=prevWk(w); }
   return {
     balance:hrs,
     dates:recent.length,
@@ -1150,8 +1151,8 @@ function depositFormHTML(){
   const defCat = (!dep.catPicked && !dep.editingId && String(defTitle).trim()) ? guessCat(defTitle) : (dep.cat || 'Food & drink');
   return `<div class="fgroup"><label class="f">Type</label>
       <div class="pills">
-        <button class="pill ${!small?'on':''}" onclick="grabDep();dep.etype='date';renderPage()">Date</button>
-        <button class="pill ${small?'on':''}" onclick="grabDep();dep.etype='small';renderPage()">Everyday moment</button>
+        <button class="pill ${!small?'on':''}" onclick="setDepType('date')">Date</button>
+        <button class="pill ${small?'on':''}" onclick="setDepType('small')">Everyday moment</button>
       </div></div>
     <div class="fgroup"><label class="f" for="d-title">What did you do?</label>
       ${suggHTML()}<input type="text" id="d-title" enterkeyhint="done" maxlength="60" value="${esc(defTitle)}" placeholder="${small?'Morning walk, phones at home':'Dinner at that new ramen place'}"></div>
@@ -1195,6 +1196,13 @@ function grabDep(){
   if($('#d-moment')) dep.moment=$('#d-moment').value;
 }
 window.grabDep=grabDep;
+/* v153: switching Date / Everyday moment converts the number, so 20 minutes doesn't become 20 hours */
+window.setDepType=t=>{
+  grabDep();
+  const v=parseFloat(dep.hours);
+  if(t!==dep.etype && v>0) dep.hours = t==='small' ? Math.round(v*60) : Math.max(0.01, Math.round(v/0.6)/100);   // hundredths, so switching back gives the same minutes
+  dep.etype=t; renderPage();
+};
 /* SLICE 1 (v132): throw away a new-date draft, after a confirmation */
 window.askDiscardDraft=()=>{
   const extra=[dep.fromPlanId!=null&&planById(dep.fromPlanId)?'The booking stays on your calendar.':null,
@@ -1318,7 +1326,10 @@ window.commitDeposit=()=>{
   const sameDay = plans.filter(p=>p.date===record.date);
   let pix = dep.fromPlanId!=null ? plans.findIndex(p=>p.id===dep.fromPlanId)
             : wasEdit ? -1 : plans.findIndex(p=>p.title===record.title && p.date===record.date);
-  if(pix<0 && dep.fromPlanId==null && !wasEdit && !small && sameDay.length===1) pix=plans.indexOf(sameDay[0]);
+  // v153: ...but only once that booking's time has come; a morning walk doesn't close tonight's dinner
+  const nowD=new Date(), nowHM=String(nowD.getHours()).padStart(2,'0')+':'+String(nowD.getMinutes()).padStart(2,'0');
+  const started=p=>p.date<todayISO() || !p.time || p.time<=nowHM;
+  if(pix<0 && dep.fromPlanId==null && !wasEdit && !small && sameDay.length===1 && started(sameDay[0])) pix=plans.indexOf(sameDay[0]);
   if(pix>-1){ plans.splice(pix,1); savePlans(); }
   // SLICE 1 (v131): the clock ends only when this date came from it; edits never touch it
   if(timer && !wasEdit && (dep.fromClock || (!timer.running && record.date===timer.date))){ timer=null; store.set('timer',null); pushClock(); }
@@ -1902,12 +1913,12 @@ window.openStreakSheet=()=>{
       <button class="cta pink" onclick="closeSheet();openDepForm()">${ICO.plus} Log a date</button>
       <button class="cta ghostd" onclick="closeSheet()">Close</button>`); return; }
   const wkOf=e=>monday(parseISO(e.date)).getTime(), thisWk=monday(new Date()).getTime();
-  let w=thisWk; if(!dates.some(e=>wkOf(e)===w)) w-=7*DAY;   // same rule the streak count uses
+  let w=thisWk; if(!dates.some(e=>wkOf(e)===w)) w=prevWk(w);   // same rule the streak count uses
   let rows='';
   const show=Math.min(st,12);
-  for(let i=0;i<show;i++, w-=7*DAY){
+  for(let i=0;i<show;i++, w=prevWk(w)){
     const wk=dates.filter(e=>wkOf(e)===w).sort((a,b)=>b.date.localeCompare(a.date));
-    rows+=`<div class="swk">${w===thisWk?'This week':w===thisWk-7*DAY?'Last week':'Week of '+fmtDate(toISO(new Date(w)))}</div>`
+    rows+=`<div class="swk">${w===thisWk?'This week':w===prevWk(thisWk)?'Last week':'Week of '+fmtDate(toISO(new Date(w)))}</div>`
       +wk.map(e=>`<button class="srow" onclick="openEntrySheet(${e.id})">${e.photo?`<img class="sthumb" src="${e.photo}" alt="Photo from ${esc(e.title)}" style="${focusCSS(e)}">`:`<span class="sthumb none">${ICO.heart}</span>`}
           <span class="smid"><b class="clamp2">${esc(e.title)}</b><span class="ts">${parseISO(e.date).toLocaleDateString(undefined,{weekday:'short'})} ${fmtDate(e.date)}</span></span>
           <span class="samt">+${e.hours.toFixed(1)}h</span></button>`).join('');
@@ -2969,7 +2980,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=152;
+const APP_V=153;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
