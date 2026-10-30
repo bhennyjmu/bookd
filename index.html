@@ -1108,7 +1108,7 @@ function freshDep(){
 }
 window.clockOut=()=>{
   const wasRunning=!!(timer&&timer.running);
-  if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); }
+  if(timer&&timer.running){ timer.elapsed=(timer.elapsed||0)+(Date.now()-timer.startedAt)/1000; timer.running=false; store.set('timer',timer); pushClock(); }   // v154: so the cloud stops counting toward "Still on a date?"
   if(dep.fromClock && !dep.editingId){   // SLICE 2 (v139): pick the timed date's draft back up
     if(wasRunning){ delete dep.hours; dep._auto=false; }   // the clock ran again, so the hours come from it again
     ui.showDraftNote=!!dep._draft; dep._draft=false;
@@ -2032,8 +2032,8 @@ function settingsPage(){
     <p class="secsub">First names only. They label who booked each date. Everything stays on this phone until you sync with your partner below.</p>
     <div class="cardbox">
       <div class="grid2 fgroup">
-        <div><label class="f" for="p-me">You</label><input type="text" id="p-me" maxlength="20" value="${esc(profile.me)}" placeholder="First name"></div>
-        <div><label class="f" for="p-pa">Your partner</label><input type="text" id="p-pa" maxlength="20" value="${esc(profile.partner)}" placeholder="First name"></div>
+        <div><label class="f" for="p-me">You</label><input type="text" id="p-me" maxlength="20" value="${esc(sync&&sync.role==='partner'?profile.partner:profile.me)}" placeholder="First name"></div>
+        <div><label class="f" for="p-pa">Your partner</label><input type="text" id="p-pa" maxlength="20" value="${esc(sync&&sync.role==='partner'?profile.me:profile.partner)}" placeholder="First name"></div>
       </div>
       <div class="fgroup"><label class="f" for="p-anniv">Anniversary (optional)</label>
         <input type="date" id="p-anniv" value="${esc(profile.anniv)}"></div>
@@ -2063,9 +2063,10 @@ window.setKids=v=>{ profile.kids=v; store.set('profile',profile); pushMeta();
 window.saveProfile=()=>{
   if(!$('#p-me').value.trim()) return fieldError('p-me','First name, please. It labels who booked each date');   // SLICE 1 (v133)
   if(!$('#p-pa').value.trim()) return fieldError('p-pa','Their first name, please. It labels their dates too');
-  profile={ me:$('#p-me').value.trim(), partner:$('#p-pa').value.trim(), anniv:$('#p-anniv').value||'', kids:kidsAsk()?'ask':profile.kids!==false };
+  const you=$('#p-me').value.trim(), them=$('#p-pa').value.trim(), joined=sync&&sync.role==='partner';   // v154: the shared copy keeps the founder as "me"
+  profile={ me:joined?them:you, partner:joined?you:them, anniv:$('#p-anniv').value||'', kids:kidsAsk()?'ask':profile.kids!==false };
   store.set('profile',profile); pushMeta();
-  toast((profile.me&&profile.partner)?profile.me+' & '+profile.partner+', on the books ♥':'Saved');
+  toast(you+' & '+them+', on the books ♥');
   renderAll();
 };
 window.saveGoal=()=>{
@@ -2107,7 +2108,7 @@ window.wipeAll=()=>{
   closeSheet();
   const hadSync=!!sync;
   // SLICE 1 (v134): give the seat back on the way out, same as Disconnect, so this phone can rejoin
-  if(hadSync && db){ window.fb.setDoc(metaRef(), {devices:{[sync.role]:null}}, {merge:true}).catch(()=>{}); }
+  if(hadSync && db){ window.fb.setDoc(metaRef(), {devices:{[sync.role]:null}, pushTokens:{[sync.role]:null}}, {merge:true}).catch(()=>{}); }   // v154: and the push address
   if(hadSync) stopSync();
   sync=null;
   Object.keys(localStorage).filter(k=>k.startsWith('bookd.') && k!=='bookd.deviceId').forEach(k=>localStorage.removeItem(k));   // SLICE 1 (v134): the phone's own ID survives
@@ -2291,7 +2292,7 @@ function startSync(){
       const myPace=d.nudgePace&&d.nudgePace[sync.role];
       if(myPace>0){ nudgeEvery=myPace; store.set('nudgeEvery',nudgeEvery); }
       store.set('profile',profile); store.set('reservation',reservation); store.set('plans',plans);
-      store.set('goal',goal); store.set('favorites',favorites);
+      store.set('goal',goal); store.set('favorites',favorites); noteMetaBase();
       if(wasHere===false && partnerHere) toast(partnerName()+' is connected. Same books on both phones ♥');
       if(firstMeta){
         away.book = plans.filter(p=>p.by && p.by!==sync.role && (p.id||0)>oldSeen).length;
@@ -2330,6 +2331,35 @@ let partnerHere=null;   // v147: true once the other seat has a phone in it; nul
 function stopSync(){ if(unsubMeta)unsubMeta(); if(unsubEntries)unsubEntries(); unsubMeta=unsubEntries=null; syncStatus='off'; partnerHere=null; }
 /* SLICE 1 (v139): changes made before the sync code has loaded wait here, then go up as soon as it's ready */
 const pend={ up:store.get('pendUp',[])||[], del:store.get('pendDel',[])||[], meta:!!store.get('pendMeta',false), clock:!!store.get('pendClock',false) };
+/* v154: the shared settings merge instead of being swapped wholesale. metaBase is the shared copy as this phone last saw it.
+   Only fields this phone changed since then are sent; bookings and saved ideas merge one item at a time,
+   so a phone that was offline or a step behind can't erase what the other phone just booked. */
+let metaBase=store.get('metaBase',null);
+const J=x=>JSON.stringify(x??null);
+function noteMetaBase(){ metaBase={cid:sync&&sync.cid, profile, reservation, plans, goal, favorites}; store.set('metaBase',metaBase); }
+function mergeList(base, mine, remote, key){
+  const k=key||(x=>x), B=new Map(base.map(x=>[k(x),J(x)])), M=new Map(mine.map(x=>[k(x),x]));
+  const out=remote.filter(x=>!(B.has(k(x)) && !M.has(k(x))))                     // gone from this phone since last look: removed here
+    .map(x=>M.has(k(x)) && J(M.get(k(x)))!==B.get(k(x)) ? M.get(k(x)) : x);     // changed on this phone: this edit wins
+  mine.forEach(x=>{ if(!B.has(k(x)) && !out.some(y=>k(y)===k(x))) out.push(x); });   // new on this phone
+  return out;
+}
+let metaQ=Promise.resolve();
+function sendMeta(){
+  const cid=sync.cid, role=sync.role, ref=metaRef();
+  const local={profile, reservation, plans, goal, favorites};   // what this phone has right now, before anything arrives
+  const base=metaBase&&metaBase.cid===cid?metaBase:null;
+  metaQ=metaQ.then(async()=>{
+    let remote=null; try{ const sn=await window.fb.getDoc(ref); remote=sn.exists()?sn.data():null; }catch(e){}
+    const pay={lastBy:role, updatedAt:Date.now()};
+    Object.keys(local).forEach(f=>{
+      const r=remote&&remote[f];
+      if((f==='plans'||f==='favorites') && Array.isArray(r)) pay[f]=mergeList(base&&Array.isArray(base[f])?base[f]:[], local[f]||[], r, f==='plans'?(p=>p.id):null);
+      else if(!remote || !base || J(local[f])!==J(base[f])) pay[f]=local[f]??null;
+    });
+    await window.fb.setDoc(ref, pay, {merge:true});
+  }).catch(()=>{});
+}
 const flying=new Set();   // queued dates just sent: kept on screen until the shared copy shows them
 function savePend(){ store.set('pendUp',pend.up); store.set('pendDel',pend.del); store.set('pendMeta',pend.meta); store.set('pendClock',pend.clock); }
 function flushPending(){
@@ -2337,12 +2367,12 @@ function flushPending(){
   if(!pend.up.length && !pend.del.length && !pend.meta && !pend.clock) return;
   const up=pend.up, del=pend.del, meta=pend.meta, clock=pend.clock;
   pend.up=[]; pend.del=[]; pend.meta=false; pend.clock=false; savePend();
-  if(meta) window.fb.setDoc(metaRef(), metaPayload(), {merge:true}).catch(()=>{});
+  if(meta) sendMeta();
   up.forEach(id=>{ const r=entries.find(e=>e.id===id); if(r){ flying.add(r.id); window.fb.setDoc(entryRef(r.id), r).catch(()=>{}); } });
   del.forEach(id=>window.fb.deleteDoc(entryRef(id)).catch(()=>{}));
   if(clock) pushClock();
 }
-function pushMeta(){ if(sync&&db) window.fb.setDoc(metaRef(), metaPayload(), {merge:true}).catch(()=>{});
+function pushMeta(){ if(sync&&db) sendMeta();
   else if(sync){ pend.meta=true; savePend(); } }
 function pushEntry(r){ if(sync&&db) window.fb.setDoc(entryRef(r.id), r).catch(()=>{});
   else if(sync){ pend.del=pend.del.filter(x=>x!==r.id); if(!pend.up.includes(r.id)) pend.up.push(r.id); savePend(); } }
@@ -2980,7 +3010,7 @@ const _openDepFormRaw=window.openDepForm, _closeDepFormRaw=window.closeDepForm;
 window.openDepForm=(...a)=>{ _openDepFormRaw(...a); if(!(history.state&&history.state.log)) history.pushState({tab:ui.tab, log:1},''); };
 window.closeDepForm=()=>{ if(history.state&&history.state.log) history.back(); else _closeDepFormRaw(); };
 /* ---------- boot ---------- */
-const APP_V=153;
+const APP_V=154;
 renderAll();
 /* fresh phone → the opening sequence; established phone → mark it done and fall back to the card tour if unseen */
 if(!store.get('onboarded',false)){
